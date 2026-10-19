@@ -197,14 +197,13 @@ details.more2 summary{cursor:pointer;color:var(--muted);font-size:12px;margin-to
   .brand .sub{display:none}
   .stats{flex-wrap:nowrap;overflow-x:auto;white-space:nowrap;scrollbar-width:none;gap:14px;font-size:11.5px}
   .stats>*{flex:0 0 auto;white-space:nowrap}
-  .clock{flex:1 1 100%;flex-wrap:nowrap;gap:8px}
+  .clock{flex:1 1 100%;flex-wrap:wrap;gap:8px}
   .clock .year{margin-left:auto}
-  .app{padding-bottom:72px}
-  .jump{display:none!important}
-  .side{position:fixed;left:0;right:0;bottom:0;z-index:30;height:78vh;height:78dvh;border-radius:14px 14px 0 0;transform:translateY(calc(100% - 56px - env(safe-area-inset-bottom,0px)));transition:transform .25s ease;box-shadow:0 -6px 24px rgba(0,0,0,.25);overflow:hidden;padding-bottom:env(safe-area-inset-bottom,0px)}
-  .side.open{transform:none}
-  .side::before{content:"";display:block;flex:none;width:40px;height:4px;border-radius:2px;background:var(--line);margin:6px auto 0}
-  .pane{overflow-y:auto;flex:1 1 0;min-height:0}
+  #map{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+  button,.chip,.card{-webkit-tap-highlight-color:transparent}
+  .zoomc button{width:42px;height:42px}
+  .tip{white-space:normal;max-width:min(240px,66%);transform:translate(-50%,-125%)}
+  .toast{font-size:12.5px;max-width:92%;padding:6px 10px}
 }
 @media (max-width:900px) and (orientation:landscape) and (max-height:520px){
   .brand{display:none}
@@ -212,8 +211,8 @@ details.more2 summary{cursor:pointer;color:var(--muted);font-size:12px;margin-to
   .main{grid-template-columns:minmax(0,1fr) 42%;grid-template-rows:minmax(0,1fr) 70px;height:calc(100vh - 90px);height:calc(100svh - 90px);min-height:260px}
   .mapwrap{height:auto;min-height:0;max-height:none;grid-column:1;grid-row:1}
   .timeline{grid-column:1;grid-row:2}
-  .side{position:static;transform:none;grid-column:2;grid-row:1/3;height:auto;border-radius:8px;box-shadow:none}
-  .side::before{display:none}
+  .side{grid-column:2;grid-row:1/3;overflow:hidden}
+  .pane{overflow-y:auto;flex:1 1 0;min-height:0}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -234,7 +233,7 @@ details.more2 summary{cursor:pointer;color:var(--muted);font-size:12px;margin-to
       <div class="modes" id="modes"></div>
       <div class="legend" id="legend"></div>
       <button type="button" class="legtog" id="legtog" aria-expanded="false">Legend</button>
-      <div class="zoomc" id="zoomc"><button type="button" data-z="in" aria-label="Zoom in">+</button><button type="button" data-z="out" aria-label="Zoom out">−</button><button type="button" data-z="reset" aria-label="Reset view" style="font-size:18px">⤢</button></div>
+      <div class="zoomc" id="zoomc"><button type="button" data-z="in" aria-label="Zoom in">+</button><button type="button" data-z="out" aria-label="Zoom out">−</button><button type="button" data-z="play" aria-label="Play or pause" id="ppb" style="font-size:15px">▶︎</button><button type="button" data-z="lab" aria-label="Toggle map labels" style="font-size:15px">Aa</button><button type="button" data-z="reset" aria-label="Reset view" style="font-size:18px">⤢</button></div>
       <div class="tip" id="tip" hidden></div>
       <div class="toast" id="toast" hidden></div>
       <div class="busy" id="busy">Loading Earth…</div>
@@ -350,6 +349,7 @@ const PDEF=[
 ['States','eco','Ecological reach',0,3,0.05,1,'How much harder it is to conquer, tax and hold lands unlike the state\'s home climate and way of life. Higher favours empires that follow one climate belt, river or coast.'],
 ['States','scaleExp','Returns to scale',0.6,1,0.01,0.8,'How strongly a bigger tax base turns into military reach. Higher favours large empires.'],
 ['States','fortify','Fortification',0,3,0.05,1,'How readily cohesive, wealthy states fortify threatened frontiers.'],
+['States','scl','Institutional sclerosis',0,3,0.05,1,'How fast old states silt up with entrenched elites and costly, diminishing-return bureaucracy (Olson, Tainter). Sclerotic states face more crises, and the worst cases break apart instead of reforming. 0 turns it off.'],
 ['Nomads','nomad','Nomad confederations',0,3,0.05,1,'How readily herders unite into confederations under strong leaders.'],
 ['Nomads','raid','Raiding',0,3,0.05,1,'How often nomads raid settled neighbours.'],
 ['Leaders','leaderInfl','Leader influence',0,1,0.01,0.6,'How much a ruler’s traits matter.'],
@@ -1108,7 +1108,7 @@ function techStep(a0,b0){if(a0==null){a0=0;b0=1}
       if(ls1>ls0&&r()<0.2)j=w.lt[ls0+((r()*(ls1-ls0))|0)];
       if(j>=0&&s.pop[j]>=1&&s.rel[j]!==ri&&!(R.kind==='ethnic'&&s.eth[j]>=0&&s.eths[s.eth[j]].fam!==R.fam)){
         const qj=s.pol[j],sr=qj?pols[qj].rel:-1;
-        let p=0.09*R.miss*P.faith*Math.min(1,0.15+Math.sqrt(s.pop[i]*s.pop[j])/15000+2*s.car[j])*(pi&&qj===pi?1.5:1)*(sr===ri?4:sr>=0?0.25:1)*(s.rel[j]<0?1.3:0.6)*(1+0.5*s.paper[i])*(0.7+0.6*R.cent);
+        let p=0.09*R.miss*P.faith*Math.min(1,0.15+Math.sqrt(s.pop[i]*s.pop[j])/15000+2*s.car[j])*(pi&&qj===pi?1.5:1)*(sr===ri?4:sr>=0?0.25:1)*(s.rel[j]<0?1.3:0.6)*(1+0.5*s.paper[i])*(0.7+0.6*R.cent)*(R.kind==='ethnic'&&s.eth[j]===s.eth[i]?2.5:1);
         if(r()<p)s.rel[j]=ri;
       }}
   }
@@ -1237,11 +1237,11 @@ function newPolity(c,from,opt){
     rel:s.rel[c],allies:[],enemies:new Map(),truce:new Map(),nb:new Map(),over:0,tribs:0,spc:0,era:0,rulers:[],warsF:[],kids:[],
     origin:opt.origin||(from?{type:'rebellion',from:from.id}:{type:'emerged',people:e}),loot:0,cult:0.2,works:[],golds:[],goldStart:0,sample:[],succ:null,fortN:0,cityPop:0,island:false,assimT:0,conqDyn:!!opt.conqDyn,settledY:0,restores:opt.restores||0};
   o.ruler=newRuler(L,o);o.founderR=o.ruler;o.tier=tierOf(o);o.full=fullName(o);o.peak=o.full;
-  if(from)from.kids.push(id);
+  o.civ=from?(from.civ||from.base):o.base;if(from)from.kids.push(id);
   if(from&&from.cplx!=null){o.cplx=from.cplx*0.55;o.ineq=from.ineq*0.85;o.treas=0.2;o.warC=0}
   s.pols.push(o);s.alive.push(id);s.pol[c]=id;s.dist[c]=0;s.integ[c]=Math.max(s.integ[c],0.7);o.mandate=1;
   // a new state in the heartland of a fallen great power may claim its name
-  if(!opt.base&&o.kind==='state'){for(const F of s.fallen){if(s.year-F.died>900||F.restoredBy)continue;
+  if(opt.claim&&!opt.base&&o.kind==='state'){for(const F of s.fallen){if(s.year-F.died>900||F.restoredBy)continue;
       const fe=s.eths[F.core],ce=s.eths[e];if(!fe||!ce||fe.fam!==ce.fam)continue;
       if(!F.sample.includes(c)&&angDist(c,F.capital)>0.06)continue;
       if(r()<0.5){F.restoredBy=id;o.base=F.base;o.restores=F.id;o.origin={type:'restoration',from:F.id,people:e};o.full=fullName(o);
@@ -1281,7 +1281,7 @@ function civilWar(o,breakup){
   const n=clamp(1+(r()<0.5?1:0)+(cells.length>=80&&r()<0.5?1:0)+Math.floor(cells.length/250)+(breakup?2:0),1,6),top=cells.slice(0,Math.max(1,Math.round(cells.length*0.6))),seeds=[];
   for(let t=0;t<60&&seeds.length<n;t++){const c=pick(r,top);if(c===o.capital)continue;if(seeds.every(q=>angDist(q,c)>0.07))seeds.push(c)}
   if(!seeds.length)return;
-  const oldName=o.full,causes=topCauses(o.why||{}),why=breakup?'A confederation held together by one leader rarely outlives him.':causes.length?'Driven by '+causes.join(' and ')+'.':null;
+  const oldName=o.full,causes=topCauses(o.why||{}),why=breakup?(o.kind==='state'&&(o.scl||0)>1.1?'An old regime, clogged with entrenched interests, could no longer reform itself.':'A confederation held together by one leader rarely outlives him.'):causes.length?'Driven by '+causes.join(' and ')+'.':null;
   const lab=s.lab,q=s.q;let h=0,t=0;
   for(const i of cells)lab[i]=-2;
   lab[o.capital]=id;q[t++]=o.capital;
@@ -1290,7 +1290,10 @@ function civilWar(o,breakup){
   const ids=sOK.map(c=>{const nid=newPolity(c,o,{kind:o.kind,origin:{type:'rebellion',from:id,why}});lab[c]=nid;q[t++]=c;return nid});
   while(h<t){const i=q[h++],l=lab[i];for(let d=0;d<4;d++){const j=w.nb[i*4+d];if(j>=0&&lab[j]===-2){lab[j]=l;q[t++]=j}}}
   for(const i of cells){const l=lab[i];if(l>0&&l!==id){s.pol[i]=l;s.s[i]=Math.min(1,s.s[i]+0.12)}s.pop[i]*=0.94;lab[i]=0}
-  o.E=0.7*etOf(o);o.shock=0.2;o.crises++;if(o.cplx!=null){o.cplx*=breakup?0.7:0.85;o.ineq=Math.max(0.2,o.ineq*(breakup?0.7:0.88))}
+  {let kept=0;for(const i of cells)if(s.pol[i]===id)kept++;
+   if(cells.length>=10&&(breakup||kept<0.55*cells.length)){const o0=o,nid=newPolity(o.capital,o,{kind:o.kind,origin:{type:'successor',from:id}});for(const i of cells)if(s.pol[i]===id)s.pol[i]=nid;
+    const n2=s.pols[nid];n2.civ=o0.civ||o0.base;n2.rel=o0.rel;if(o0.cplx!=null){n2.cplx=o0.cplx*0.7;n2.ineq=o0.ineq*0.8}o=n2}}
+  o.E=0.7*etOf(o);o.shock=0.2;o.crises++;o.scl=(o.scl||0)*(breakup?0.3:0.6);if(o.cplx!=null){o.cplx*=breakup?0.7:0.85;o.ineq=Math.max(0.2,o.ineq*(breakup?0.7:0.88))}
   const rebels=ids.map(k=>s.pols[k]);
   for(const k of ids){const p=s.pols[k];p.rel=s.rel[p.capital]>=0?s.rel[p.capital]:o.rel}
   for(const i of cells){const p=s.pol[i];if(p&&i!==s.pols[p].capital&&cerealEff(i)<0.3&&r()<0.6)s.pol[i]=0}
@@ -1299,7 +1302,7 @@ function civilWar(o,breakup){
   war.why=why;
   if(big&&!breakup){const names=ids.map(k=>s.pols[k].base);
     const nm=names.length>1?names.slice(0,-1).join(', ')+' and '+names[names.length-1]:names[0];
-    chron('war',`Civil war breaks the ${oldName}; ${nm} ${names.length>1?'break':'breaks'} away.`,o.capital,[['pol',o.id,oldName],...ids.map(k=>RB(s.pols[k])),RW(war)],why)}
+    chron('war',`Civil war breaks the ${oldName}; ${nm} ${names.length>1?'break':'breaks'} away.`,o.capital,[['pol',id,oldName],...ids.map(k=>RB(s.pols[k])),RW(war)],why)}
 }
 function collapse(o){
   const s=S,w=WD;let lost=0;
@@ -1452,7 +1455,7 @@ function foundReligion(o){
   const f=figFor(null,Rp,'prophet');f.pol=o.id;f.eth=s.eth[c];f.title=`Prophet of the ${e?e.name:'people'}`;f.died=Rp.death;
   const G=cap(L.lex.god),F=Rp.base;
   const name=pick(r,[`${G}ism`,`the Way of ${F}`,`the ${G} Covenant`,`the Faith of ${G}`,`${F}ism`,`the ${cap(L.lex.sun)} Path`]);
-  const universal=r()<0.65;
+  const universal=r()<(s.admin[c]>0.5?0.5:0.12);
   if(s.city[c]<0){s.city[c]=s.cities.length;s.cities.push({name:cityWord(L,r),cell:c,born:s.year,eth:s.eth[c],peak:s.pop[c],holy:true})}
   const R={id:s.rels.length,name,founder:f.id,born:s.year,origin:c,holy:c,pol:o.id,eth:s.eth[c],fam:e?e.fam:-1,kind:universal?'universal':'ethnic',miss:universal?0.35+0.65*r():0.15,cent:universal?0.3+0.4*r():0.1,holder:o.id,rgb:hsl(r()*360,0.55,0.48),parent:-1,kids:[],cells:0,pop:0,peak:0,alive:true,states:[],councils:0};
   s.rels.push(R);f.rel=R.id;
@@ -1461,6 +1464,17 @@ function foundReligion(o){
   chron('faith',`The prophet ${f.name} begins to preach ${name} in the ${o.full}${universal?', a faith open to every people':''}.`,c,[RF(f),RR(R),R_(o)]);
   spot(`The prophet ${f.name} begins to preach ${name}`,c,[RF(f),RR(R)]);
 }
+function foundFolk(c){
+  const s=S,r=s.r,L=langAt(c),e=s.eths[s.eth[c]];
+  const Rp=newRuler(L,null);Rp.epithet='';Rp.birth=s.year-(25+((r()*15)|0));Rp.death=Rp.birth+55+((r()*25)|0);
+  const f=figFor(null,Rp,'prophet');f.eth=s.eth[c];f.title=`Seer of the ${e.name}`;f.died=Rp.death;
+  const G=cap(L.lex.god),name=pick(r,[`the ${G} Cult`,`the Rites of ${G}`,`${G}ism`,`the ${cap(L.lex.sun)} Rites`,`the Way of ${Rp.base}`]);
+  if(s.city[c]<0){s.city[c]=s.cities.length;s.cities.push({name:cityWord(L,r),cell:c,born:s.year,eth:s.eth[c],peak:s.pop[c],holy:true})}
+  const R={id:s.rels.length,name,founder:f.id,born:s.year,origin:c,holy:c,pol:s.pol[c]||0,eth:s.eth[c],fam:e.fam,kind:'ethnic',miss:0.15,cent:0.1,holder:s.pol[c]||0,rgb:hsl(r()*360,0.55,0.48),parent:-1,kids:[],cells:0,pop:0,peak:0,alive:true,states:[],councils:0};
+  s.rels.push(R);f.rel=R.id;s.rel[c]=R.id;
+  for(let d=0;d<4;d++){const j=WD.nb[c*4+d];if(j>=0&&s.pop[j]>=1&&s.eth[j]===s.eth[c]&&s.rel[j]<0)s.rel[j]=R.id}
+  deed(f,`Began to preach ${name} among the ${e.name}`,[RR(R)]);
+  chron('faith',`Among the ${e.name}, the seer ${f.name} gathers a following around ${name}.`,c,[RF(f),RR(R),RE(e)])}
 function holyName(R){const c=S.city[R.holy];return c>=0?S.cities[c].name:'its holy city'}
 function relPass(){
   const s=S,w=WD,E=s.rels,n=E.length;if(!n)return;
@@ -1480,11 +1494,16 @@ function relPass(){
   }
   const md=new Float64Array(n).fill(2),far=new Int32Array(n).fill(-1);
   for(let k=0;k<L.length;k++){const i=L[k],e=s.rel[i];if(e<0||s.pop[i]<1)continue;const d=w.x3[i]*sx[e]+w.y3[i]*sy[e]+w.z3[i]*sz[e];if(d<md[e]){md[e]=d;far[e]=i}}
-  const thr=14*2*Math.PI/W;let made=0;
-  for(let e=0;e<n&&made<3;e++){const R=E[e];
-    if(!R.alive||cnt[e]<40||far[e]<0||Math.acos(clamp(md[e],-1,1))<thr)continue;
+  {const ne=s.eths.length,rc=new Int32Array(ne),cl=new Int32Array(ne).fill(-1);let nf=0;
+   for(const R of E)if(R.alive&&R.kind==='ethnic')nf++;
+   for(let k=0;k<L.length;k++){const i=L[k],q=s.eth[i];if(q<0||s.pop[i]<1)continue;if(s.rel[i]>=0)rc[q]++;else if(cl[q]<0||s.r()<0.2)cl[q]=i}
+   let fm=0;if(nf<30)for(let q=0;q<ne&&fm<1;q++){const e=s.eths[q];if(!e.alive||e.cells<12||cl[q]<0||rc[q]>0.3*e.cells)continue;
+     if(s.r()<P.faith*0.0022*Math.min(2,e.cells/25)){foundFolk(cl[q]);fm++}}}
+  const thr=7*2*Math.PI/W;let made=0;
+  for(let e=0;e<n&&made<4;e++){const R=E[e];
+    if(!R.alive||cnt[e]<15||far[e]<0||Math.acos(clamp(md[e],-1,1))<thr)continue;
     const f0=far[e],age=(s.year-R.born)/1000;
-    const pSch=0.12*P.faith*(1-0.7*R.cent)*(1+1.5*s.paper[f0])*(1+0.5*Math.min(2,age));
+    const pSch=0.22*P.faith*(1-0.7*R.cent)*(1+1.5*s.paper[f0])*(1+0.5*Math.min(2,age));
     if(s.r()>pSch)continue;
     if(R.cent>0.55&&s.r()<R.cent*0.7){R.councils++;if(R.peak>=30)chron('faith',`A council at ${holyName(R)} settles a dispute that threatened to split ${R.name}.`,R.holy,[RR(R)]);continue}
     const L2=langAt(f0),Rp=newRuler(L2,null);Rp.epithet='';Rp.birth=s.year-30;Rp.death=s.year+20+((s.r()*25)|0);
@@ -1682,11 +1701,17 @@ function* politicsG(){
     statecraft(o,c,y);
     if(o.kind==='state'&&o.pop<FLOOR.chief*P.floor){o.lowY=o.lowY||y;if(y-o.lowY>25){if(o.maxCells>=8)chron('fall',`The ${o.full} dwindles below the numbers needed to sustain a ruler and his household; it dissolves back into villages and kin-groups.`,c,[R_(o)],'Too few people remained to feed a court, an army and their collectors.');for(const i of polCells(id))pol[i]=0;continue}}else o.lowY=0;
     const pP=Math.max(0,o.press-0.85)*3,pE=Math.max(0,o.E/Et-1.15)*1.1,pS=Math.max(0,0.42-o.S)*2.2,pX=Math.max(0,o.md/o.h-0.85)*(s.admin[c]<0.5?2.2:1.0),pR=Math.max(0,0.5-comp)*0.8,pI=Math.max(0,0.45-o.integ)*0.8,pM=Math.max(0,0.5-o.mandate)*1.2,pZ=o.kind==='state'?Math.max(0,o.cells/(170*(1+0.6*s.roads[c]+0.4*s.admin[c]+0.3*s.paper[c]))-1)*0.9:0;
-    const pT=o.pT||0,pF=o.pF||0,pQ=o.pQ||0;const pN=o.kind==='state'?P.eco*0.8*Math.max(0,(o.forS||0)-0.35):0;o.why={pP,pE,pS,pX,pR,pI,pM,pZ,pN,pT,pF,pQ,sh:o.shock};o.psi=pP+pE+pS+pX+pR+pI+pM+pZ+pT+pF+pQ+pN+o.shock;
+    const pT=o.pT||0,pF=o.pF||0,pQ=o.pQ||0,pC=Math.max(0,(o.scl||0)-0.35)*1.7;const pN=o.kind==='state'?P.eco*0.8*Math.max(0,(o.forS||0)-0.35):0;o.why={pP,pE,pS,pX,pR,pI,pM,pZ,pN,pT,pF,pQ,sh:o.shock};o.psi=pP+pE+pS+pX+pR+pI+pM+pZ+pT+pF+pQ+pN+pC+o.shock;
     const isl=o.island?0.4:1;
     if(o.kind==='state'&&o.cells>=40&&o.psi>2.2&&r()<P.crisis*0.008*(o.psi-2)*isl){o.shock+=0.4;if(o.cells>=80)chron('fall',`The ${o.full} shatters into rival kingdoms.`,o.capital,[R_(o)],'Driven by '+topCauses(o.why).join(' and ')+'.');civilWar(o,true)}
-    else if(o.cells>=3&&r()<P.crisis*0.0035*o.psi*o.psi*isl)civilWar(o);
+    else if(o.cells>=3&&r()<P.crisis*0.0035*o.psi*o.psi*isl)civilWar(o,(o.scl||0)>1.1&&o.cells>=10);
     else if(o.cells>=2&&o.S<(o.island?0.08:0.12)&&r()<0.02)collapse(o);
+    {const cx=Math.min(1.5,o.cplx||0.2);o.scl=Math.max(0,(o.scl||0)+P.scl*0.0016*(0.4+(o.ineq==null?0.5:o.ineq))*(0.4+cx)*(1-0.6*Math.min(1,o.shock)))}
+    if(y%10===0&&o.kind==='state'&&!o.restores&&o.cells>=12){for(const F of s.fallen){if(F.restoredBy||y-F.died>500||F.id===id)continue;
+      const fe=s.eths[F.core],ce=s.eths[o.core];if(!fe||!ce||fe.fam!==ce.fam)continue;
+      if(o.cells<0.6*F.maxCells||pol[F.capital]!==id)continue;
+      F.restoredBy=id;o.restores=F.id;o.base=F.base;o.civ=F.civ||F.base;o.origin={type:'restoration',from:F.id,people:o.core};o.full=fullName(o);
+      chron('rise',`Having won back the old heartland and grown as large as its predecessor, the ${o.full} claims the legacy of the fallen ${F.peak}.`,c,[R_(o),['pol',F.id,F.peak]]);break}}
     if(o.kind==='horde'&&o.cells<=2&&y-o.born>30&&r()<0.03){for(const i of polCells(id)){pol[i]=0}continue}
     culture(o);
     if(y%5===0){
@@ -1723,7 +1748,7 @@ function* politicsG(){
     if(cr>=0&&cr!==o.rel&&r()<0.04){o.rel=cr;const Rl=s.rels[cr];if(!Rl.states.includes(id))Rl.states.push(id);
       if(o.cells>=30){const f=figFor(o,Rn,'ruler');deed(f,`Made ${Rl.name} the faith of the realm`,[RR(Rl)]);
         chron('faith',`${cap(rulerName(o))} makes ${Rl.name} the faith of the ${o.full}.`,c,[R_(o),RR(Rl),RF(f)])}}
-    if(o.kind==='state'&&s.admin[c]>0.5&&o.cells>=10&&(o.shock>0.25||o.why.pS>0.2)&&r()<P.faith*0.0003)foundReligion(o);
+    if(o.kind==='state'&&o.cells>=4&&r()<P.faith*((o.shock>0.25||o.why.pS>0.2)?0.0004:0.00012)*(s.admin[c]>0.5?1:0.6)*(o.rel>=0?0.5:1.5))foundReligion(o);
     // nomads on the move
     if(o.kind==='horde'&&o.cells>=6&&o.pop>50000&&s.activeMigs.length<10&&((o.wet<-0.4&&o.press>0.75&&r()<0.02*P.wander)||(o.S>0.55&&Rn.aggr>0.7&&r()<0.006*P.wander))){hordeMigration(o)}
     // war
@@ -2251,9 +2276,9 @@ function drawMap(){
   else if(m==='religion'){for(const R of s.rels)if(R.alive&&R.cells>=12&&R.lon!=null)lab.push([lonToMx(R.lon),laToMy(R.la),R.name.replace(/^the /,''),R.cells,false])}
   lab.sort((a,b)=>b[3]-a[3]);
   ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';
-  const placed=[];
-  for(const [mx,my,name,n,big] of lab.slice(0,110)){
-    const size=clamp(9+Math.sqrt(n)*1.3,10,30)*Math.min(1.6,Math.sqrt(ui.z));
+  const placed=[],narrow=mapDim.w<640;
+  for(const [mx,my,name,n,big] of ui.noLab?[]:lab.slice(0,narrow?40:110)){
+    const size=clamp(9+Math.sqrt(n)*1.3,10,30)*Math.min(1.6,Math.sqrt(ui.z))*(narrow?0.7:1);
     ctx.font=`${big?'':'italic '}${size}px ${DISPLAY_FONT}`;
     const txt=big?name.toUpperCase().split('').join(' '):name,tw=ctx.measureText(txt).width;
     each(mx,my,(sx,sy)=>{const bx=[sx-tw/2-2,sy-size/2,tw+4,size];
@@ -2406,7 +2431,7 @@ function renderPage(){
   }else if(t==='pol'){
     const o=s.pols[id],R=o.ruler,c=o.capital,city=s.city[c]>=0?s.cities[s.city[c]]:null;
     h+=`<div class="kind">${o.alive?(o.kind==='horde'?'Nomad '+o.tier.toLowerCase():o.tier):'Fallen state'}${o.island?' · island realm':''}${o.conqDyn?' · conquest dynasty':''}</div><h2 class="name">${esc(o.alive?o.full:o.peak)}</h2>`;
-    h+=`<p class="sub2">${originText(o)}${o.alive?'':` · fell ${fy(o.died)}${o.lastBy&&s.pols[o.lastBy]?` to the ${lp(s.pols[o.lastBy])}`:''}`}</p>`;
+    h+=`<p class="sub2">${originText(o)}${o.civ&&o.civ!==o.base?` · ${esc(cap(o.civ))} tradition`:''}${o.alive?'':` · fell ${fy(o.died)}${o.lastBy&&s.pols[o.lastBy]?` to the ${lp(s.pols[o.lastBy])}`:''}`}</p>`;
     h+=spark(o.hist);
     if(o.alive){
       const age=s.year-R.birth;
@@ -2490,6 +2515,7 @@ function originText(o){const s=S,g=o.origin||{},from=g.from&&s.pols[g.from];
   switch(g.type){
     case'rebellion':return`Founded ${fy(o.born)} in a revolt against the ${from?lp(from):'old regime'}${g.why?' · '+esc(g.why.replace(/\.$/,'')):''}`;
     case'migration':{const M=s.migs[g.mig];return`Founded ${fy(o.born)} by the ${M?lm_(M):'migrants'}${from?` in the lands of the ${lp(from)}`:''}`}
+    case'successor':return`Founded ${fy(o.born)} as a successor state of the ${from?lp(from):'old regime'}, which broke apart`;
     case'restoration':return`Founded ${fy(o.born)} as a restoration of the fallen ${from?lp(from):'empire'}`;
     default:{const e=s.eths[g.people!=null?g.people:o.core];return`${o.kind==='horde'?'Formed':'Founded'} ${fy(o.born)} ${o.kind==='horde'?'when the clans':'among the'} ${e?le(e):'people'}${o.kind==='horde'?' united':''}${g.settled?` · settled as rulers of farmland in ${fy(g.settled)}`:''}`}
   }}
@@ -2703,11 +2729,11 @@ mapCv.addEventListener('pointerup',e=>{clearTimeout(lpT);pts.delete(e.pointerId)
     else if(WD.land[i]&&m==='peoples'&&S.eth[i]>=0)openPage('eth',S.eth[i]);
     else if(WD.land[i]&&m==='religion'&&S.rel[i]>=0)openPage('rel',S.rel[i]);
     else openPage('cell',i);
-    if(isMob())setTimeout(()=>{if(lastTap.t)setSheet(true)},330)}}drag=null});
+    if(isMob())setTimeout(()=>{if(lastTap.t)showJump('d')},330)}}drag=null});
 mapCv.addEventListener('wheel',e=>{e.preventDefault();const r=mapCv.getBoundingClientRect(),sx=e.clientX-r.left,sy=e.clientY-r.top;
   zoomAt(sx,sy,Math.exp(-e.deltaY*(e.ctrlKey?0.01:0.0025)))},{passive:false});
 $('zoomc').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const v=b.dataset.z;
-  if(v==='reset'){ui.z=1;ui.ox=0;ui.oy=0;clampView();drawMap()}else zoomAt(mapDim.w/2,mapDim.h/2,v==='in'?1.6:1/1.6)});
+  if(v==='play')$('play').click();else if(v==='lab'){ui.noLab=!ui.noLab;b.style.opacity=ui.noLab?0.45:1;drawMap()}else if(v==='reset'){ui.z=1;ui.ox=0;ui.oy=0;clampView();drawMap()}else zoomAt(mapDim.w/2,mapDim.h/2,v==='in'?1.6:1/1.6)});
 document.addEventListener('keydown',e=>{if(e.target.matches('input,textarea')||e.ctrlKey||e.metaKey)return;
   if(e.key==='+'||e.key==='=')zoomAt(mapDim.w/2,mapDim.h/2,1.4);else if(e.key==='-')zoomAt(mapDim.w/2,mapDim.h/2,1/1.4)});
 $('legtog').addEventListener('click',()=>{const o=$('legend').classList.toggle('open');$('legtog').setAttribute('aria-expanded',o)});
@@ -2721,17 +2747,21 @@ jumpB.addEventListener('click',()=>{if(jumpB.dataset.m==='map')document.querySel
   else{jumpMode=null;document.querySelector('.side').scrollIntoView({behavior:'smooth',block:'start'})}updJump()});
 new IntersectionObserver(es=>{mapVis=es[0].intersectionRatio>0.35;if(!mapVis)jumpMode=null;updJump()},{threshold:[0,.35,1]}).observe($('mapwrap'));
 window.addEventListener('resize',updJump);
+let wl=null;const ppB=$('ppb');
+setInterval(async()=>{try{if(ppB)ppB.textContent=ui.running?'\u275a\u275a':'\u25b6\ufe0e';
+  if(ui.running&&!wl&&navigator.wakeLock&&!document.hidden){wl=await navigator.wakeLock.request('screen');wl.addEventListener('release',()=>{wl=null})}
+  else if(!ui.running&&wl){await wl.release();wl=null}}catch(e){wl=null}},800);
 /* bottom sheet, long-press info, battery, saved settings, install */
 let lpT=0,tipHold=0,svT=0;const BUD=()=>isMob()?9:14,SIDE=document.querySelector('.side');
-function setSheet(o){SIDE.classList.toggle('open',o)}
-function closedSheet(){const o=isMob()&&SIDE.classList.contains('open');if(o)setSheet(false);return o}
+function setSheet(){}
+function closedSheet(){return false}
 document.querySelector('.tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!isMob())return;setSheet(!(SIDE.classList.contains('open')&&b.getAttribute('aria-selected')==='true'))},true);
 {let y0=null;SIDE.addEventListener('touchstart',e=>{const t=e.touches[0],r=SIDE.getBoundingClientRect();y0=t.clientY-r.top<56?t.clientY:null},{passive:true});
  SIDE.addEventListener('touchend',e=>{if(y0===null||!isMob())return;const dy=e.changedTouches[0].clientY-y0;if(dy>50)setSheet(false);else if(dy<-50)setSheet(true);y0=null},{passive:true})}
 function tipAt(sx,sy,hold){const i=screenToCell(sx,sy),tip=$('tip');if(i<0||!S||!WD.land[i]){tip.hidden=true;return}
   const p=S.pol[i]?S.pols[S.pol[i]]:null,e2=S.eth[i]>=0?S.eths[S.eth[i]]:null,R=S.rel[i]>=0?S.rels[S.rel[i]]:null,e3=S.eth2[i]>=0?S.eths[S.eth2[i]]:null;
   tip.textContent=[p&&p.full,e2?e2.name+(e3?' and '+e3.name:''):'Unpeopled',R&&R.name,fmtN(S.pop[i])].filter(Boolean).join(' \u00b7 ');
-  tip.style.left=sx+'px';tip.style.top=(hold&&sy>70?sy-48:sy)+'px';tip.hidden=false;
+  tip.style.left=sx+'px';tip.style.top=sy+'px';tip.hidden=false;
   if(hold){tipHold=Date.now()+3500;setTimeout(()=>{if(Date.now()>=tipHold)tip.hidden=true},3600)}}
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&ui.running)setRunning(false)});
 function savePrefs(){try{const o={mode:ui.mode,speed:ui.speed,fit:$('fitc').checked,shuf:$('shufn').checked,fol:$('followc').checked,P:{}};for(const k in P)if($('p-'+k))o.P[k]=P[k];localStorage.setItem('asabiya.v1',JSON.stringify(o))}catch(e){}}
