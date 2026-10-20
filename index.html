@@ -156,6 +156,10 @@ h3.sec{font-size:10.5px;text-transform:uppercase;letter-spacing:.09em;color:var(
 .status{font-size:12px;color:var(--good);margin-top:8px;min-height:1.2em}
 .status.err{color:var(--accent)}
 details.more2 summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:8px}
+.spd{display:flex;align-items:center;gap:8px;flex:1 1 200px;min-width:160px}
+.spd input[type=range]{flex:1 1 auto;min-width:80px;accent-color:var(--accent)}
+.spd output{font:11.5px var(--f-mono);min-width:70px;color:var(--muted)}
+.spdauto{display:flex;align-items:center;gap:4px;font-size:11.5px;white-space:nowrap;color:var(--muted)}
 /* map zoom buttons + mobile helpers */
 .mapwrap{touch-action:auto}
 #map{touch-action:none}
@@ -198,6 +202,7 @@ details.more2 summary{cursor:pointer;color:var(--muted);font-size:12px;margin-to
   .stats{flex-wrap:nowrap;overflow-x:auto;white-space:nowrap;scrollbar-width:none;gap:14px;font-size:11.5px}
   .stats>*{flex:0 0 auto;white-space:nowrap}
   .clock{flex:1 1 100%;flex-wrap:wrap;gap:8px}
+  .spd{flex:1 1 100%}
   .clock .year{margin-left:auto}
   #map{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
   button,.chip,.card{-webkit-tap-highlight-color:transparent}
@@ -219,10 +224,11 @@ details.more2 summary{cursor:pointer;color:var(--muted);font-size:12px;margin-to
 
 <div class="app">
   <header class="bar">
-    <div class="brand"><span class="mark">Asabiya</span><span class="sub">history engine · v0.5.2</span></div>
+    <div class="brand"><span class="mark">Asabiya</span><span class="sub">history engine · v0.7.0</span></div>
     <div class="clock">
       <button id="play" class="btn primary" type="button" disabled>Play</button>
       <div class="seg" id="speed" role="group" aria-label="Years per second"></div>
+      <div class="spd"><input type="range" id="speedr" min="0" max="200" step="1" aria-label="Simulation speed in years per second"><output id="speedv" for="speedr"></output><label class="spdauto" title="Briefly drop to 1 year per second when a major event happens"><input type="checkbox" id="autoslow"><span>Auto-slow</span></label></div>
       <div class="year" aria-live="off"><span id="yr">–</span><span class="era" id="era"></span></div>
     </div>
     <div class="stats" id="topstats"></div>
@@ -470,12 +476,15 @@ function genClimate(eHi){
   boxBlur(pHi,HW,HH,4,2,true);boxBlur(aHi,HW,HH,6,2,true);boxBlur(tHi,HW,HH,1,1,true);
   return{tHi,pHi,aHi};
 }
+const KGP={Af:2400,Am:2300,As:1100,Aw:1200,Cfa:1250,Cfb:1100,Cfc:1300,Csa:650,Csb:700,Csc:800,Cwa:1200,Cwb:1100,Cwc:1000,Dfa:800,Dfb:700,Dfc:550,Dfd:450,Dsa:500,Dsb:550,Dsc:500,Dsd:400,Dwa:650,Dwb:550,Dwc:450,Dwd:300};
 function fitClimate(tHi,pHi,aHi,eHi,kg){
   let changed=0;
   for(let i=0;i<HW*HH;i++){
     if(eHi[i]<=0)continue;const g=kgGroup(kg[i]);if(g<0)continue;
     let T=tHi[i],Pp=pHi[i];const A=aHi[i],T0=T,P0=Pp;
     const Tw=()=>T+A/2,Tc=()=>T-A/2;
+    {const cd=KG_CODES[kg[i]],c0=cd.charAt(0),c2=cd.charAt(2);
+     if((c0==='C'||c0==='D')&&c2==='a'&&Tw()<22.3)T+=22.3-Tw();else if((c0==='C'||c0==='D')&&c2==='b'&&Tw()>21.5)T-=Tw()-21.5}
     if(g===5){if(Tw()>=10)T-=Tw()-9.5}else if(Tw()<10)T+=10.5-Tw();
     if(g===0&&Tc()<18)T+=18.5-Tc();
     if(g===3){if(Tc()>=18)T-=Tc()-17.5;if(Tc()<=0)T+=0.5-Tc()}
@@ -483,7 +492,7 @@ function fitClimate(tHi,pHi,aHi,eHi,kg){
     const th=Math.max(0,20*T+140);
     if(g===1){if(Pp>=th/2)Pp=th*0.35}
     else if(g===2){if(Pp>=th)Pp=th*0.8;else if(Pp<th/2)Pp=th*0.65}
-    else if(g!==5&&Pp<th)Pp=th*1.25+40;
+    else if(g!==5){const tg=KGP[KG_CODES[kg[i]]];if(tg){const u=clamp(Pp/(2*tg),0,1);Pp=tg*(0.8+0.6*u)}if(Pp<th*1.1)Pp=th*1.25+40}
     tHi[i]=T;pHi[i]=Pp;if(T!==T0||Pp!==P0)changed++;
   }
   return changed;
@@ -2106,7 +2115,7 @@ const fmtN=n=>n>=1e9?(n/1e9).toFixed(2)+'B':n>=1e6?(n/1e6).toFixed(n>=1e8?0:1)+'
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const TYPES={rise:['Rise','#c08a2a'],war:['War','#b2452c'],fall:['Fall','#6e5a8c'],diplomacy:['Diplomacy','#4f7f6a'],faith:['Faith','#b0729a'],migration:['Migrations','#a0703a'],culture:['Culture','#4f78a8'],ideas:['Ideas','#3f8a5c'],plague:['Plague','#8a2f4a'],famine:['Famine','#9a7b45'],people:['Peoples','#3d7a99'],nature:['Nature & climate','#6f7d84']};
 const MODES=[['political','States'],['alliances','Alliances'],['peoples','Peoples'],['mixing','Mixing'],['unity','Identity'],['loyalty','Loyalty'],['niche','Home ground'],['soil','Soil'],['forest','Forest'],['inequality','Inequality'],['circ','Exit option'],['religion','Religion'],['knowledge','Knowledge'],['era','Era'],['density','Population'],['capacity','Capacity'],['asabiya','Asabiya'],['disease','Disease'],['weather','Weather'],['climate','Climate check'],['terrain','Terrain']];
-const SPEEDS=[[5,'5'],[25,'25'],[100,'100'],[400,'400'],[1e9,'Max']];
+const SPEEDS=[[0.5,'0.5'],[2,'2'],[10,'10'],[50,'50'],[250,'250'],[1e9,'Max']];
 const ERA_COL=[[120,128,130],[118,150,86],[196,140,64],[150,96,72],[178,74,58],[122,84,150],[64,96,150],[40,130,140]];
 const GROUP_COL=[[40,140,70],[222,190,120],[206,170,90],[110,170,110],[90,120,170],[200,215,225]];
 const ui={running:false,speed:2,mode:'political',page:null,stack:[],z:1,ox:0,oy:0,bs:1,filters:new Set(Object.keys(TYPES)),q:'',lastChronKey:'',dirty:true,lastRender:0,lastSide:0,pausedAtEnd:false,pane:'chron',know:new Set(),figFilter:'all',fq:'',plagueSort:'deaths',climView:'mismatch',src:'earth',ready:false,lastSpot:0,toastT:0,ringCell:-1,ringT:0,follow:false};
@@ -2384,7 +2393,7 @@ function updateTop(){
   const s=S,st=s.stats[s.stats.length-1];
   $('yr').textContent=s.year<=0?(1-s.year).toLocaleString('en-US'):String(s.year);$('era').textContent=s.year<=0?'BCE':'CE';
   if(!st)return;
-  $('topstats').innerHTML=`<span>Population <b>${fmtN(st.pop)}</b></span><span>States <b>${st.np}</b></span><span>Hordes <b>${st.nh||0}</b></span><span>Leading era <b>${ERAS[st.lead||0]}</b></span><span>Largest <b>${esc(st.big||'none')}</b>${st.bc?` (${st.bc})`:''}</span>${ui.rate>0?`<span>Speed <b>${ui.rate>=10?Math.round(ui.rate):ui.rate.toFixed(1)}</b> yr/s</span>`:''}`;
+  $('topstats').innerHTML=`<span>Population <b>${fmtN(st.pop)}</b></span><span>States <b>${st.np}</b></span><span>Hordes <b>${st.nh||0}</b></span><span>Leading era <b>${ERAS[st.lead||0]}</b></span><span>Largest <b>${esc(st.big||'none')}</b>${st.bc?` (${st.bc})`:''}</span>${ui.rate>0?`<span>Actual <b>${ui.rate>=10?Math.round(ui.rate):ui.rate.toFixed(1)}</b> yr/s</span>`:''}`;
 }
 
 /* ---------- links and pages ---------- */
@@ -2616,7 +2625,7 @@ function renderChecks(){
   if(g){
     h+=`<div class="score"><b>${(g.score*100).toFixed(0)}%</b><span>of land area falls in the same climate group as the observed Köppen map</span></div>`;
     h+=`<div class="bars" style="margin-top:10px">${g.per.map((p,k)=>p.tot?bar(KG_GROUPS[k],p.ok/p.tot,1,'g'):'').join('')}</div>`;
-    h+=`<p class="note">${w.fitted?`The model's climate is graded here. For the simulation itself, Earth's climate is nudged into the observed zones (${Math.round((w.fitChanged||0)/(HW*HH)*1000)/10}% of the map adjusted).`:'The simulation is running on the model climate alone.'} Use the Climate check map mode to see where the model goes wrong.</p>`;
+    h+=`<p class="note">${w.fitted?`The model's climate is graded here. For the simulation itself, Earth's climate is nudged into the observed zones and given each zone's typical rainfall and summer heat (${Math.round((w.fitChanged||0)/(HW*HH)*1000)/10}% of the map adjusted).`:'The simulation is running on the model climate alone.'} Use the Climate check map mode to see where the model goes wrong.</p>`;
   }else h+=`<p class="note">Grading needs a real-world reference, so it is available on Earth. On other worlds the climate comes from the model below.</p>`;
   h+=`<details class="more2" ${tuneRun?'open':''}><summary>Tune the climate model</summary>`;
   h+=CDEF.map(([k,l,mn,mx,stp])=>`<div class="param"><label for="c-${k}">${l}</label><output id="co-${k}">${(+CL[k]).toFixed(stp<0.01?3:stp<1?2:0)}</output><input type="range" id="c-${k}" min="${mn}" max="${mx}" step="${stp}" value="${CL[k]}"></div>`).join('');
@@ -2702,8 +2711,18 @@ function showPane(p){ui.pane=p;for(const b of document.querySelectorAll('.tabs b
 document.querySelector('.tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b)showPane(b.dataset.pane)});
 
 /* ---------- controls ---------- */
-$('speed').innerHTML=SPEEDS.map(([v,l],k)=>`<button type="button" data-k="${k}" aria-pressed="${k===ui.speed}" title="${k===4?'As fast as possible':v+' years per second'}">${l}</button>`).join('');
-$('speed').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;ui.speed=+b.dataset.k;for(const x of $('speed').children)x.setAttribute('aria-pressed',x===b)});
+const nice=r=>{const m=Math.pow(10,Math.floor(Math.log10(r))-1);return Math.round(r/m)*m};
+const fmtRate=r=>r>=1e9?'Max':r<1?String(+r.toFixed(2)):r<10?String(+r.toFixed(1)):String(Math.round(r));
+function setRate(r,fromSlider){r=r>=1e9?1e9:clamp(nice(r),0.1,1000);ui.target=r;
+  $('speedv').textContent=fmtRate(r)+(r<1e9?' yr/s':'');
+  if(!fromSlider)$('speedr').value=r>=1e9?200:clamp(200*(Math.log10(r)+1)/4,0,200);
+  for(const x of $('speed').children)x.setAttribute('aria-pressed',+x.dataset.v===r)}
+$('speed').innerHTML=SPEEDS.map(([v,l])=>`<button type="button" data-v="${v}" aria-pressed="false" title="${v>=1e9?'As fast as possible':v+' years per second'}">${l}</button>`).join('');
+$('speed').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setRate(+b.dataset.v)});
+$('speedr').addEventListener('input',()=>setRate(Math.pow(10,-1+4*(+$('speedr').value)/200),true));
+document.addEventListener('keydown',e=>{if(e.target.matches('input,textarea')||e.ctrlKey||e.metaKey)return;
+  if(e.key===']')setRate((ui.target>=1e9?1000:ui.target)*1.5);else if(e.key==='[')setRate((ui.target>=1e9?1000:ui.target)/1.5)});
+setRate(window.matchMedia('(max-width:900px)').matches?10:25);
 function setRunning(on){ui.running=on&&ui.ready;$('play').textContent=ui.running?'Pause':'Play'}
 $('play').addEventListener('click',()=>setRunning(!ui.running));
 $('modes').innerHTML=MODES.map(([k,l])=>`<button type="button" data-m="${k}" aria-pressed="${k===ui.mode}">${l}</button>`).join('');
@@ -2776,13 +2795,12 @@ function tipAt(sx,sy,hold){const i=screenToCell(sx,sy),tip=$('tip');if(i<0||!S||
   tip.style.left=sx+'px';tip.style.top=sy+'px';tip.hidden=false;
   if(hold){tipHold=Date.now()+3500;setTimeout(()=>{if(Date.now()>=tipHold)tip.hidden=true},3600)}}
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&ui.running)setRunning(false)});
-function savePrefs(){try{const o={mode:ui.mode,speed:ui.speed,fit:$('fitc').checked,shuf:$('shufn').checked,fol:$('followc').checked,P:{}};for(const k in P)if($('p-'+k))o.P[k]=P[k];localStorage.setItem('asabiya.v1',JSON.stringify(o))}catch(e){}}
+function savePrefs(){try{const o={mode:ui.mode,rate:ui.target,auto:$('autoslow').checked,fit:$('fitc').checked,shuf:$('shufn').checked,fol:$('followc').checked,P:{}};for(const k in P)if($('p-'+k))o.P[k]=P[k];localStorage.setItem('asabiya.v1',JSON.stringify(o))}catch(e){}}
 function loadPrefs(){let o=null;try{o=JSON.parse(localStorage.getItem('asabiya.v1')||'null')}catch(e){}
   try{if(o){for(const k in o.P||{}){const el=$('p-'+k);if(el){el.value=o.P[k];el.dispatchEvent(new Event('input',{bubbles:true}))}}
     for(const[id,v]of[['fitc',o.fit],['shufn',o.shuf],['followc',o.fol]]){const el=$(id);if(el&&typeof v==='boolean'&&el.checked!==v){el.checked=v;el.dispatchEvent(new Event('change',{bubbles:true}))}}
     if(o.mode&&$('modes').querySelector('[data-m="'+o.mode+'"]')){ui.mode=o.mode;for(const x of $('modes').children)x.setAttribute('aria-pressed',x.dataset.m===o.mode);drawLegend()}}
-    let sp=o&&Number.isInteger(o.speed)?o.speed:(isMob()?1:ui.speed);if(isMob()&&sp>3)sp=3;ui.speed=clamp(sp,0,SPEEDS.length-1);
-    for(const x of $('speed').children)x.setAttribute('aria-pressed',+x.dataset.k===ui.speed)}catch(e){console.error(e)}}
+    let sp=o&&typeof o.rate==='number'?o.rate:(isMob()?10:25);if(isMob()&&sp>250)sp=250;setRate(sp);if(o&&typeof o.auto==='boolean')$('autoslow').checked=o.auto}catch(e){console.error(e)}}
 for(const ev of ['click','input','change'])document.addEventListener(ev,()=>{clearTimeout(svT);svT=setTimeout(savePrefs,500)},true);
 try{const c=document.createElement('canvas');c.width=c.height=512;const g=c.getContext('2d');g.fillStyle='#1c262c';g.beginPath();g.roundRect(0,0,512,512,96);g.fill();g.fillStyle='#3f6f8f';g.beginPath();g.arc(256,256,150,0,7);g.fill();g.fillStyle='#d9cfa8';g.beginPath();g.moveTo(150,330);g.lineTo(256,140);g.lineTo(362,330);g.closePath();g.fill();
   const png=c.toDataURL('image/png');for(const rel of ['icon','apple-touch-icon']){const l=document.createElement('link');l.rel=rel;l.href=png;document.head.appendChild(l)}
@@ -2842,7 +2860,7 @@ let lastT=performance.now(),accY=0;
 function frame(t){
   const dt=Math.min(0.1,(t-lastT)/1000);lastT=t;
   if(ui.running&&S){
-    const sp=SPEEDS[ui.speed][0],t0=performance.now();
+    const sp=ui.running&&$('autoslow').checked&&t<ui.slowUntil?Math.min(ui.target,1):ui.target,t0=performance.now();
     // run the year in slices, keeping each frame short so the map and panels stay responsive
     const slice=()=>{if(!ui.gen||ui.genS!==S){ui.gen=stepG();ui.genS=S}if(ui.gen.next().done){ui.gen=null;return true}return false};
     if(sp>=1e9){while(performance.now()-t0<BUD())slice()}
@@ -2850,7 +2868,7 @@ function frame(t){
     ui.dirty=true;
     if(S.year>=1800&&!ui.pausedAtEnd){ui.pausedAtEnd=true;setRunning(false);chron('nature','The age of agrarian empires gives way to the industrial era, where this version of the model stops being reliable.')}
   }
-  if(S&&S.spot.length&&S.spot[S.spot.length-1]!==ui.lastSpotObj){const sp=S.spot[S.spot.length-1];ui.lastSpotObj=sp;
+  if(S&&S.spot.length&&S.spot[S.spot.length-1]!==ui.lastSpotObj){const sp=S.spot[S.spot.length-1];ui.lastSpotObj=sp;if(ui.running&&$('autoslow').checked)ui.slowUntil=t+6000;
     if(ui.ready&&ui.running){const el=$('toast');el.innerHTML=`<span class="ty">${fy(sp.y)}</span> ${linkify(sp.txt,sp.refs)}`;el.hidden=false;ui.toastT=t+5000;ui.ringCell=sp.cell;ui.ringT=performance.now()+4000;if(ui.follow&&sp.cell>=0)centerOn(sp.cell)}}
   if(ui.toastT&&t>ui.toastT){$('toast').hidden=true;ui.toastT=0}
   if(ui.ringT&&performance.now()<ui.ringT)ui.dirty=true;
