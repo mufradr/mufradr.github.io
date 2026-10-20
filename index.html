@@ -863,6 +863,10 @@ const EARTH_HEARTHS=[
  {kind:'sail',lat:23.5,lon:120.5,y:-3000},
  {kind:'camel',lat:22,lon:50,y:-1200},
  {kind:'ard',lat:33,lon:44,y:-4300},
+ {kind:'irrig',lat:32,lon:45.5,y:-5500},
+ {kind:'irrig',lat:26.5,lon:32.5,y:-4200},
+ {kind:'irrig',lat:28,lon:68.5,y:-3800},
+ {kind:'irrig',lat:35,lon:110.5,y:-2800},
 ];
 const EARTH_SEEDS=[[5,25,'afr'],[33,40,'afro'],[48,10,'ie'],[22,78,'indo'],[35,110,'sino'],[5,105,'aus'],[-25,134,'pama'],[60,100,'alt'],[40,-100,'nam'],[-10,-60,'sam']];
 
@@ -914,6 +918,7 @@ function newHistory(hseed){
     s.hearths.push({kind:'horse',year:s.start+4000+r()*1500|0,done:false});
     s.hearths.push({kind:'camel',year:s.start+6500+r()*1500|0,done:false});
     s.hearths.push({kind:'ard',year:s.start+4300+r()*1500|0,done:false});
+    s.hearths.push({kind:'irrig',year:s.start+3500+r()*1500|0,done:false});
   }
   chron('nature',`Foragers of ${seeds.length} unrelated stocks people the habitable world.`,seeds[0]);
   recordStats();
@@ -973,7 +978,7 @@ function computeK(){
     const irr=s.irrig[i]*rv;
     const wf=1+(Math.min(dry,1.25)-1)*(1-0.75*irr);
     const T_=s.tk,hv=w.heavy[i],lc=w.leach[i];
-    let Kfa=ar*3.5*w.sF[i]*s.farm[i]*s.fert[i]*wf*(1+0.8*s.metal[i]+0.9*s.iron[i]*(1-0.4*lc)+1.0*s.crops[i]+0.7*s.admin[i]+0.55*s.ard[i]*(1-0.6*hv)+0.7*s.plough[i]*hv+0.6*s.manure[i]+s.xcrops[i]*(0.25+0.8*lc+0.5*w.trop[i]+0.3*(1-w.sF[i]))+0.4*T_[26][i]*Math.max(lc,s.forest[i])+0.15*T_[28][i]*w.coast[i])*(1+rv*(0.25+2.2*s.irrig[i]));
+    let Kfa=ar*3.5*Math.max(w.sF[i],0.7*w.rv[i]*s.irrig[i])*s.farm[i]*s.fert[i]*wf*(1+0.8*s.metal[i]+0.9*s.iron[i]*(1-0.4*lc)+1.0*s.crops[i]+0.7*s.admin[i]+0.55*s.ard[i]*(1-0.6*hv)+0.7*s.plough[i]*hv+0.6*s.manure[i]+s.xcrops[i]*(0.25+0.8*lc+0.5*w.trop[i]+0.3*(1-w.sF[i]))+0.4*T_[26][i]*Math.max(lc,s.forest[i])+0.15*T_[28][i]*w.coast[i])*(1+rv*(0.25+2.2*s.irrig[i]));
     Kfa*=(0.45+0.55*(1-s.forest[i]))*(1-0.6*s.salt[i])*(1-0.5*w.oncho[i]);
     if(w.T[i]<12)Kfa*=clamp(1+0.18*dT,0.4,1.35);
     // heavy, wet temperate forest soils: hard to clear and work until iron axes and ploughs
@@ -1132,6 +1137,7 @@ function hearthCheck(){
           else if(h.kind==='horse')ok=w.sH[i]>0.45&&w.sF[i]<0.35&&s.herd[i]>0.2;
           else if(h.kind==='camel')ok=s.herd[i]>0.3&&(w.desert[i]||w.Pr[i]<350);
           else if(h.kind==='ard')ok=s.farm[i]>0.8&&s.herd[i]>0.5&&!w.tsetse[i]&&w.Pr[i]<900;
+          else if(h.kind==='irrig')ok=s.farm[i]>0.6&&(w.desert[i]||w.Pr[i]<600)&&w.rv[i]>0.04;
           else ok=w.coast[i]&&s.pop[i]>200;
           if(ok&&s.pop[i]>bp){bp=s.pop[i];best=i}}
         if(best<0){h.year=y+25;continue}c=best}
@@ -1140,6 +1146,7 @@ function hearthCheck(){
       if(h.kind==='copper'){seedTech(s.metal,c,1,1);chron('ideas',`Smiths among the ${e.name} learn to smelt copper, and later bronze.`,c,[RE(e)]);s.firstTech[3]=s.firstTech[3]||{y,cell:c}}
       else if(h.kind==='horse'){seedTech(s.horse,c,1,1);seedTech(s.herd,c,1,1);chron('ideas',`On the grasslands, the ${e.name} tame and ride the horse.`,c,[RE(e)]);s.firstTech[4]=s.firstTech[4]||{y,cell:c}}
       else if(h.kind==='ard'){seedTech(s.ard,c,1,1);chron('ideas',`Farmers among the ${e.name} yoke oxen to a scratch plough; one family can now till far more land.`,c,[RE(e)]);s.firstTech[20]=s.firstTech[20]||{y,cell:c}}
+      else if(h.kind==='irrig'){seedTech(s.irrig,c,1,2);chron('ideas',`The ${e.name} dig canals and ditches to carry river water onto their fields.`,c,[RE(e)]);s.firstTech[2]=s.firstTech[2]||{y,cell:c}}
       else if(h.kind==='camel'){seedTech(s.camel,c,1,2);chron('ideas',`The ${e.name} tame the camel; the deserts begin to open to caravans and raiders.`,c,[RE(e)]);s.firstTech[18]=s.firstTech[18]||{y,cell:c}}
       else{seedTech(s.sail,c,1,1);chron('ideas',`The ${e.name} build boats that can cross open sea.`,c,[RE(e)])}
       h.done=true;
@@ -1292,7 +1299,7 @@ function civilWar(o,breakup){
   for(const i of cells){const l=lab[i];if(l>0&&l!==id){s.pol[i]=l;s.s[i]=Math.min(1,s.s[i]+0.12)}s.pop[i]*=0.94;lab[i]=0}
   {let kept=0;for(const i of cells)if(s.pol[i]===id)kept++;
    if(cells.length>=10&&(breakup||kept<0.55*cells.length)){const o0=o,nid=newPolity(o.capital,o,{kind:o.kind,origin:{type:'successor',from:id}});for(const i of cells)if(s.pol[i]===id)s.pol[i]=nid;
-    const n2=s.pols[nid];n2.civ=o0.civ||o0.base;n2.rel=o0.rel;if(o0.cplx!=null){n2.cplx=o0.cplx*0.7;n2.ineq=o0.ineq*0.8}o=n2}}
+    const n2=s.pols[nid];n2.born=s.year+1;n2.civ=o0.civ||o0.base;n2.rel=o0.rel;if(o0.cplx!=null){n2.cplx=o0.cplx*0.7;n2.ineq=o0.ineq*0.8}o=n2}}
   o.E=0.7*etOf(o);o.shock=0.2;o.crises++;o.scl=(o.scl||0)*(breakup?0.3:0.6);if(o.cplx!=null){o.cplx*=breakup?0.7:0.85;o.ineq=Math.max(0.2,o.ineq*(breakup?0.7:0.88))}
   const rebels=ids.map(k=>s.pols[k]);
   for(const k of ids){const p=s.pols[k];p.rel=s.rel[p.capital]>=0?s.rel[p.capital]:o.rel}
@@ -1508,11 +1515,15 @@ function relPass(){
     if(R.cent>0.55&&s.r()<R.cent*0.7){R.councils++;if(R.peak>=30)chron('faith',`A council at ${holyName(R)} settles a dispute that threatened to split ${R.name}.`,R.holy,[RR(R)]);continue}
     const L2=langAt(f0),Rp=newRuler(L2,null);Rp.epithet='';Rp.birth=s.year-30;Rp.death=s.year+20+((s.r()*25)|0);
     const fg=figFor(null,Rp,'reformer');fg.pol=s.pol[f0];fg.eth=s.eth[f0];fg.title='Reformer';fg.died=Rp.death;
-    const core=R.name.replace(/^the /,'');
-    const nm=pick(s.r,[`Reformed ${core}`,`${cap(word(L2,s.r))}ism`,`the New ${core}`,`the ${Rp.base} Church`]);
+    const core=(R.root||R.name).replace(/^the /,'');
+    if(s.city[f0]<0){s.city[f0]=s.cities.length;s.cities.push({name:cityWord(L2,s.r),cell:f0,born:s.year,eth:s.eth[f0],peak:s.pop[f0],holy:true})}
+    const cityN=s.cities[s.city[f0]].name,used=new Set(E.map(x=>x.name));
+    const cands=[[`Reformed ${core}`,1],[`Orthodox ${core}`,1],[`Old ${core}`,1],[`${core} of ${cityN}`,1],[`the ${cityN} Rite`,0],[`${cap(word(L2,s.r))}ism`,0],[`the ${Rp.base} Church`,0]];
+    let pk=cands.filter(x=>!used.has(x[0]));if(!pk.length)pk=[[`${Rp.base}\u2019s ${core}`,1]];
+    const [nm,keepRoot]=pick(s.r,pk);
     if(s.city[f0]<0){s.city[f0]=s.cities.length;s.cities.push({name:cityWord(L2,s.r),cell:f0,born:s.year,eth:s.eth[f0],peak:s.pop[f0],holy:true})}
     const C={id:E.length,name:nm,founder:fg.id,born:s.year,origin:f0,holy:f0,pol:s.pol[f0],eth:s.eth[f0],fam:R.fam,kind:R.kind,miss:clamp(R.miss+gauss(s.r)*0.15,0.1,1),cent:0.25,holder:s.pol[f0],rgb:hsl(s.r()*360,0.5,0.5),parent:e,kids:[],cells:0,pop:0,peak:0,alive:true,states:[],councils:0};
-    E.push(C);R.kids.push(C.id);fg.rel=C.id;made++;
+    C.root=keepRoot?core:nm.replace(/^the /,'');E.push(C);R.kids.push(C.id);fg.rel=C.id;made++;
     for(let k=0;k<L.length;k++){const i=L[k];if(s.rel[i]!==e)continue;
       if(w.x3[i]*w.x3[f0]+w.y3[i]*w.y3[f0]+w.z3[i]*w.z3[f0]>w.x3[i]*sx[e]+w.y3[i]*sy[e]+w.z3[i]*sz[e])s.rel[i]=C.id}
     deed(fg,`Broke with ${R.name} and founded ${nm}`,[RR(R),RR(C)]);
@@ -1693,7 +1704,7 @@ function* politicsG(){
     const a=s.anom[c];o.wet=o.wet*0.92+a*0.08;
     o.loot*=0.9;
     o.gate=clamp(0.5+1.1*(1-o.press)+(o.nomF>0.5||o.kind==='horde'?0.5:0.22)*a+Math.min(0.5,o.tribs*0.15)-(o.over?0.15:0)+Math.min(0.5,o.loot/(o.pop+1)*4)-Math.min(0.3,o.fortN*0.004),0.15,1.9);
-    o.h=P.reach*(1+0.8*s.admin[c]+0.5*s.law[c]+0.7*s.roads[c]+0.4*s.coin[c]+0.6*s.gun[c])*(0.7+0.6*comp)*(o.kind==='horde'?1.4:1)*(o.kind==='state'?0.75+0.5*Math.min(1.4,o.cplx||0.2):1)*(1+0.15*s.tk[24][c]+0.1*s.tk[31][c]);
+    o.h=P.reach*(0.55+0.45*Math.min(1,2*s.admin[c]+s.roads[c]))*(1+0.8*s.admin[c]+0.5*s.law[c]+0.7*s.roads[c]+0.4*s.coin[c]+0.6*s.gun[c])*(0.7+0.6*comp)*(o.kind==='horde'?1.4:1)*(o.kind==='state'?0.75+0.5*Math.min(1.4,o.cplx||0.2):1)*(1+0.15*s.tk[24][c]+0.1*s.tk[31][c]);
     const Et=etOf(o);
     o.E=clamp(o.E+0.012*o.E*(1-o.press)*(0.8+0.4*comp)*(0.5+(o.ineq==null?0.5:o.ineq)),0.004,0.12);
     o.shock*=0.92;
@@ -1707,7 +1718,7 @@ function* politicsG(){
     else if(o.cells>=3&&r()<P.crisis*0.0035*o.psi*o.psi*isl)civilWar(o,(o.scl||0)>1.1&&o.cells>=10);
     else if(o.cells>=2&&o.S<(o.island?0.08:0.12)&&r()<0.02)collapse(o);
     {const cx=Math.min(1.5,o.cplx||0.2);o.scl=Math.max(0,(o.scl||0)+P.scl*0.0016*(0.4+(o.ineq==null?0.5:o.ineq))*(0.4+cx)*(1-0.6*Math.min(1,o.shock)))}
-    if(y%10===0&&o.kind==='state'&&!o.restores&&o.cells>=12){for(const F of s.fallen){if(F.restoredBy||y-F.died>500||F.id===id)continue;
+    if(y%10===0&&o.kind==='state'&&!o.restores&&o.cells>=12){for(const F of s.fallen){if(F.restoredBy||y-F.died>500||F.id===id||o.born<F.died-20)continue;
       const fe=s.eths[F.core],ce=s.eths[o.core];if(!fe||!ce||fe.fam!==ce.fam)continue;
       if(o.cells<0.6*F.maxCells||pol[F.capital]!==id)continue;
       F.restoredBy=id;o.restores=F.id;o.base=F.base;o.civ=F.civ||F.base;o.origin={type:'restoration',from:F.id,people:o.core};o.full=fullName(o);
@@ -1793,7 +1804,8 @@ function* politicsG(){
             else if(horde&&t.kind==='state'){rn+=wt;if(r()*rn<wt)rcand=j}}
           else if(!horde||w.nomad[j]||w.desert[j]||pop[j]>=1){nc+=wt;if(r()*nc<wt)cand=j}}}}
     if(o&&w.coast[i]&&s.sail[i]>0.5){for(let q2=w.ls[i];q2<w.ls[i+1];q2++){const j=w.lt[q2];if(w.ld[q2]>3&&s.nav[i]<0.5)continue;const q=pol[j];if(q===p)continue;
-      if(q){o.nb.set(q,(o.nb.get(q)||0)+1);if(o.enemies.has(q)){nc+=1;if(r()*nc<1){cand=j;candSea=true}}}}}
+      if(q){o.nb.set(q,(o.nb.get(q)||0)+1);if(o.enemies.has(q)){nc+=1;if(r()*nc<1){cand=j;candSea=true}}}
+      else if(o.kind==='state'&&w.coast[j]&&s.pop[j]>=0.3&&r()<0.012*P.seafaring*(0.4+s.nav[i])&&r()*(nc+1)<1){nc+=1;cand=j;candSea=true}}}
     let sv=s.s[i];
     if(o){const decay=asD*(o.island?0.5:1)*(o.conqDyn?1.6:1);
       sv+=fr?asR*sv*(1-sv):-decay*sv;sv+=0.004*infl*(o.ruler.char-0.5);if(ri>=0&&ri===o.rel)sv+=0.0015*(0.5+rels[ri].cent);
@@ -1811,9 +1823,9 @@ function* politicsG(){
       if(threat&&!horde&&o.S>0.45&&o.gate>0.7&&s.admin[o.capital]>0.3&&s.fort[i]<1)s.fort[i]=Math.min(1,s.fort[i]+0.006*fz*(1+s.roads[i]));
     }else{
       sv+=fr?asR*0.6*sv*(1-sv):(0.3-sv)*0.02;s.s[i]=clamp(sv,0.02,1);
-      if(pi>=1){const dens=pi/w.area[i],agr=s.farm[i]*w.sF[i],past=s.herd[i]*Math.max(w.sH[i],w.desert[i]*s.camel[i]*0.6);
-        if(agr>0.35&&dens>4.5&&!w.nomad[i]&&localPop(i)>=FLOOR.chief*3*P.floor){
-          if(r()<P.formRate*0.0012*(0.2+1.6*P.circ*s.circE[i])*(0.4+s.s[i])*(1+Math.min(2,dens/15))*Math.min(1,0.05+s.metal[i]+s.admin[i]+s.horse[i]*0.5+Math.min(0.4,Math.max(0,dens-5)/25)+0.15*Math.max(0,s.circE[i]-0.5))*(0.03+0.97*cerealEff(i)*cerealEff(i))){
+      if(pi>=1){const dens=pi/w.area[i],agr=s.farm[i]*Math.max(w.sF[i],0.7*w.rv[i]*s.irrig[i]),past=s.herd[i]*Math.max(w.sH[i],w.desert[i]*s.camel[i]*0.6);
+        if(agr>0.35&&dens>(s.irrig[i]>0.5?3.5:4.5)&&!w.nomad[i]&&localPop(i)>=FLOOR.chief*3*P.floor){
+          if(r()<P.formRate*0.0012*(0.2+1.6*P.circ*s.circE[i])*(0.4+s.s[i])*(1+Math.min(2,dens/15))*Math.min(1,0.05+s.metal[i]+s.admin[i]+s.horse[i]*0.5+Math.min(0.4,Math.max(0,dens-5)/25)+0.15*Math.max(0,s.circE[i]-0.5))*(0.03+0.97*cerealEff(i)*cerealEff(i))*Math.pow(0.05+0.95*Math.max((s.irrig[i]+0.5*w.rv[i])*clamp(1-(w.Pr[i]-300)/700,0.2,1),0.5*s.metal[i],s.iron[i],0.8*s.admin[i]),1.7)){
             const id=newPolity(i,null);
             for(let d=0;d<4;d++){const j=w.nb[i*4+d];if(j>=0&&w.land[j]&&!pol[j]&&s.eth[j]===ei&&pop[j]>=1&&r()<0.5){pol[j]=id;s.dist[j]=2}}}}
         else if(past>0.3&&dens>0.5&&(w.nomad[i]||w.desert[i])&&fr){
@@ -2372,7 +2384,7 @@ function updateTop(){
   const s=S,st=s.stats[s.stats.length-1];
   $('yr').textContent=s.year<=0?(1-s.year).toLocaleString('en-US'):String(s.year);$('era').textContent=s.year<=0?'BCE':'CE';
   if(!st)return;
-  $('topstats').innerHTML=`<span>Population <b>${fmtN(st.pop)}</b></span><span>States <b>${st.np}</b></span><span>Hordes <b>${st.nh||0}</b></span><span>Leading era <b>${ERAS[st.lead||0]}</b></span><span>Largest <b>${esc(st.big||'none')}</b>${st.bc?` (${st.bc})`:''}</span>`;
+  $('topstats').innerHTML=`<span>Population <b>${fmtN(st.pop)}</b></span><span>States <b>${st.np}</b></span><span>Hordes <b>${st.nh||0}</b></span><span>Leading era <b>${ERAS[st.lead||0]}</b></span><span>Largest <b>${esc(st.big||'none')}</b>${st.bc?` (${st.bc})`:''}</span>${ui.rate>0?`<span>Speed <b>${ui.rate>=10?Math.round(ui.rate):ui.rate.toFixed(1)}</b> yr/s</span>`:''}`;
 }
 
 /* ---------- links and pages ---------- */
@@ -2515,7 +2527,7 @@ function originText(o){const s=S,g=o.origin||{},from=g.from&&s.pols[g.from];
   switch(g.type){
     case'rebellion':return`Founded ${fy(o.born)} in a revolt against the ${from?lp(from):'old regime'}${g.why?' · '+esc(g.why.replace(/\.$/,'')):''}`;
     case'migration':{const M=s.migs[g.mig];return`Founded ${fy(o.born)} by the ${M?lm_(M):'migrants'}${from?` in the lands of the ${lp(from)}`:''}`}
-    case'successor':return`Founded ${fy(o.born)} as a successor state of the ${from?lp(from):'old regime'}, which broke apart`;
+    case'successor':return from&&from.born<o.born?`Founded ${fy(o.born)} as a successor state of the ${lp(from)}, which broke apart`:`Founded ${fy(o.born)} after the collapse of an older state`;
     case'restoration':return`Founded ${fy(o.born)} as a restoration of the fallen ${from?lp(from):'empire'}`;
     default:{const e=s.eths[g.people!=null?g.people:o.core];return`${o.kind==='horde'?'Formed':'Founded'} ${fy(o.born)} ${o.kind==='horde'?'when the clans':'among the'} ${e?le(e):'people'}${o.kind==='horde'?' united':''}${g.settled?` · settled as rulers of farmland in ${fy(g.settled)}`:''}`}
   }}
@@ -2748,7 +2760,7 @@ jumpB.addEventListener('click',()=>{if(jumpB.dataset.m==='map')document.querySel
 new IntersectionObserver(es=>{mapVis=es[0].intersectionRatio>0.35;if(!mapVis)jumpMode=null;updJump()},{threshold:[0,.35,1]}).observe($('mapwrap'));
 window.addEventListener('resize',updJump);
 let wl=null;const ppB=$('ppb');
-setInterval(async()=>{try{if(ppB)ppB.textContent=ui.running?'\u275a\u275a':'\u25b6\ufe0e';
+setInterval(async()=>{try{{const now=performance.now();ui.rate=ui.running&&S&&ui._t?Math.max(0,(S.year-ui._y)/((now-ui._t)/1000)):0;ui._t=now;ui._y=S?S.year:0}if(ppB)ppB.textContent=ui.running?'\u275a\u275a':'\u25b6\ufe0e';
   if(ui.running&&!wl&&navigator.wakeLock&&!document.hidden){wl=await navigator.wakeLock.request('screen');wl.addEventListener('release',()=>{wl=null})}
   else if(!ui.running&&wl){await wl.release();wl=null}}catch(e){wl=null}},800);
 /* bottom sheet, long-press info, battery, saved settings, install */
