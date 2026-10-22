@@ -1,5 +1,33 @@
 # Release history
 
+## 0.10.0 — Early states and map display controls
+
+- Farming communities now need at least 600 years of sustained settlement before
+  agrarian chiefdoms can form, unless they already possess advanced administration.
+  Maturity and population density affect their chances.
+  Mountain density uses settled valley area rather than uninhabitable slopes.
+  Abandonment erodes that history. This applies to generated worlds as well as Earth.
+- Territorial expansion slows beyond institutional governing capacity. Accounting,
+  law, roads, records, military technology and river administration support larger realms.
+  Accounting alone has an early territorial ceiling; empire titles require stronger
+  administration and law.
+- Pastoral expansion also depends on transport: foot herders lack the reach of
+  mounted confederations. Advanced settlers retain their imported governing skills.
+- Capturing a capital yields a tributary relationship when direct annexation would
+  exceed the victor's governing capacity. Forest travel is slower before roads.
+- Irrigated river societies gain administrative reach and more stable interior
+  cohesion, and can develop accounting at smaller populations. These rules favour
+  connected river kingdoms without prescribing a regional unification or a date.
+- The Aa button opens independent controls for country, people and religion names,
+  city markers, city names, colony annotations and trade routes. Choices are saved
+  locally and restored on reload; display choices do not change simulation rules.
+
+Validation: all 49 automated checks passed, including independent layer rendering,
+settlement maturity, valley density, governing capacity and empire classification.
+A 6,500-year default Earth comparison completed with valid reported integrity
+checks. The 4,010-year agriculture scenario retained 16 Mexican and 6 Andean
+states at its endpoint. See docs/STATE_BALANCE.md for results and limitations.
+
 ## 0.9.0 — Independent overseas communities
 
 - Late-game expeditions can establish independent settlements on viable unclaimed

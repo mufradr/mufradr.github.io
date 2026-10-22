@@ -52,7 +52,7 @@ test('independent overseas communities',async t=>{
     assert.equal(app.state.eths[c.people].parent,site.founder);
     assert.ok(Math.abs(app.state.pop[site.source]+app.state.pop[site.cell]-initial)<.1,'no population is created by migration');
     // A mature farming community uses the ordinary agricultural state threshold.
-    app.inspect(`S.farm[${site.cell}]=1`);
+    app.inspect(`S.farm[${site.cell}]=1;S.settled[${site.cell}]=1500`);
     assert.ok(app.inspect(`stateFormationChance(${site.cell})`)>0,'ordinary state formation remains possible');
     const state=app.inspect(`S.pols[newPolity(${site.cell},null)]`);
     assert.notEqual(state.id,site.home);assert.equal(state.over,0);assert.equal(state.from,0);

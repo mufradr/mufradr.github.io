@@ -8,6 +8,7 @@ function simulationIssues(limit=50){
   for(let i=0;i<N;i++)if(!w.land[i]&&(s.pol[i]!==0||s.pop[i]!==0))report('Invalid water-cell settlement at '+i);
   for(const i of w.landIdx){
     if(!Number.isFinite(s.pop[i])||s.pop[i]<0)report('Invalid population at '+i);
+    if(!Number.isInteger(s.settled[i])||s.settled[i]<0||s.settled[i]>2000)report('Invalid settlement history at '+i);
     if(!Number.isFinite(s.K[i])||s.K[i]<0)report('Invalid carrying capacity at '+i);
     for(const name of ['dp','immune','mix','integ','s','fert','salt','adapt'])if(!Number.isFinite(s[name][i])||s[name][i]<0||s[name][i]>1)report('Invalid '+name+' at '+i);
     if(!index(s.pol[i],s.pols,0))report('Invalid owner at '+i);

@@ -3,7 +3,7 @@
 An interactive browser simulation of populations, states, cultures, and climate,
 hosted on GitHub Pages at https://mufradr.github.io/.
 
-The app identifies itself as version 0.9.0. It is a static site: no package
+The app identifies itself as version 0.10.0. It is a static site: no package
 installation or build step is required to run or publish it. `.nojekyll` enables
 direct static serving on GitHub Pages.
 
@@ -18,7 +18,9 @@ python3 -m http.server 8000 --bind 127.0.0.1
 Open `http://127.0.0.1:8000/` in a modern browser. Click **Play** to advance the
 simulation and **Pause** to stop it. Use the map controls to explore views such as
 Terrain, Population, Cohesion (the ability to act together), and Climate check.
-The **Aa** toggle shows or hides map names and city markers for an unobstructed map view.
+The **Aa** menu independently controls country, people and religion names, city
+markers, city names, colony annotations, and trade routes. Choices are remembered
+in this browser. You can keep country names visible while hiding cities, or the reverse.
 
 Google Fonts are optional external resources; fallback fonts work offline.
 
@@ -61,6 +63,9 @@ set `CHROMIUM_PATH` to its executable. The tests automatically use
 - `npm run test:core` checks Earth and generated-world elevations against the original
   terrain baseline, fixed-seed climate and history reproducibility, three simulation
   years, and finite, nonnegative population values.
+- `npm run validate:states` reports 6,500 years of early political development,
+  including regional polity counts and the population shares held by states and
+  tributary blocs. Use `npm run validate:states -- another-seed 6500` to compare seeds.
 - `npm run test:regional` checks monsoon and desert climates, highland farming,
   non-metallurgical development paths, and ocean expeditions with return trade.
 - `npm run test:browser` starts its own temporary server and checks Earth
@@ -74,6 +79,20 @@ For manual validation, start the local server, check that the simulation date
 advances with Play and stops with Pause, try the map views, and inspect the
 browser console for errors. Simulation-rule changes need additional checks of
 the affected behavior; the regression suite does not cover all long-term outcomes.
+
+## Early states in 0.10.0
+
+Farming communities need sustained settlement before chiefdom formation; advanced
+settlers can bring established governing skills with them. Larger
+realms depend on accounting, administration and transport; expansion slows when
+territory exceeds governing capacity. Early states have a territorial ceiling until
+law or road institutions develop; empire titles require stronger administration
+and law. A capital victory can yield tribute rather
+than immediate annexation. Forests impede travel before roads, while irrigated
+river societies gain administrative reach, stability and earlier access to accounting.
+These are geographic and institutional rules, not a scripted historical timeline.
+See [the before/after balance comparison](docs/STATE_BALANCE.md) for measured
+results and the remaining calibration limits.
 
 ## Simulation changes in 0.8.0
 

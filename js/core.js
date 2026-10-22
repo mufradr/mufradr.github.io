@@ -1,7 +1,7 @@
 
 "use strict";
 /* ================= SIMULATION CORE (no DOM) ================= */
-const ENGINE_VERSION='0.9.0';
+const ENGINE_VERSION='0.10.0';
 const calendarPhase=(year,period)=>((year%period)+period)%period;
 const W=400,H=200,N=W*H,SC=4,HW=W*SC,HH=H*SC,AGW=40,AGH=20;
 const PDEF=[
@@ -578,7 +578,7 @@ function newHistory(hseed){
   const w=WD,r=mulberry32(hashStr('hist:'+hseed+':'+w.seed));
   const tk=TECH.map(()=>new Float32Array(N));
   S={r,initialRules:{...P},seed:hseed,year:P.startYear,start:P.startYear,famN:0,tk,
-    pop:new Float32Array(N),K:new Float32Array(N),eth:new Int32Array(N).fill(-1),eth2:new Int32Array(N).fill(-1),mix:new Float32Array(N),mixT:new Uint8Array(N),
+    settled:new Uint16Array(N),pop:new Float32Array(N),K:new Float32Array(N),eth:new Int32Array(N).fill(-1),eth2:new Int32Array(N).fill(-1),mix:new Float32Array(N),mixT:new Uint8Array(N),
     pol:new Int32Array(N),s:new Float32Array(N).fill(0.3),rel:new Int32Array(N).fill(-1),fort:new Float32Array(N),
     fert:new Float32Array(N).fill(1),immune:new Float32Array(N),infect:new Uint8Array(N),ob:new Int32Array(N).fill(-1),
     dist:new Uint16Array(N).fill(65535),taken:new Int32Array(N).fill(-1e9),q:new Int32Array(N),lab:new Int32Array(N),city:new Int32Array(N).fill(-1),
@@ -694,7 +694,9 @@ function computeK(){
 }
 function growth(){
   const s=S,w=WD,L=w.landIdx,g=P.growth,dg=P.degrade;
-  for(let k=0;k<L.length;k++){const i=L[k];let p=s.pop[i];if(p<=0)continue;const K=s.K[i];
+  for(let k=0;k<L.length;k++){const i=L[k];let p=s.pop[i];if(p<=0){s.settled[i]=0;continue}const K=s.K[i];
+    // Durable farming settlements need generations to build political institutions.
+    s.settled[i]=s.farm[i]>=0.5?Math.min(2000,s.settled[i]+1):Math.max(0,s.settled[i]-2);
     if(p<K)p+=g*p*(1-p/K)*(0.6+0.4*Math.min(1,s.farm[i]+0.5*s.herd[i]));else{const ex=(p-K)*0.2;p-=ex;if(!s.pol[i]&&p>1.2*K&&p>20000&&s.eth[i]>=0)pushPressure(s.eth[i],ex*0.35,i,0,null)}
     if(p<0.5){p=0;s.eth[i]=-1;s.eth2[i]=-1;s.rel[i]=-1}
     s.pop[i]=p;
@@ -982,7 +984,7 @@ function tierOf(o){const n=o.cells-(o.wasteN||0),p=o.pop;
   const nom=o.nomF>0.5;
   // a narrow, crowded river kingdom is still a kingdom: size in people counts, not only in land
   if(p<FLOOR.king*P.floor||(n<4&&p<4*FLOOR.king*P.floor))return'Chiefdom';
-  if(n<20||(!nom&&o.adm<0.25)||p<FLOOR.emp*P.floor)return nom?'Khanate':'Kingdom';
+  if(n<20||(!nom&&(o.adm<0.45||S.law[o.capital]<0.3))||p<FLOOR.emp*P.floor)return nom?'Khanate':'Kingdom';
   return nom?'Khaganate':'Empire'}
 function fullName(o){const t=o.tier;return t==='Horde'||t==='Clans'?`${o.base} ${t}`:`${t} of ${o.base}`}
 function styleOf(o){const e=S.eths[o.core];return e?STYLES[e.lang.style]:STYLES.romance}
@@ -1088,14 +1090,36 @@ function collapse(o){
 }
 function milAt(c){const s=S,w=WD,ts=w.tsetse[c]?0.15:1;return 1+0.4*s.metal[c]+0.3*s.wheel[c]*ts+0.5*s.iron[c]+ts*(s.horse[c]*(0.3+(w.nomad[c]?0.9:0))+0.6*s.caval[c]*(w.nomad[c]?1:0.5))+1.2*s.gun[c]+0.2*s.admin[c]+0.3*s.camel[c]*w.desert[c]}
 function stateFormationChance(i){
-  const s=S,w=WD,dens=s.pop[i]/w.area[i],crop=cerealEff(i);
+  // Mountain cells include large uninhabitable slopes: villages concentrate in valleys.
+  const s=S,w=WD,settledArea=w.area[i]*Math.max(0.35,1-0.65*w.rough[i]),dens=s.pop[i]/settledArea,crop=cerealEff(i);
   const agr=s.farm[i]*Math.max(w.sF[i],0.7*w.rv[i]*s.irrig[i]);
-  if(agr<=0.35||dens<=1.5||w.nomad[i]||localPop(i)<FLOOR.chief*3*P.floor)return 0;
+  if((s.settled[i]<600&&s.admin[i]<0.7)||agr<=0.35||dens<=2||w.nomad[i]||localPop(i)<FLOOR.chief*3*P.floor)return 0;
   const communal=0.35*s.farm[i]*crop*(0.4+0.6*s.circE[i]);
   const organization=Math.max(communal,(s.irrig[i]+0.5*w.rv[i])*clamp(1-(w.Pr[i]-300)/700,0.2,1),0.5*s.metal[i],s.iron[i],0.8*s.admin[i]);
-  return P.formRate*0.0012*(0.2+1.6*P.circ*s.circE[i])*(0.4+s.s[i])*(1+Math.min(2,dens/15))
+  const maturity=Math.max(clamp((s.settled[i]-500)/1500,0,1),s.admin[i]>=0.7?s.admin[i]:0);
+  const settlement=clamp((dens-1.5)/4,0,1);
+  return maturity*settlement*P.formRate*0.0012*(0.2+1.6*P.circ*s.circE[i])*(0.4+s.s[i])*(1+Math.min(2,dens/15))
     *Math.min(1,0.05+communal+s.metal[i]+s.admin[i]+s.horse[i]*0.5+Math.min(0.4,Math.max(0,dens-5)/25)+0.15*Math.max(0,s.circE[i]-0.5))
     *(0.03+0.97*crop*crop)*Math.pow(0.05+0.95*organization,1.7);
+}
+// Governing capacity grows with institutions and transport, not the calendar or a region bonus.
+function riverAdministration(i){return S.irrig[i]*WD.rv[i]*(1-0.5*WD.rough[i])}
+function governingCapacity(o){
+  const s=S,c=o.capital;
+  if(o.kind==='horde')return 4+12*s.horse[c]+20*s.caval[c]+12*s.camel[c]+6*s.admin[c];
+  return 4+8*s.admin[c]+12*s.law[c]+30*s.roads[c]+12*s.paper[c]+10*s.iron[c]+20*s.gun[c]
+    +12*riverAdministration(c)+8*s.nav[c]*Math.min(1,(o.coastN||0)/Math.max(1,o.cells));
+}
+function expansionReadiness(o){
+  const cap=governingCapacity(o),c=o.capital;
+  // Accounting alone cannot support unlimited accumulation of conquered provinces.
+  if(o.kind==='state'&&S.law[c]<0.5&&S.roads[c]<0.5&&o.cells>=1.5*cap)return 0;
+  return Math.exp(-2*Math.max(0,o.cells-cap)/cap);
+}
+function interiorDecay(o){
+  const c=o.capital;
+  return P.asabD*(o.island?0.5:1)*(o.conqDyn?1.6:1)
+    /(1+1.5*S.admin[c]+S.law[c]+S.roads[c]+2*riverAdministration(c));
 }
 function cerealEff(i){return S.grain[i]*(1-0.75*WD.leach[i])*(1-0.65*WD.trop[i])}
 function strength(o){return o.kind==='horde'?o.pop+o.loot*3:(o.tax||0)*1.6+0.25*o.pop}
@@ -1148,7 +1172,9 @@ function raid(o,i,j){
 function decisive(o,d,war){
   const s=S,r=s.r;const kin=s.eths[d.core]&&s.eths[o.core]&&s.eths[d.core].fam===s.eths[o.core].fam;
   const idn=s.uni[d.capital]>0.3&&s.eths[o.core]&&s.uniFam[d.capital]===s.eths[o.core].fam;
-  const annex=d.cells<=0.35*o.cells||(kin||idn)&&r()<0.7||r()<0.35;
+  // A capital victory can secure tribute before the victor can administer annexation.
+  const canGovern=o.cells+d.cells<=governingCapacity(o)*1.5;
+  const annex=canGovern&&(d.cells<=0.35*o.cells||(kin||idn)&&r()<0.7||r()<0.35);
   const n=d.cells,old=d.full;
   if(annex){for(const i of polCells(d.id)){s.pol[i]=o.id;s.integ[i]=Math.min(s.integ[i],kin?0.4:0.12);s.dist[i]=Math.min(65534,(s.dist[d.capital]<65535?s.dist[d.capital]:4)+s.dist[i])}
     o.conq+=n;o.ruler.conq+=n;d.lastBy=o.id;
@@ -1165,7 +1191,7 @@ function distBFS(){
     const bk=B[d&31];B[d&31]=[];
     for(const i of bk){pending--;if(s.dist[i]!==d)continue;const p=s.pol[i],horde=pols[p].kind==='horde';
       for(let k=0;k<4;k++){const j=w.nb[i*4+k];if(j<0||s.pol[j]!==p)continue;
-        let c=2+(w.tcost[j]-2)*tf;if(k<2)c*=w.cosLat[i];if(s.roads[j]>0.5)c*=0.6;if(w.desert[j]&&(s.camel[j]>0.5||horde))c*=0.5;if(horde&&w.nomad[j])c=Math.min(c,1.5);
+        let c=2+(w.tcost[j]-2)*tf;c+=(horde?2:4)*s.forest[j]*(1-s.roads[j])*tf;if(k<2)c*=w.cosLat[i];if(s.roads[j]>0.5)c*=0.6;if(w.desert[j]&&(s.camel[j]>0.5||horde))c*=0.5;if(horde&&w.nomad[j])c=Math.min(c,1.5);
         const nd=d+Math.max(1,Math.min(30,Math.round(c)));if(s.dist[j]>nd){s.dist[j]=nd;B[nd&31].push(j);pending++}}
       if(w.coast[i]&&s.sail[i]>0.5)for(let q=w.ls[i];q<w.ls[i+1];q++){const j=w.lt[q],dl=w.ld[q];if(dl>3&&s.nav[i]<0.5)continue;if(s.pol[j]!==p)continue;const nd=d+Math.min(30,2+2*dl);if(s.dist[j]>nd){s.dist[j]=nd;B[nd&31].push(j);pending++}}
     }
@@ -1486,7 +1512,7 @@ function* politicsG(){
     const a=s.anom[c];o.wet=o.wet*0.92+a*0.08;
     o.loot*=0.9;
     o.gate=clamp(0.5+1.1*(1-o.press)+(o.nomF>0.5||o.kind==='horde'?0.5:0.22)*a+Math.min(0.5,o.tribs*0.15)-(o.over?0.15:0)+Math.min(0.5,o.loot/(o.pop+1)*4)-Math.min(0.3,o.fortN*0.004),0.15,1.9);
-    o.h=P.reach*(0.55+0.45*Math.min(1,2*s.admin[c]+s.roads[c]))*(1+0.8*s.admin[c]+0.5*s.law[c]+0.7*s.roads[c]+0.4*s.coin[c]+0.6*s.gun[c])*(0.7+0.6*comp)*(o.kind==='horde'?1.4:1)*(o.kind==='state'?0.75+0.5*Math.min(1.4,o.cplx||0.2):1)*(1+0.15*s.tk[24][c]+0.1*s.tk[31][c]);
+    o.h=P.reach*(0.3+0.7*Math.min(1,1.5*s.admin[c]+s.roads[c]+0.6*riverAdministration(c)))*(1+0.8*s.admin[c]+0.5*s.law[c]+0.7*s.roads[c]+0.4*s.coin[c]+0.6*s.gun[c])*(0.7+0.6*comp)*(o.kind==='horde'?1.4:1)*(o.kind==='state'?0.75+0.5*Math.min(1.4,o.cplx||0.2):1)*(1+0.15*s.tk[24][c]+0.1*s.tk[31][c]);
     const Et=etOf(o);
     o.E=clamp(o.E+0.012*o.E*(1-o.press)*(0.8+0.4*comp)*(0.5+(o.ineq==null?0.5:o.ineq)),0.004,0.12);
     o.shock*=0.92;
@@ -1568,7 +1594,7 @@ function* politicsG(){
   yield;
   // border pass
   for(const id of s.alive)pols[id].nb=new Map();
-  const asR=P.asabR,asD=P.asabD,wr=P.warRate*0.03,rev=y&1,rels=s.rels,fz=P.fortify;
+  const asR=P.asabR,wr=P.warRate*0.03,rev=y&1,rels=s.rels,fz=P.fortify;
   for(let kk=0;kk<L.length;kk++){
     const i=L[rev?L.length-1-kk:kk],p=pol[i],pi=pop[i],ei=s.eth[i],ri=s.rel[i];
     const o=p?pols[p]:null,horde=o&&o.kind==='horde';
@@ -1587,13 +1613,13 @@ function* politicsG(){
       if(q){o.nb.set(q,(o.nb.get(q)||0)+1);if(o.enemies.has(q)){nc+=1;if(r()*nc<1){cand=j;candSea=true}}}
       else if(o.kind==='state'&&w.coast[j]&&s.pop[j]>=0.3&&r()<0.012*P.seafaring*(0.4+s.nav[i])&&r()*(nc+1)<1){nc+=1;cand=j;candSea=true}}}
     let sv=s.s[i];
-    if(o){const decay=asD*(o.island?0.5:1)*(o.conqDyn?1.6:1);
+    if(o){const decay=interiorDecay(o);
       sv+=fr?asR*sv*(1-sv):-decay*sv;sv+=0.004*infl*(o.ruler.char-0.5);if(ri>=0&&ri===o.rel)sv+=0.0015*(0.5+rels[ri].cent);
       s.s[i]=clamp(sv,0.02,1);
       if(s.integ[i]<1){const fam=ei>=0&&s.eths[ei]&&s.eths[o.core]&&s.eths[ei].fam===s.eths[o.core].fam;s.integ[i]=Math.min(1,s.integ[i]+0.0011/(1+0.8*P.eco*ecoD(i,o))*(0.5+s.admin[i]+s.roads[i]+0.5*s.law[i])*(fam?1.5:0.6)*(ri>=0&&ri===o.rel?1.2:0.8)*(s.uni[i]>0.3&&s.eths[o.core]&&s.uniFam[i]===s.eths[o.core].fam?1.6:1))}
       if(cand>=0&&s.taken[i]!==y){const q=pol[cand];
         if(horde&&!q&&!w.nomad[cand]&&!w.desert[cand]&&pop[cand]>=1){if(r()<P.raid*0.02*o.aggrM*o.gate){const t0=pop[cand]*0.03;pop[cand]-=t0;o.loot+=t0*0.5;displace(cand,0.02,o.id)}}
-        else{const rate=q?wr*2*(1+3*s.circE[cand]):wr*(horde?1:Math.min(1,Math.max(0.1,pop[i]/w.area[i]/6))*(0.3+0.7*Math.min(1,o.press))*(1+2*s.gun[i]));if(r()<rate*o.aggrM*o.gate)attack(o,i,cand,candSea)}}
+        else{const rate=q?wr*2*(1+3*s.circE[cand]):wr*(horde?1:Math.min(1,Math.max(0.1,pop[i]/w.area[i]/6))*(0.3+0.7*Math.min(1,o.press))*(1+2*s.gun[i]));if(r()<rate*o.aggrM*o.gate*expansionReadiness(o))attack(o,i,cand,candSea)}}
       if(horde&&rcand>=0&&r()<P.raid*0.025*o.aggrM*o.gate*(1-0.8*s.fort[rcand]))raid(o,i,rcand);
       const c=o.core;
       if(ei>=0&&c>=0&&ei!==c&&pi>=1&&!o.conqDyn&&r()<P.assim*0.004*o.S*(1-0.8*ethDist(ei,c))*(ri>=0&&ri===o.rel?1.5:1))s.eth[i]=c;
@@ -1768,7 +1794,8 @@ function prepEco(w){
 function inventionChance(o,k){
   const s=S,w=WD,T=TECH[k],em=T.em,c=o.capital;
   if(!em||s.tk[k][c]>=0.5)return 0;
-  const emP=em.pop*0.6;
+  // Irrigated towns can develop accounting before a large territorial kingdom exists.
+  const emP=em.pop*0.6*(k===6?1-0.75*riverAdministration(c):1);
   if((em.after&&w.isEarth&&s.year<em.after)||o.pop<emP*0.5||(em.cells&&o.cells<em.cells)||(em.coast&&!w.coast[c]&&o.coastN<2)||(em.horse&&s.horse[c]<0.6)||(em.heavy&&(o.hvN||0)<3))return 0;
   if(T.pre.some(p=>s.tk[p][c]<0.7))return 0;
   const fit=techFit(o,k),bos=em.press?clamp((o.press-0.7)*5,0,2):1;

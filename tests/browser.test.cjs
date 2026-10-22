@@ -39,7 +39,7 @@ test('browser: startup, controls, pacing, and Pages-relative resources', async t
       await page.waitForFunction(() => typeof ui !== 'undefined' && ui.ready && document.getElementById('busy').hidden);
       assert.equal(await page.title(), 'World Engine');
       assert.equal(await page.locator('.brand .mark').innerText(), 'World Engine');
-      assert.match(await page.locator('.brand .sub').innerText(), /v0\.9\.0/i);
+      assert.match(await page.locator('.brand .sub').innerText(), /v0\.10\.0/i);
       assert.equal(await page.locator('meta[property="og:title"]').getAttribute('content'), 'World Engine');
       const manifest = await page.evaluate(async () => (await fetch(document.querySelector('link[rel="manifest"]').href)).json());
       assert.equal(manifest.name, 'World Engine');
@@ -74,7 +74,7 @@ test('browser: startup, controls, pacing, and Pages-relative resources', async t
       assert.equal(await page.evaluate(() => ui.mode), 'asabiya');
       assert.match(await page.locator('#legend').innerText(), /Social cohesion/);
       await page.getByRole('button', {name:'States', exact:true}).click();
-      const labels = page.getByRole('button', {name:'Show map names and cities', exact:true});
+      const labels = page.getByRole('button', {name:'Map display options', exact:true});
       // Starting in prehistory means no real cities exist yet. Temporarily supply
       // a capital and a town and observe their actual canvas drawing operations.
       const cityDrawing = () => page.evaluate(() => {
@@ -84,11 +84,11 @@ test('browser: startup, controls, pacing, and Pages-relative resources', async t
           pol:[S.pol[first],S.pol[second]], z:ui.z, ox:ui.ox, oy:ui.oy};
         const methods = ['fillRect','strokeRect','arc','fillText','fill'];
         const original = Object.fromEntries(methods.map(name => [name,mapCtx[name]]));
-        const counts = {capital:0,town:0,names:0,colonies:0};
+        const counts = {capital:0,town:0,names:0,colonies:0,countries:0};
         const previousColony=S.colonies.get(first);
         try {
           const id = S.pols.length;
-          S.pols.push({capital:first}); S.pol[first]=id; S.pol[second]=0;
+          S.pols.push({capital:first,cells:12,lx:WD.cxA[first]*2*Math.PI/W-Math.PI,ly:WD.cyA[first],base:'Test Country',tier:'Kingdom'});S.alive.push(id); S.pol[first]=id; S.pol[second]=0;
           S.pop[first]=S.pop[second]=100000;
           S.cities=[{cell:first,name:'Test Capital'},{cell:second,name:'Test Town'}];
           S.colonies.set(first,{cell:first,name:'Test Colony',status:'active'});
@@ -97,6 +97,7 @@ test('browser: startup, controls, pacing, and Pages-relative resources', async t
             if (name==='fillRect' && args[2]===6 && args[3]===6) counts.capital++;
             if (name==='arc' && args[2]===2.5) counts.town++;
             if (name==='fill' && this.fillStyle==='#207b83') counts.colonies++;
+            if (name==='fillText' && args[0]==='Test Country') counts.countries++;
             if (name==='fillText' && ['Test Capital','Test Town'].includes(args[0])) counts.names++;
             return original[name].apply(this,args);
           };
@@ -104,7 +105,7 @@ test('browser: startup, controls, pacing, and Pages-relative resources', async t
           return counts;
         } finally {
           for (const name of methods) mapCtx[name]=original[name];
-          S.pols.pop(); S.cities=previous.cities;
+          S.pols.pop();S.alive.pop(); S.cities=previous.cities;
           if(previousColony)S.colonies.set(first,previousColony);else S.colonies.delete(first);
           [S.pop[first],S.pop[second]]=previous.pop;
           [S.pol[first],S.pol[second]]=previous.pol;
@@ -112,15 +113,30 @@ test('browser: startup, controls, pacing, and Pages-relative resources', async t
           drawMap();
         }
       });
-      assert.equal(await labels.getAttribute('aria-pressed'), 'true');
+      await labels.click();
+      assert.equal(await labels.getAttribute('aria-expanded'), 'true');
+      const layer=k=>page.locator('#map-layers [data-layer="'+k+'"]');
       const visible = await cityDrawing();
-      assert.ok(visible.capital>0 && visible.town>0 && visible.names>=2 && visible.colonies>0, 'capital, town, colony and names render');
-      await labels.click();
-      assert.equal(await labels.getAttribute('aria-pressed'), 'false');
-      assert.deepEqual(await cityDrawing(), {capital:0,town:0,names:0,colonies:0}, 'hidden names also hide city and colony markers');
-      await labels.click();
-      assert.equal(await labels.getAttribute('aria-pressed'), 'true');
-      assert.deepEqual(await cityDrawing(), visible, 'toggling back restores cities and names');
+      assert.ok(visible.capital>0 && visible.town>0 && visible.names>=2 && visible.colonies>0 && visible.countries>0);
+      await layer('cityMarkers').uncheck();
+      assert.deepEqual(await cityDrawing(), {...visible,capital:0,town:0}, 'city markers can hide while country and city names remain');
+      await layer('cityNames').uncheck();
+      assert.deepEqual(await cityDrawing(), {...visible,capital:0,town:0,names:0}, 'countries remain with all cities hidden');
+      await layer('cityMarkers').check();await layer('cityNames').check();await layer('states').uncheck();
+      assert.deepEqual(await cityDrawing(), {...visible,countries:0}, 'cities remain with country names hidden');
+      await layer('colonies').uncheck();
+      assert.deepEqual(await cityDrawing(), {...visible,countries:0,colonies:0}, 'colony markers have their own control');
+      await layer('states').check();await layer('colonies').check();
+      assert.deepEqual(await cityDrawing(), visible);
+      await layer('peoples').uncheck();await layer('faiths').uncheck();await layer('routes').uncheck();
+      await page.evaluate(()=>savePrefs());
+      assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem('asabiya.v1')).layers),
+        {states:true,peoples:false,faiths:false,cityMarkers:true,cityNames:true,colonies:true,routes:false});
+      await page.evaluate(()=>{mapLayers.peoples=mapLayers.faiths=mapLayers.routes=true;loadPrefs()});
+      assert.equal(await layer('routes').isChecked(),false,'display preferences restore');
+      await layer('peoples').check();await layer('faiths').check();await layer('routes').check();
+      await page.keyboard.press('Escape');
+      assert.equal(await labels.getAttribute('aria-expanded'),'false');
       await page.getByRole('button', {name:'Terrain', exact:true}).click();
       assert.equal(await page.getByRole('button', {name:'Terrain', exact:true}).getAttribute('aria-pressed'), 'true');
       assert.equal(await page.evaluate(() => ui.mode), 'terrain');
@@ -162,7 +178,7 @@ test('browser: startup, controls, pacing, and Pages-relative resources', async t
       await page.locator('#btn-export-setup').click();
       const download=await downloadPromise;
       const exported=JSON.parse(fs.readFileSync(await download.path(),'utf8'));
-      assert.equal(exported.engineVersion,'0.9.0');assert.equal(exported.rules.growth,.02);
+      assert.equal(exported.engineVersion,'0.10.0');assert.equal(exported.rules.growth,.02);
       const other=await browser.newPage();
       await other.route('https://fonts.googleapis.com/**',r=>r.abort());
       await other.goto(shared);

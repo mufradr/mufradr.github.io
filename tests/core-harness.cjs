@@ -28,7 +28,7 @@ function snapshot(app) {
   return {
     landCells:w.landIdx.length,
     terrain:hash(w.elev), temperature:hash(w.T), rainfall:hash(w.Pr),
-    year:s.year, population:hash(s.pop), peoples:hash(s.eth),
+    year:s.year, population:hash(s.pop), settlementHistory:hash(s.settled), peoples:hash(s.eth),
     states:hash(s.pol), chronicle:JSON.parse(JSON.stringify(s.chron))
   };
 }

@@ -7,6 +7,7 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 const TYPES={rise:['Rise','#c08a2a'],war:['War','#b2452c'],fall:['Fall','#6e5a8c'],diplomacy:['Diplomacy','#4f7f6a'],faith:['Faith','#b0729a'],migration:['Migrations','#a0703a'],culture:['Culture','#4f78a8'],ideas:['Ideas','#3f8a5c'],plague:['Plague','#8a2f4a'],famine:['Famine','#9a7b45'],people:['Peoples','#3d7a99'],nature:['Nature & climate','#6f7d84']};
 const MODES=[['political','States'],['alliances','Alliances'],['peoples','Peoples'],['mixing','Mixing'],['unity','Identity'],['loyalty','Loyalty'],['niche','Home ground'],['soil','Soil'],['forest','Forest'],['inequality','Inequality'],['circ','Exit option'],['religion','Religion'],['knowledge','Knowledge'],['era','Era'],['density','Population'],['capacity','Capacity'],['asabiya','Cohesion'],['disease','Disease'],['weather','Weather'],['climate','Climate check'],['terrain','Terrain']];
 const SPEEDS=[[0.5,'0.5'],[2,'2'],[10,'10'],[50,'50'],[250,'250'],[1e9,'Max']];
+const mapLayers={states:true,peoples:true,faiths:true,cityMarkers:true,cityNames:true,colonies:true,routes:true};
 const ERA_COL=[[120,128,130],[118,150,86],[196,140,64],[150,96,72],[178,74,58],[122,84,150],[64,96,150],[40,130,140]];
 const GROUP_COL=[[40,140,70],[222,190,120],[206,170,90],[110,170,110],[90,120,170],[200,215,225]];
 const ui={running:false,speed:2,mode:'political',page:null,stack:[],z:1,ox:0,oy:0,bs:1,filters:new Set(Object.keys(TYPES)),q:'',lastChronKey:'',dirty:true,lastRender:0,lastSide:0,pausedAtEnd:false,pane:'chron',know:new Set(),figFilter:'all',fq:'',plagueSort:'deaths',climView:'mismatch',src:'earth',ready:false,lastSpot:0,toastT:0,ringCell:-1,ringT:0,follow:false};
@@ -157,13 +158,13 @@ function drawMap(){
       each(x1,y1,(sx,sy)=>{ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(sx+(x2-x1)*k,sy+(y2-y1)*k);ctx.stroke()})}}
     ctx.setLineDash([])}
   // caravan routes
-  if((m==='political'||m==='alliances'||m==='religion'||m==='peoples')&&s.routes){ctx.lineWidth=1.6;ctx.strokeStyle='rgba(232,200,140,.85)';ctx.setLineDash([2,3]);
+  if(mapLayers.routes&&(m==='political'||m==='alliances'||m==='religion'||m==='peoples')&&s.routes){ctx.lineWidth=1.6;ctx.strokeStyle='rgba(232,200,140,.85)';ctx.setLineDash([2,3]);
     for(const R of s.routes){const pts=R.path.map(cellXY);if(pts.length<2)continue;
       each(pts[0][0],pts[0][1],(sx0,sy0)=>{ctx.beginPath();let px=pts[0][0];ctx.moveTo(sx0,sy0);
         for(let k=1;k<pts.length;k++){let dx=pts[k][0]-px;if(Math.abs(dx)>HW/2){dx-=Math.sign(dx)*HW}px+=dx;ctx.lineTo(sx0+(px-pts[0][0])*k_,sy0+(pts[k][1]-pts[0][1])*k_)}ctx.stroke()})}
     ctx.setLineDash([])}
   // Established overseas routes, retained after the first expedition returns.
-  if(['political','alliances','peoples','religion','knowledge'].includes(m)&&s.seaRoutes){
+  if(mapLayers.routes&&['political','alliances','peoples','religion','knowledge'].includes(m)&&s.seaRoutes){
     ctx.lineWidth=1.5;ctx.strokeStyle='rgba(65,160,210,.9)';ctx.setLineDash([5,4]);
     for(const R of s.seaRoutes.values()){
       const pts=R.path.map(cellXY);if(pts.length<2)continue;
@@ -184,15 +185,15 @@ function drawMap(){
   if(ui.ringCell>=0&&performance.now()<ui.ringT){const [mx,my]=cellXY(ui.ringCell),ph=(ui.ringT-performance.now())/4000;
     each(mx,my,(sx,sy)=>{ctx.strokeStyle=`rgba(255,240,200,${0.4+0.6*ph})`;ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(sx,sy,10+18*(1-ph)*((performance.now()/600)%1+0.2),0,7);ctx.stroke()})}
   // cities
-  if(!ui.noLab&&(m==='political'||m==='alliances'||m==='peoples'||m==='religion')&&ui.z>=1.4){
+  if((mapLayers.cityMarkers||mapLayers.cityNames)&&(m==='political'||m==='alliances'||m==='peoples'||m==='religion')&&ui.z>=1.4){
     ctx.font=`11px ${cssVar('--f-ui')}`;ctx.textAlign='left';ctx.textBaseline='middle';
     for(const c of s.cities){const p=s.pop[c.cell];if(p<60000)continue;const isCap=s.pol[c.cell]&&s.pols[s.pol[c.cell]].capital===c.cell;
       const [mx,my]=cellXY(c.cell);
       each(mx,my,(sx,sy)=>{ctx.fillStyle='#14202a';ctx.strokeStyle='#f5f3ec';ctx.lineWidth=1.5;
-        if(isCap){ctx.fillRect(sx-3,sy-3,6,6);ctx.strokeRect(sx-3,sy-3,6,6)}else{ctx.beginPath();ctx.arc(sx,sy,2.5,0,7);ctx.fill();ctx.stroke()}
-        if(ui.z>=2.6){ctx.lineWidth=3;ctx.strokeText(c.name,sx+6,sy);ctx.fillText(c.name,sx+6,sy)}})}}
+        if(mapLayers.cityMarkers){if(isCap){ctx.fillRect(sx-3,sy-3,6,6);ctx.strokeRect(sx-3,sy-3,6,6)}else{ctx.beginPath();ctx.arc(sx,sy,2.5,0,7);ctx.fill();ctx.stroke()}}
+        if(mapLayers.cityNames&&ui.z>=2.6){ctx.lineWidth=3;ctx.strokeText(c.name,sx+6,sy);ctx.fillText(c.name,sx+6,sy)}})}}
   // Small independent settlements are visible before they grow into cities.
-  if(!ui.noLab&&['political','alliances','peoples','religion'].includes(m)){
+  if(mapLayers.colonies&&['political','alliances','peoples','religion'].includes(m)){
     for(const c of s.colonies.values())if(c.status==='active'&&s.city[c.cell]<0){
       const [mx,my]=cellXY(c.cell);each(mx,my,(sx,sy)=>{
         ctx.beginPath();ctx.moveTo(sx,sy-4);ctx.lineTo(sx+4,sy);ctx.lineTo(sx,sy+4);ctx.lineTo(sx-4,sy);ctx.closePath();
@@ -209,7 +210,8 @@ function drawMap(){
   lab.sort((a,b)=>b[3]-a[3]);
   ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';
   const placed=[],narrow=mapDim.w<640;
-  for(const [mx,my,name,n,big] of ui.noLab?[]:lab.slice(0,narrow?40:110)){
+  const showNames=(m==='political'||m==='alliances')?mapLayers.states:m==='peoples'?mapLayers.peoples:mapLayers.faiths;
+  for(const [mx,my,name,n,big] of showNames?lab.slice(0,narrow?40:110):[]){
     const size=clamp(9+Math.sqrt(n)*1.3,10,30)*Math.min(1.6,Math.sqrt(ui.z))*(narrow?0.7:1);
     ctx.font=`${big?'':'italic '}${size}px ${DISPLAY_FONT}`;
     const txt=big?name.toUpperCase().split('').join(' '):name,tw=ctx.measureText(txt).width;
@@ -229,7 +231,7 @@ function drawLegend(){
   const rampBox=(t,a,b)=>`<div>${t}</div><div class="ramp" style="background:${rampCss()}"></div><div class="row"><span>${a}</span><span>${b}</span></div>`;
   const keys=list=>'<div class="keys">'+list.map(([c,l])=>`<span><i style="background:rgb(${c})"></i>${l}</span>`).join('')+'</div>';
   switch(m){
-    case'political':h='Each colour is a state. Hatched, faint areas are nomad confederations; pale areas are wasteland a state only claims. Teal diamonds mark independent overseas communities. Dotted tan lines are caravan routes; dashed blue lines are overseas trade routes. Red borders are war fronts; dark dashed lines are fortified frontiers; amber trails are peoples on the move. Click a state to open its page.';break;
+    case'political':h='Each colour is an independent polity; early societies may be small chiefdoms. Hatched, faint areas are nomad confederations; pale areas are wasteland a state only claims. Teal diamonds mark independent overseas communities. Dotted tan lines are caravan routes; dashed blue lines are overseas trade routes. Red borders are war fronts; dark dashed lines are fortified frontiers; amber trails are peoples on the move. Click a state to open its page.';break;
     case'soil':h=rampBox('Soil fertility (farmland only; worn-out soils are cool, fresh ones warm)','depleted','fresh')+keys([[[235,235,225],'Salt-poisoned fields']])+'<p style="margin:6px 0 0;opacity:.85">Crowded fields wear out unless rested, manured or rotated; floodplains renew each year; irrigation in dry lands slowly salts the soil.</p>';break;
     case'forest':h=keys([[[34,110,52],'Standing forest'],[[196,120,60],'Cleared or lost forest']])+'<p style="margin:6px 0 0;opacity:.85">Farmers clear forest to plant; smelting eats charcoal; abandoned land grows back. Stripped hillsides erode.</p>';break;
     case'inequality':h=rampBox('Inequality within each state','equal','extreme')+'<p style="margin:6px 0 0;opacity:.85">Crowding and long peace concentrate wealth, faster where the plough makes land the prize. War, revolution, collapse and plague level it.</p>';break;
@@ -694,7 +696,9 @@ $('speed').innerHTML=SPEEDS.map(([v,l])=>`<button type="button" data-v="${v}" ar
 $('speed').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setRate(+b.dataset.v)});
 $('speedr').addEventListener('input',()=>setRate(rateFromSlider(+$('speedr').value)));
 $('autoslow').addEventListener('change',()=>{ui.slowUntil=0;simClock.reset(performance.now());resetRateMeter();updateSpeedLabel()});
-document.addEventListener('keydown',e=>{if(e.target.matches('input,textarea')||e.ctrlKey||e.metaKey)return;
+$('map-layers').addEventListener('change',e=>{const k=e.target.dataset.layer;if(k in mapLayers){mapLayers[k]=e.target.checked;drawMap()}});
+document.addEventListener('click',e=>{if(!e.target.closest('#map-layers,[data-z="lab"]')){$('map-layers').hidden=true;$('zoomc').querySelector('[data-z="lab"]').setAttribute('aria-expanded','false')}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('map-layers').hidden=true;$('zoomc').querySelector('[data-z="lab"]').setAttribute('aria-expanded','false')}if(e.target.matches('input,textarea')||e.ctrlKey||e.metaKey)return;
   if(e.key===']')setRate((ui.target>=1e9?1000:ui.target)*1.5);else if(e.key==='[')setRate((ui.target>=1e9?1000:ui.target)/1.5)});
 setRate(window.matchMedia('(max-width:900px)').matches?10:25);
 function setRunning(on){
@@ -705,7 +709,9 @@ function setRunning(on){
 $('play').addEventListener('click',()=>setRunning(!ui.running));
 $('modes').innerHTML=MODES.map(([k,l])=>`<button type="button" data-m="${k}" aria-pressed="${k===ui.mode}">${l}</button>`).join('');
 $('modes').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;ui.mode=b.dataset.m;for(const x of $('modes').children)x.setAttribute('aria-pressed',x===b);drawLegend();ui.dirty=true});
-document.addEventListener('keydown',e=>{if(e.target.matches('input,textarea'))return;if(e.code==='Space'){e.preventDefault();setRunning(!ui.running)}});
+$('map-layers').addEventListener('change',e=>{const k=e.target.dataset.layer;if(k in mapLayers){mapLayers[k]=e.target.checked;drawMap()}});
+document.addEventListener('click',e=>{if(!e.target.closest('#map-layers,[data-z="lab"]')){$('map-layers').hidden=true;$('zoomc').querySelector('[data-z="lab"]').setAttribute('aria-expanded','false')}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('map-layers').hidden=true;$('zoomc').querySelector('[data-z="lab"]').setAttribute('aria-expanded','false')}if(e.target.matches('input,textarea'))return;if(e.code==='Space'){e.preventDefault();setRunning(!ui.running)}});
 let drag=null;
 const ZMAX=12,pts=new Map();let pinch=null,lastTap={t:0,x:0,y:0};
 const isMob=()=>window.matchMedia('(max-width:900px)').matches;
@@ -742,8 +748,10 @@ mapCv.addEventListener('pointerup',e=>{clearTimeout(lpT);pts.delete(e.pointerId)
 mapCv.addEventListener('wheel',e=>{e.preventDefault();const r=mapCv.getBoundingClientRect(),sx=e.clientX-r.left,sy=e.clientY-r.top;
   zoomAt(sx,sy,Math.exp(-e.deltaY*(e.ctrlKey?0.01:0.0025)))},{passive:false});
 $('zoomc').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const v=b.dataset.z;
-  if(v==='play')$('play').click();else if(v==='lab'){ui.noLab=!ui.noLab;b.setAttribute('aria-pressed',String(!ui.noLab));b.style.opacity=ui.noLab?0.45:1;drawMap()}else if(v==='reset'){ui.z=1;ui.ox=0;ui.oy=0;clampView();drawMap()}else zoomAt(mapDim.w/2,mapDim.h/2,v==='in'?1.6:1/1.6)});
-document.addEventListener('keydown',e=>{if(e.target.matches('input,textarea')||e.ctrlKey||e.metaKey)return;
+  if(v==='play')$('play').click();else if(v==='lab'){const panel=$('map-layers');panel.hidden=!panel.hidden;b.setAttribute('aria-expanded',String(!panel.hidden))}else if(v==='reset'){ui.z=1;ui.ox=0;ui.oy=0;clampView();drawMap()}else zoomAt(mapDim.w/2,mapDim.h/2,v==='in'?1.6:1/1.6)});
+$('map-layers').addEventListener('change',e=>{const k=e.target.dataset.layer;if(k in mapLayers){mapLayers[k]=e.target.checked;drawMap()}});
+document.addEventListener('click',e=>{if(!e.target.closest('#map-layers,[data-z="lab"]')){$('map-layers').hidden=true;$('zoomc').querySelector('[data-z="lab"]').setAttribute('aria-expanded','false')}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('map-layers').hidden=true;$('zoomc').querySelector('[data-z="lab"]').setAttribute('aria-expanded','false')}if(e.target.matches('input,textarea')||e.ctrlKey||e.metaKey)return;
   if(e.key==='+'||e.key==='=')zoomAt(mapDim.w/2,mapDim.h/2,1.4);else if(e.key==='-')zoomAt(mapDim.w/2,mapDim.h/2,1/1.4)});
 $('legtog').addEventListener('click',()=>{const o=$('legend').classList.toggle('open');$('legtog').setAttribute('aria-expanded',o)});
 const jumpB=$('jump');let jumpMode=null,mapVis=true;
@@ -773,9 +781,9 @@ function tipAt(sx,sy,hold){const i=screenToCell(sx,sy),tip=$('tip');if(i<0||!S||
   tip.style.left=sx+'px';tip.style.top=sy+'px';tip.hidden=false;
   if(hold){tipHold=Date.now()+3500;setTimeout(()=>{if(Date.now()>=tipHold)tip.hidden=true},3600)}}
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&ui.running)setRunning(false)});
-function savePrefs(){try{const o={mode:ui.mode,rate:ui.target,auto:$('autoslow').checked,fit:$('fitc').checked,shuf:$('shufn').checked,fol:$('followc').checked,P:{}};for(const k in P)if($('p-'+k))o.P[k]=P[k];localStorage.setItem('asabiya.v1',JSON.stringify(o))}catch(e){}}
+function savePrefs(){try{const o={mode:ui.mode,rate:ui.target,auto:$('autoslow').checked,fit:$('fitc').checked,shuf:$('shufn').checked,fol:$('followc').checked,layers:{...mapLayers},P:{}};for(const k in P)if($('p-'+k))o.P[k]=P[k];localStorage.setItem('asabiya.v1',JSON.stringify(o))}catch(e){}}
 function loadPrefs(){let o=null;try{o=JSON.parse(localStorage.getItem('asabiya.v1')||'null')}catch(e){}
-  try{if(o){for(const k in o.P||{}){const el=$('p-'+k);if(el){el.value=o.P[k];el.dispatchEvent(new Event('input',{bubbles:true}))}}
+  try{if(o){for(const k in mapLayers)if(typeof o.layers?.[k]==='boolean'){mapLayers[k]=o.layers[k];$('map-layers').querySelector('[data-layer="'+k+'"]').checked=mapLayers[k]}for(const k in o.P||{}){const el=$('p-'+k);if(el){el.value=o.P[k];el.dispatchEvent(new Event('input',{bubbles:true}))}}
     for(const[id,v]of[['fitc',o.fit],['shufn',o.shuf],['followc',o.fol]]){const el=$(id);if(el&&typeof v==='boolean'&&el.checked!==v){el.checked=v;el.dispatchEvent(new Event('change',{bubbles:true}))}}
     if(o.mode&&$('modes').querySelector('[data-m="'+o.mode+'"]')){ui.mode=o.mode;for(const x of $('modes').children)x.setAttribute('aria-pressed',x.dataset.m===o.mode);drawLegend()}}
     let sp=o&&typeof o.rate==='number'?o.rate:(isMob()?10:25);if(isMob()&&sp>250)sp=250;setRate(sp);if(o&&typeof o.auto==='boolean')$('autoslow').checked=o.auto}catch(e){console.error(e)}}

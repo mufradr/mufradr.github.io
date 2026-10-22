@@ -64,7 +64,7 @@ test('regional climate, independent agriculture, and overseas contact', async t 
       const cells=[[18,-97],[-13,-72]].map(([lat,lon])=>cellAt(lat,lon));
       return cells.map(i=>{
         S.farm[i]=S.grain[i]=1;S.pop[i]=WD.area[i]*3;
-        S.s[i]=.6;S.circE[i]=.9;const capable=stateFormationChance(i);
+        S.settled[i]=1500;S.s[i]=.6;S.circE[i]=.9;const capable=stateFormationChance(i);
         S.grain[i]=0;const noStaples=stateFormationChance(i);
         S.pop[i]=10;const sparse=stateFormationChance(i);
         return {capable,noStaples,sparse,metal:S.metal[i],irrigation:S.irrig[i],horses:S.horse[i]};

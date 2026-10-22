@@ -67,6 +67,34 @@ playback speed, or pausing with a partially executed generator. Tests compare
 population, ownership, history, all technique arrays, disease pools and the next
 random draw at .5, 25 and maximum speed. Browser checks also exercise pause/resume.
 
+## Early political development (0.10.0)
+
+The settlement-history array counts years of sustained farming, capped at 2,000;
+non-farming years erode it and empty sites reset it. Agrarian founding requires at
+least 600 years, except where advanced administration is already present (such as
+settlers bringing institutions). Maturity and density scale the founding probability. Density is measured over
+estimated settled valley area (35–100% of a coarse cell according to roughness),
+so mountains do not suppress local village organization through whole-cell density.
+
+Expansion probability falls beyond governing capacity. Before law or road
+institutions reach 0.5, agrarian expansion stops at 150% of that capacity.
+Accounting alone does not qualify a realm as an empire: non-nomadic empire titles
+require average administration of 0.45 and capital law knowledge of 0.3.
+A capital victory cannot
+annex a realm beyond 150% of that capacity. Instead it can establish tribute.
+Pastoral confederations also need transport and mounted skills to sustain wide
+expansion. Forests raise land travel costs, while roads reduce them. Irrigated
+river societies gain reach, slower interior cohesion decay, and access to accounting
+at smaller populations. No rule names Europe or the Fertile Crescent or forces
+an empire to appear on a particular date.
+
+`npm run validate:states -- seed 6500` reports the default Earth's regional
+population, polity counts and largest-state/tributary-bloc shares, checking integrity
+every 100 years. Polity counts include chiefdoms, not just urban states. This is a
+calibration aid; a successful run is not proof of historically correct dates or
+that every seed will give the same regional ordering. The grid is too coarse to
+resolve individual Mesopotamian city-states accurately.
+
 ## Known next modeling work
 
 Civil-war partitioning and cohesion collapse can redistribute many provinces in
