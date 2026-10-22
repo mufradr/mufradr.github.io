@@ -3,7 +3,7 @@
 An interactive browser simulation of populations, states, cultures, and climate,
 hosted on GitHub Pages at https://mufradr.github.io/.
 
-The app identifies itself as version 0.8.1. It is a static site: no package
+The app identifies itself as version 0.9.0. It is a static site: no package
 installation or build step is required to run or publish it. `.nojekyll` enables
 direct static serving on GitHub Pages.
 
@@ -31,12 +31,13 @@ Google Fonts are optional external resources; fallback fonts work offline.
 | `styles/app.css` | App layout, map controls, and responsive styles |
 | `assets/earth.js` | Compressed elevation and Köppen climate data |
 | `js/core.js` | World generation, climate, and simulation rules; no DOM dependency |
+| `js/colonies.js` | Independent overseas settlements, immigration, and cultural development |
 | `js/experiments.js` | Versioned starting setups, sharing, and JSON import/export |
 | `js/diagnostics.js` | On-demand simulation state consistency checks |
 | `js/ui.js` | Map rendering, controls, simulation pacing, and startup |
 | `tests/` | Simulation regression fixtures and browser checks |
 
-Scripts load in order: Earth data, simulation core, experiments, diagnostics, then interface. They use
+Scripts load in order: Earth data, simulation core, colonies, experiments, diagnostics, then interface. They use
 classic scripts with shared bindings; preserve that order. Edit the relevant
 file and reload the browser. Keep all these directories alongside `index.html`
 when serving or publishing the site. Relative asset URLs also support hosting
@@ -131,3 +132,27 @@ See [CHANGELOG.md](CHANGELOG.md) for release history and
 This release does not rebalance abrupt civil-war fragmentation or add governed
 overseas colonies. Ocean voyages can settle unpopulated land and establish trade;
 existing inhabited shores are not automatically annexed.
+
+## Independent overseas communities in 0.9.0
+
+Late-game ocean voyages can found independent settler communities on suitable,
+unclaimed coasts. Earth requires 1300 CE or later, ocean-going ships, navigation,
+farming, a substantial sending population, and room to sustain newcomers. Founding
+is probabilistic; it does not annex land belonging to another state.
+
+Settlers leave the source population and carry culture, faith and practical
+knowledge. On sparsely populated shores they begin as a minority, preserving the
+existing majority. Sustained migration along a return route can grow the community;
+after generations it can develop a daughter culture. Ordinary simulation rules
+can then produce an independent local state. Communities can also dwindle, blend
+into neighbours or lose their connection to the homeland.
+
+Teal diamonds mark active communities on political, alliance, peoples and religion
+maps. Zoom in for names or inspect the province for founding people, local culture,
+settler descendants and current government. The map names toggle hides these
+markers too. At most 128 community records are retained; failed records can be
+replaced when new communities form.
+
+National colony ownership, imperial administration and overseas conquest remain
+future work. JSON setups still reproduce starting conditions rather than saving
+an ongoing colony's progress.

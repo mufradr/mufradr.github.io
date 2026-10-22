@@ -1,5 +1,26 @@
 # Release history
 
+## 0.9.0 — Independent overseas communities
+
+- Late-game expeditions can establish independent settlements on viable unclaimed
+  coasts, including sparse inhabited areas with room for a new minority.
+- Settler migration subtracts population from the source; founding neither annexes
+  states nor automatically replaces an existing majority or substantial minority.
+- Maintained sea connections allow further immigration. Descendants share local
+  growth and mortality, can develop daughter cultures, and can form their own
+  states through the existing state-formation rules.
+- Added named settlement records, map diamonds, province details, cultural
+  genealogy, colony-origin state histories and integrity checks.
+- Records and per-year work are bounded. Failed communities do not repopulate
+  themselves, and missing shipping connections stop organized arrivals.
+- National ownership, administration and conquest of overseas populations remain
+  future work.
+
+Validation: all 40 automated checks passed, including overseas population transfer,
+minority preservation, cultural branching, independent state origins, failure,
+and 120 simulated years of colony integrity. Browser checks cover colony markers
+and the names-and-cities toggle at root and subdirectory URLs.
+
 ## 0.8.1 — Correctness and reproducibility
 
 - Fixed positive-offset annual schedules in BCE years: disease pools run every

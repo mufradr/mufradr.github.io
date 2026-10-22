@@ -34,5 +34,11 @@ function simulationIssues(limit=50){
   for(const war of s.wars)for(const id of war.a.concat(war.d))if(!s.pols[id])report('Invalid war participant '+id);
   for(const city of s.cities)if(!w.land[city.cell]||!index(city.eth,s.eths))report('Invalid city record');
   for(const route of s.seaRoutes.values())if(!w.land[route.from]||!w.land[route.to]||!Number.isFinite(route.km)||route.km<=0||route.path.some(i=>!Number.isInteger(i)||i<0||i>=N))report('Invalid sea route');
+  if(s.colonies.size>128)report('Too many colony records');
+  for(const [cell,c] of s.colonies){
+    if(cell!==c.cell||!w.land[cell]||!w.coast[cell]||!w.coast[c.source])report('Invalid colony location');
+    if(!index(c.people,s.eths,-2)||!index(c.founderPeople,s.eths,-2)||!index(c.homeState,s.pols,0))report('Invalid colony origin');
+    if(!['active','failed'].includes(c.status)||!Number.isFinite(c.founded)||!Number.isFinite(c.settlers)||c.settlers<0||c.settlers>s.pop[cell]+0.01||!Number.isFinite(c.lastPopulation))report('Invalid colony demographics');
+  }
   return errors;
 }

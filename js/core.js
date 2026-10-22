@@ -1,7 +1,7 @@
 
 "use strict";
 /* ================= SIMULATION CORE (no DOM) ================= */
-const ENGINE_VERSION='0.8.1';
+const ENGINE_VERSION='0.9.0';
 const calendarPhase=(year,period)=>((year%period)+period)%period;
 const W=400,H=200,N=W*H,SC=4,HW=W*SC,HH=H*SC,AGW=40,AGH=20;
 const PDEF=[
@@ -588,7 +588,7 @@ function newHistory(hseed){
     firstTech:new Array(TECH.length).fill(null),lmFound:new Uint8Array(w.lmCount),regionFirst:{},medBest:{share:0,y:null,pol:0},chinaHist:[],medHist:[],farmCheck:null};
   const s=S;
   s.farm=tk[0];s.herd=tk[1];s.irrig=tk[2];s.metal=tk[3];s.horse=tk[4];s.sail=tk[5];s.admin=tk[6];s.wheel=tk[7];s.iron=tk[8];s.coin=tk[9];s.law=tk[10];s.roads=tk[11];s.nav=tk[12];s.caval=tk[13];s.paper=tk[14];s.crops=tk[15];s.gun=tk[16];s.ocean=tk[17];s.camel=tk[18];s.grain=tk[19];s.ard=tk[20];s.plough=tk[21];s.manure=tk[22];s.xcrops=tk[23];s.integ=new Float32Array(N);s.uni=new Float32Array(N);s.uniFam=new Int32Array(N).fill(-1);
-  prepEco(w);Object.assign(s,{forest:Float32Array.from(w.forest0),salt:new Float32Array(N),adapt:new Float32Array(N),dp:new Float32Array(N),poolNext:new Float32Array(N),car:new Float32Array(N),exit:new Float32Array(N),circE:Float32Array.from(w.circ),rp:new Float32Array(N),routes:[],carPairs:new Set(),cropX:new Set(),seaRoutes:new Map(),bfsPar:new Int32Array(N),bfsD:new Int16Array(N),bfsMark:new Int32Array(N),bfsStamp:0});
+  prepEco(w);Object.assign(s,{forest:Float32Array.from(w.forest0),salt:new Float32Array(N),adapt:new Float32Array(N),dp:new Float32Array(N),poolNext:new Float32Array(N),car:new Float32Array(N),exit:new Float32Array(N),circE:Float32Array.from(w.circ),rp:new Float32Array(N),routes:[],carPairs:new Set(),cropX:new Set(),seaRoutes:new Map(),colonies:new Map(),bfsPar:new Int32Array(N),bfsD:new Int16Array(N),bfsMark:new Int32Array(N),bfsStamp:0});
   for(const i of w.landIdx)s.adapt[i]=w.mal[i]*0.5;
   s.orb0=w.isEarth?null:(r()*23000);
   for(const i of w.coastIdx)s.sail[i]=0.05;
@@ -766,6 +766,7 @@ function traceVoyage(i,bearing,rangeKm){
 function seaContact(voyage){
   const s=S,w=WD,i=voyage.from,tgt=voyage.to;
   if(s.pop[i]<30||s.eth[i]<0)return;
+  tryIndependentColony(voyage);
   if(s.pop[tgt]<1){
     s.pop[tgt]=Math.min(60+s.pop[i]*0.02,s.K[tgt]*0.5+1);s.eth[tgt]=s.eth[i];s.rel[tgt]=s.rel[i];s.s[tgt]=0.4;
     for(const f of s.tk)f[tgt]=Math.max(f[tgt],f[i]*0.8);s.admin[tgt]*=0.3;
@@ -1011,7 +1012,7 @@ function newPolity(c,from,opt){
     E:0.02,shock:0,S:0.5,press:0.5,md:0,adm:0,nomF:0,cells:1,pop:s.pop[c],K:1,maxCells:1,maxPop:0,conq:0,alive:true,wet:0,p5:0,famY:-1e9,
     h:P.reach,gate:1,aggrM:1,psi:0,why:null,hist:[],tier:'Chiefdom',full:'',peak:'',from:from?from.id:0,lastBy:0,fK:0,fE:0,lx:0,ly:0,crises:0,
     rel:s.rel[c],allies:[],enemies:new Map(),truce:new Map(),nb:new Map(),over:0,tribs:0,spc:0,era:0,rulers:[],warsF:[],kids:[],
-    origin:opt.origin||(from?{type:'rebellion',from:from.id}:{type:'emerged',people:e}),loot:0,cult:0.2,works:[],golds:[],goldStart:0,sample:[],succ:null,fortN:0,cityPop:0,island:false,assimT:0,conqDyn:!!opt.conqDyn,settledY:0,restores:opt.restores||0};
+    origin:opt.origin||(from?{type:'rebellion',from:from.id}:s.colonies.has(c)&&s.colonies.get(c).status==='active'&&colonyDescendant(e,s.colonies.get(c).founderPeople)?{type:'colony',people:s.colonies.get(c).founderPeople,settlement:s.colonies.get(c).name,year:s.colonies.get(c).founded}:{type:'emerged',people:e}),loot:0,cult:0.2,works:[],golds:[],goldStart:0,sample:[],succ:null,fortN:0,cityPop:0,island:false,assimT:0,conqDyn:!!opt.conqDyn,settledY:0,restores:opt.restores||0};
   o.ruler=newRuler(L,o);o.founderR=o.ruler;o.tier=tierOf(o);o.full=fullName(o);o.peak=o.full;
   o.civ=from?(from.civ||from.base):o.base;if(from)from.kids.push(id);
   if(from&&from.cplx!=null){o.cplx=from.cplx*0.55;o.ineq=from.ineq*0.85;o.treas=0.2;o.warC=0}
@@ -1739,6 +1740,7 @@ function* stepG(){
   yield* politicsG();
   if(s.year%20===0){yield;ethPass(true);yield;relPass()}
   if(s.year%10===0){yield;recordStats();cityPass();yield;regionPass();yield;mixPass()}
+  colonyStep();
 }
 
 /* ================= v0.5: land, ecology, disease, contact, inequality ================= */

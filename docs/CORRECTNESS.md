@@ -75,6 +75,8 @@ provincial secession and exceptional rapid fragmentation, then measure their
 frequencies across seeds. This patch exposes the contributing pressures without
 claiming to rebalance that distribution.
 
-Ocean exploration supports settlement on unpopulated land, contact and trade.
-National colony ownership, overseas supply/administration and conquest of inhabited
-shores are separate future mechanics.
+As of 0.9.0, overseas communities may grow independently on viable unclaimed
+coasts, with emigrants deducted from source populations and minority representation
+on inhabited sites. Colony counts, origins and demographic estimates have integrity
+checks. National ownership, imperial supply/administration and conquest of inhabited
+shores remain future mechanics.
