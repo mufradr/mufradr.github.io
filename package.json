@@ -1,5 +1,6 @@
 {
-  "name": "asabiya-history-engine",
+  "name": "world-engine",
+  "version": "0.7.3",
   "private": true,
   "scripts": {
     "test": "node --test tests/*.test.cjs",

@@ -19,8 +19,8 @@ const PDEF=[
 ['People','wander','Great migrations',0,3,0.05,1,'How readily displaced peoples and hordes set off across the map.'],
 ['States','formRate','State formation',0,3,0.05,1,'How often dense farming or herding peoples form chiefdoms.'],
 ['States','warRate','War frequency',0,3,0.05,1,'How often states declare war and press their attacks.'],
-['States','asabR','Frontier cohesion',0.01,0.3,0.005,0.1,'Asabiya gained on frontiers with alien peoples or faiths.'],
-['States','asabD','Interior decay',0.001,0.05,0.001,0.006,'Asabiya lost in safe interiors.'],
+['States','asabR','Frontier cohesion',0.01,0.3,0.005,0.1,'Cohesion gained on frontiers with unfamiliar peoples or faiths.'],
+['States','asabD','Interior decay',0.001,0.05,0.001,0.006,'Cohesion lost in safe interiors.'],
 ['States','reach','Administrative reach',2,20,0.5,6,'Cells from the capital at which power falls to 37%, before technology.'],
 ['States','crisis','Instability sensitivity',0,3,0.05,1,'How easily structural pressure turns into civil war.'],
 ['States','allyRate','Alliances',0,3,0.05,1,'How readily states with shared interests ally.'],
@@ -1006,7 +1006,7 @@ function civilWar(o,breakup){
 function collapse(o){
   const s=S,w=WD;let lost=0;
   for(const i of w.landIdx)if(s.pol[i]===o.id&&s.dist[i]>2&&i!==o.capital){s.pol[i]=0;s.s[i]=0.3;lost++}
-  if(o.maxCells>=20&&lost>=5)chron('fall',`The ${o.full} loses its grip; ${lost} provinces fall away into stateless hands.`,o.capital,[R_(o)],'Its asabiya had decayed below the point where it could hold together.');
+  if(o.maxCells>=20&&lost>=5)chron('fall',`The ${o.full} loses its grip; ${lost} provinces fall away into stateless hands.`,o.capital,[R_(o)],'Its cohesion had decayed below the point where it could hold together.');
 }
 function milAt(c){const s=S,w=WD,ts=w.tsetse[c]?0.15:1;return 1+0.4*s.metal[c]+0.3*s.wheel[c]*ts+0.5*s.iron[c]+ts*(s.horse[c]*(0.3+(w.nomad[c]?0.9:0))+0.6*s.caval[c]*(w.nomad[c]?1:0.5))+1.2*s.gun[c]+0.2*s.admin[c]+0.3*s.camel[c]*w.desert[c]}
 function cerealEff(i){return S.grain[i]*(1-0.75*WD.leach[i])*(1-0.65*WD.trop[i])}

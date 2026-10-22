@@ -1,17 +1,7 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="stylesheet" href="styles/base.css"></head><body>
-<!-- Asabiya History Engine v0.7.2 — climate and speed update
-Speed fixes: wall-clock pacing; reset pending timing credit on rate/pause/world
-changes; explicit Max slider endpoint; completed-year speed sampling; visible
-auto-slow status. The year counter advances after a full simulated year completes.
-Climate changes retained from v0.7.1:
-Changes: stronger default monsoon rainfall; slower poleward moisture depletion;
-diagonal ocean moisture paths; eastern-coast onshore flow; no artificial summer
-moisture replenishment over land or wraparound at the ends of poleward paths.
-Province details now distinguish raw model rainfall from simulation rainfall.
-Rebuild the world to apply climate changes. Earth observed-zone anchoring remains
-recommended: the procedural model is an approximation, not observed rainfall.
--->
-<title>Asabiya History Engine</title><meta name="theme-color" content="#1c262c"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Asabiya"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="A browser-based world history simulator on real Earth terrain and climate."><meta property="og:title" content="Asabiya History Engine"><meta property="og:description" content="Watch states, peoples, faiths and plagues rise and fall on a real-Earth map.">
+<!-- World Engine v0.7.3 — new branding, clearer cohesion labels,
+     and a map names toggle that also hides city names and markers. -->
+<title>World Engine</title><meta name="theme-color" content="#1c262c"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="World Engine"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="A browser-based world history simulator on real Earth terrain and climate."><meta property="og:title" content="World Engine"><meta property="og:description" content="Watch states, peoples, faiths and plagues rise and fall on a real-Earth map.">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,7 +10,7 @@ recommended: the procedural model is an approximation, not observed rainfall.
 
 <div class="app">
   <header class="bar">
-    <div class="brand"><span class="mark">Asabiya</span><span class="sub">history engine · v0.7.2</span></div>
+    <div class="brand"><span class="mark">World Engine</span><span class="sub">history engine · v0.7.3</span></div>
     <div class="clock">
       <button id="play" class="btn primary" type="button" disabled>Play</button>
       <div class="seg" id="speed" role="group" aria-label="Years per second"></div>
@@ -35,7 +25,7 @@ recommended: the procedural model is an approximation, not observed rainfall.
       <div class="modes" id="modes"></div>
       <div class="legend" id="legend"></div>
       <button type="button" class="legtog" id="legtog" aria-expanded="false">Legend</button>
-      <div class="zoomc" id="zoomc"><button type="button" data-z="in" aria-label="Zoom in">+</button><button type="button" data-z="out" aria-label="Zoom out">−</button><button type="button" data-z="play" aria-label="Play or pause" id="ppb" style="font-size:15px">▶︎</button><button type="button" data-z="lab" aria-label="Toggle map labels" style="font-size:15px">Aa</button><button type="button" data-z="reset" aria-label="Reset view" style="font-size:18px">⤢</button></div>
+      <div class="zoomc" id="zoomc"><button type="button" data-z="in" aria-label="Zoom in">+</button><button type="button" data-z="out" aria-label="Zoom out">−</button><button type="button" data-z="play" aria-label="Play or pause" id="ppb" style="font-size:15px">▶︎</button><button type="button" data-z="lab" aria-label="Show map names and cities" aria-pressed="true" title="Show or hide map names and city markers" style="font-size:15px">Aa</button><button type="button" data-z="reset" aria-label="Reset view" style="font-size:18px">⤢</button></div>
       <div class="tip" id="tip" hidden></div>
       <div class="toast" id="toast" hidden></div>
       <div class="busy" id="busy">Loading Earth…</div>

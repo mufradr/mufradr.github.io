@@ -37,7 +37,14 @@ test('browser: startup, controls, pacing, and Pages-relative resources', async t
       await page.route('https://fonts.gstatic.com/**', r => r.abort());
       await page.goto(`http://127.0.0.1:${server.address().port}${prefix}#seed-regression`);
       await page.waitForFunction(() => typeof ui !== 'undefined' && ui.ready && document.getElementById('busy').hidden);
-      assert.equal(await page.title(), 'Asabiya History Engine');
+      assert.equal(await page.title(), 'World Engine');
+      assert.equal(await page.locator('.brand .mark').innerText(), 'World Engine');
+      assert.match(await page.locator('.brand .sub').innerText(), /v0\.7\.3/i);
+      assert.equal(await page.locator('meta[property="og:title"]').getAttribute('content'), 'World Engine');
+      const manifest = await page.evaluate(async () => (await fetch(document.querySelector('link[rel="manifest"]').href)).json());
+      assert.equal(manifest.name, 'World Engine');
+      assert.equal(manifest.short_name, 'World Engine');
+
       assert.equal(await page.evaluate(() => WD.isEarth), true, 'Earth data loaded without fallback');
       assert.equal(await page.evaluate(() => getComputedStyle(document.body).backgroundColor), 'rgb(230, 233, 228)');
       const initial = await page.evaluate(() => S.year);
@@ -48,6 +55,53 @@ test('browser: startup, controls, pacing, and Pages-relative resources', async t
       const paused = await page.evaluate(() => S.year);
       await page.waitForTimeout(350);
       assert.equal(await page.evaluate(() => S.year), paused, 'pause stops simulation advancement');
+      await page.getByRole('button', {name:'Cohesion', exact:true}).click();
+      assert.equal(await page.evaluate(() => ui.mode), 'asabiya');
+      assert.match(await page.locator('#legend').innerText(), /Social cohesion/);
+      await page.getByRole('button', {name:'States', exact:true}).click();
+      const labels = page.getByRole('button', {name:'Show map names and cities', exact:true});
+      // Starting in prehistory means no real cities exist yet. Temporarily supply
+      // a capital and a town and observe their actual canvas drawing operations.
+      const cityDrawing = () => page.evaluate(() => {
+        const first = WD.landIdx.find(i => Math.abs(WD.lat[i]) < 0.3);
+        const second = first + 1;
+        const previous = {cities:S.cities, pop:[S.pop[first],S.pop[second]],
+          pol:[S.pol[first],S.pol[second]], z:ui.z, ox:ui.ox, oy:ui.oy};
+        const methods = ['fillRect','strokeRect','arc','fillText'];
+        const original = Object.fromEntries(methods.map(name => [name,mapCtx[name]]));
+        const counts = {capital:0,town:0,names:0};
+        try {
+          const id = S.pols.length;
+          S.pols.push({capital:first}); S.pol[first]=id; S.pol[second]=0;
+          S.pop[first]=S.pop[second]=100000;
+          S.cities=[{cell:first,name:'Test Capital'},{cell:second,name:'Test Town'}];
+          ui.z=3; centerOn(first);
+          for (const name of methods) mapCtx[name] = function(...args) {
+            if (name==='fillRect' && args[2]===6 && args[3]===6) counts.capital++;
+            if (name==='arc' && args[2]===2.5) counts.town++;
+            if (name==='fillText' && ['Test Capital','Test Town'].includes(args[0])) counts.names++;
+            return original[name].apply(this,args);
+          };
+          drawMap();
+          return counts;
+        } finally {
+          for (const name of methods) mapCtx[name]=original[name];
+          S.pols.pop(); S.cities=previous.cities;
+          [S.pop[first],S.pop[second]]=previous.pop;
+          [S.pol[first],S.pol[second]]=previous.pol;
+          Object.assign(ui,{z:previous.z,ox:previous.ox,oy:previous.oy});
+          drawMap();
+        }
+      });
+      assert.equal(await labels.getAttribute('aria-pressed'), 'true');
+      const visible = await cityDrawing();
+      assert.ok(visible.capital>0 && visible.town>0 && visible.names>=2, 'capital, town, and names render');
+      await labels.click();
+      assert.equal(await labels.getAttribute('aria-pressed'), 'false');
+      assert.deepEqual(await cityDrawing(), {capital:0,town:0,names:0}, 'hidden names also hide all city markers');
+      await labels.click();
+      assert.equal(await labels.getAttribute('aria-pressed'), 'true');
+      assert.deepEqual(await cityDrawing(), visible, 'toggling back restores cities and names');
       await page.getByRole('button', {name:'Terrain', exact:true}).click();
       assert.equal(await page.getByRole('button', {name:'Terrain', exact:true}).getAttribute('aria-pressed'), 'true');
       assert.equal(await page.evaluate(() => ui.mode), 'terrain');

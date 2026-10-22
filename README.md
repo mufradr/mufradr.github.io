@@ -1,9 +1,9 @@
-# Asabiya History Engine
+# World Engine
 
 An interactive browser simulation of populations, states, cultures, and climate,
 hosted on GitHub Pages at https://mufradr.github.io/.
 
-The app identifies itself as version 0.7.2. It is a static site: no package
+The app identifies itself as version 0.7.3. It is a static site: no package
 installation or build step is required to run or publish it. `.nojekyll` enables
 direct static serving on GitHub Pages.
 
@@ -17,7 +17,8 @@ python3 -m http.server 8000 --bind 127.0.0.1
 
 Open `http://127.0.0.1:8000/` in a modern browser. Click **Play** to advance the
 simulation and **Pause** to stop it. Use the map controls to explore views such as
-Terrain, Population, and Climate check.
+Terrain, Population, Cohesion (the ability to act together), and Climate check.
+The **Aa** toggle shows or hides map names and city markers for an unobstructed map view.
 
 Google Fonts are optional external resources; fallback fonts work offline.
 
