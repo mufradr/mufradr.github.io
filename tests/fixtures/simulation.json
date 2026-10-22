@@ -1,0 +1,100 @@
+{
+  "earth": {
+    "initial": {
+      "landCells": 27442,
+      "terrain": "ca3e9f6e5d775e00367b7e76da14f6568d10db961437e374d827ea811bc32ff6",
+      "temperature": "f3d6ec1b4dffffe8cd98d05a413cfde94cc3b20330714c8ba0dc05adfbd5ca90",
+      "rainfall": "dcd739413a6f593b6f164dfccb5c2b1892f01dd469a54687035d5bdf68b95c18",
+      "year": -9000,
+      "population": "75b0ad39c387204a9366a27bf40abb99032d6b54912da732b086aa0a8857d21d",
+      "peoples": "88ed4db505bb3a7e1361966afc87f4e049f80992f41c66ad06f50b0fb8853dc4",
+      "states": "ac2878215ad33205d1732578c89f25ededaad1b676911c540825bcf4baa42d9b",
+      "chronicle": [
+        {
+          "y": -9000,
+          "t": "nature",
+          "txt": "Foragers of 10 unrelated stocks people the habitable world.",
+          "cell": 37827,
+          "refs": [],
+          "why": null
+        }
+      ]
+    },
+    "afterThreeYears": {
+      "landCells": 27442,
+      "terrain": "ca3e9f6e5d775e00367b7e76da14f6568d10db961437e374d827ea811bc32ff6",
+      "temperature": "f3d6ec1b4dffffe8cd98d05a413cfde94cc3b20330714c8ba0dc05adfbd5ca90",
+      "rainfall": "dcd739413a6f593b6f164dfccb5c2b1892f01dd469a54687035d5bdf68b95c18",
+      "year": -8997,
+      "population": "716b024a07792c794c2b88661fffa494915492eb04cdba30064d8949b947590e",
+      "peoples": "88ed4db505bb3a7e1361966afc87f4e049f80992f41c66ad06f50b0fb8853dc4",
+      "states": "ac2878215ad33205d1732578c89f25ededaad1b676911c540825bcf4baa42d9b",
+      "chronicle": [
+        {
+          "y": -9000,
+          "t": "nature",
+          "txt": "Foragers of 10 unrelated stocks people the habitable world.",
+          "cell": 37827,
+          "refs": [],
+          "why": null
+        },
+        {
+          "y": -8999,
+          "t": "ideas",
+          "txt": "Among the Yuhites, people begin to sow wheat and barley and keep sheep and goats.",
+          "cell": 23844,
+          "refs": [
+            [
+              "eth",
+              70,
+              "Yuhites"
+            ]
+          ],
+          "why": null
+        }
+      ]
+    }
+  },
+  "generated": {
+    "initial": {
+      "landCells": 28872,
+      "terrain": "8d4f0f2662b32c00e7354d578d4d30df9fef3dd6fb0e29cdb18377b457cf1673",
+      "temperature": "2cbf445c33f7f4c9ae0683df48114253113d79c1393d910f55910be717d4aa85",
+      "rainfall": "b7ceb4ed190a59de855d54f1f2fab4fc71f340d7d4a8f6114c3ea02eb7152744",
+      "year": -9000,
+      "population": "607c0bf0cb23482cd519f33e8aa8300a080571c89a5b9c23bb9323765ccfc1d5",
+      "peoples": "157224b7c69f76e71476326fff353f8985930e63108087781b2b384860344753",
+      "states": "ac2878215ad33205d1732578c89f25ededaad1b676911c540825bcf4baa42d9b",
+      "chronicle": [
+        {
+          "y": -9000,
+          "t": "nature",
+          "txt": "Foragers of 10 unrelated stocks people the habitable world.",
+          "cell": 44148,
+          "refs": [],
+          "why": null
+        }
+      ]
+    },
+    "afterThreeYears": {
+      "landCells": 28872,
+      "terrain": "8d4f0f2662b32c00e7354d578d4d30df9fef3dd6fb0e29cdb18377b457cf1673",
+      "temperature": "2cbf445c33f7f4c9ae0683df48114253113d79c1393d910f55910be717d4aa85",
+      "rainfall": "b7ceb4ed190a59de855d54f1f2fab4fc71f340d7d4a8f6114c3ea02eb7152744",
+      "year": -8997,
+      "population": "d27fac31eeacd207b1ceae132f74ecdebb624bb7b3cd76c9cea888631af4bc30",
+      "peoples": "aee24e7679e55ffb2735c80e9a8fc65b15cd38401c4c393574243c6525fb42ca",
+      "states": "ac2878215ad33205d1732578c89f25ededaad1b676911c540825bcf4baa42d9b",
+      "chronicle": [
+        {
+          "y": -9000,
+          "t": "nature",
+          "txt": "Foragers of 10 unrelated stocks people the habitable world.",
+          "cell": 44148,
+          "refs": [],
+          "why": null
+        }
+      ]
+    }
+  }
+}
