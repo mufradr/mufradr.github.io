@@ -3,7 +3,7 @@
 An interactive browser simulation of populations, states, cultures, and climate,
 hosted on GitHub Pages at https://mufradr.github.io/.
 
-The app identifies itself as version 0.8.0. It is a static site: no package
+The app identifies itself as version 0.8.1. It is a static site: no package
 installation or build step is required to run or publish it. `.nojekyll` enables
 direct static serving on GitHub Pages.
 
@@ -31,10 +31,12 @@ Google Fonts are optional external resources; fallback fonts work offline.
 | `styles/app.css` | App layout, map controls, and responsive styles |
 | `assets/earth.js` | Compressed elevation and Köppen climate data |
 | `js/core.js` | World generation, climate, and simulation rules; no DOM dependency |
+| `js/experiments.js` | Versioned starting setups, sharing, and JSON import/export |
+| `js/diagnostics.js` | On-demand simulation state consistency checks |
 | `js/ui.js` | Map rendering, controls, simulation pacing, and startup |
 | `tests/` | Simulation regression fixtures and browser checks |
 
-Scripts load in order: Earth data, simulation core, then interface. They use
+Scripts load in order: Earth data, simulation core, experiments, diagnostics, then interface. They use
 classic scripts with shared bindings; preserve that order. Edit the relevant
 file and reload the browser. Keep all these directories alongside `index.html`
 when serving or publishing the site. Relative asset URLs also support hosting
@@ -104,3 +106,28 @@ in both Mexico and the Andes. It is a development scenario, not a replay of the
 entire historical timeline. The overseas tests likewise start with a prepared
 Age-of-Sail port; they test the expedition mechanic without forcing a discovery
 or asserting that every full history reaches the same date or outcome.
+
+## Correctness and reproducibility in 0.8.1
+
+See [CHANGELOG.md](CHANGELOG.md) for release history and
+[docs/CORRECTNESS.md](docs/CORRECTNESS.md) for the buffer audit and checks.
+
+- BCE years now schedule disease-pool and caravan updates at the same frequencies
+  as CE years. Disease pools have an independent, initialized floating-point buffer.
+- Sustained war can accumulate institutional coordination, which decays in peace.
+  Every instability contribution, including institutional sclerosis, appears in
+  the state inspector and recorded explanations.
+- **Setup → Copy link** shares the starting world, seeds, applied climate settings,
+  initial rules and engine version. **Export setup / Import setup** round trip the
+  same configuration as JSON. Imported worlds include their height, temperature
+  and precipitation maps and must be shared as files, not links.
+- Setups recreate a run from the beginning. Progress and runtime rule edits are
+  not saved. Configurations from other engine versions are rejected explicitly;
+  corrected rules can change the outcome of an old seed. Legacy seed links still
+  work, using the receiving browser's current settings.
+- **Checks → Check simulation integrity** pauses at a completed year and checks
+  numeric bounds, ownership, entity references, relationships and explanations.
+
+This release does not rebalance abrupt civil-war fragmentation or add governed
+overseas colonies. Ocean voyages can settle unpopulated land and establish trade;
+existing inhabited shores are not automatically annexed.

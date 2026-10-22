@@ -1,6 +1,8 @@
 
 "use strict";
 /* ================= SIMULATION CORE (no DOM) ================= */
+const ENGINE_VERSION='0.8.1';
+const calendarPhase=(year,period)=>((year%period)+period)%period;
 const W=400,H=200,N=W*H,SC=4,HW=W*SC,HH=H*SC,AGW=40,AGH=20;
 const PDEF=[
 ['World','landFrac','Land share',0.2,0.5,0.01,0.33,'Share of the surface above sea level (generated worlds).',1],
@@ -245,7 +247,7 @@ function genWorld(o){
     for(let i=0;i<raw.length;i++){const v=raw[i];eHi[i]=v>sl?20+Math.pow((v-sl)/(mx-sl),1.35)*6200:-(60+Math.pow((sl-v)/(sl-mn),0.5)*5600)}
   }
   const C=genClimate(eHi);
-  const w={seed:o.seed,eHi,isEarth:!!o.earth,imported:!!o.height&&!o.earth,kgHi:o.kg||null,fitted:false};
+  const w={generation:{source:o.earth?'earth':o.height?'import':'generated',seed:String(o.seed),landFrac:o.landFrac??P.landFrac,fitClimate:!!(o.kg&&o.fit)},climateRules:{...CL},importSource:o.height&&!o.earth?{height:o.height,temp:o.temp||null,prec:o.prec||null}:null,seed:o.seed,eHi,isEarth:!!o.earth,imported:!!o.height&&!o.earth,kgHi:o.kg||null,fitted:false};
   // raw (model) climate on the coarse grid, kept for grading
   const rawT=new Float32Array(N),rawP=new Float32Array(N),rawA=new Float32Array(N);
   const agg=(src,dst)=>{for(let cy=0;cy<H;cy++)for(let cx=0;cx<W;cx++){let s=0;for(let dy=0;dy<SC;dy++)for(let dx=0;dx<SC;dx++)s+=src[(cy*SC+dy)*HW+cx*SC+dx];dst[cy*W+cx]=s/(SC*SC)}};
@@ -575,7 +577,7 @@ const EARTH_SEEDS=[[5,25,'afr'],[33,40,'afro'],[48,10,'ie'],[22,78,'indo'],[35,1
 function newHistory(hseed){
   const w=WD,r=mulberry32(hashStr('hist:'+hseed+':'+w.seed));
   const tk=TECH.map(()=>new Float32Array(N));
-  S={r,seed:hseed,year:P.startYear,start:P.startYear,famN:0,tk,
+  S={r,initialRules:{...P},seed:hseed,year:P.startYear,start:P.startYear,famN:0,tk,
     pop:new Float32Array(N),K:new Float32Array(N),eth:new Int32Array(N).fill(-1),eth2:new Int32Array(N).fill(-1),mix:new Float32Array(N),mixT:new Uint8Array(N),
     pol:new Int32Array(N),s:new Float32Array(N).fill(0.3),rel:new Int32Array(N).fill(-1),fort:new Float32Array(N),
     fert:new Float32Array(N).fill(1),immune:new Float32Array(N),infect:new Uint8Array(N),ob:new Int32Array(N).fill(-1),
@@ -586,7 +588,7 @@ function newHistory(hseed){
     firstTech:new Array(TECH.length).fill(null),lmFound:new Uint8Array(w.lmCount),regionFirst:{},medBest:{share:0,y:null,pol:0},chinaHist:[],medHist:[],farmCheck:null};
   const s=S;
   s.farm=tk[0];s.herd=tk[1];s.irrig=tk[2];s.metal=tk[3];s.horse=tk[4];s.sail=tk[5];s.admin=tk[6];s.wheel=tk[7];s.iron=tk[8];s.coin=tk[9];s.law=tk[10];s.roads=tk[11];s.nav=tk[12];s.caval=tk[13];s.paper=tk[14];s.crops=tk[15];s.gun=tk[16];s.ocean=tk[17];s.camel=tk[18];s.grain=tk[19];s.ard=tk[20];s.plough=tk[21];s.manure=tk[22];s.xcrops=tk[23];s.integ=new Float32Array(N);s.uni=new Float32Array(N);s.uniFam=new Int32Array(N).fill(-1);
-  prepEco(w);Object.assign(s,{forest:Float32Array.from(w.forest0),salt:new Float32Array(N),adapt:new Float32Array(N),dp:new Float32Array(N),car:new Float32Array(N),exit:new Float32Array(N),circE:Float32Array.from(w.circ),rp:new Float32Array(N),routes:[],carPairs:new Set(),cropX:new Set(),seaRoutes:new Map(),bfsPar:new Int32Array(N),bfsD:new Int16Array(N),bfsMark:new Int32Array(N),bfsStamp:0});
+  prepEco(w);Object.assign(s,{forest:Float32Array.from(w.forest0),salt:new Float32Array(N),adapt:new Float32Array(N),dp:new Float32Array(N),poolNext:new Float32Array(N),car:new Float32Array(N),exit:new Float32Array(N),circE:Float32Array.from(w.circ),rp:new Float32Array(N),routes:[],carPairs:new Set(),cropX:new Set(),seaRoutes:new Map(),bfsPar:new Int32Array(N),bfsD:new Int16Array(N),bfsMark:new Int32Array(N),bfsStamp:0});
   for(const i of w.landIdx)s.adapt[i]=w.mal[i]*0.5;
   s.orb0=w.isEarth?null:(r()*23000);
   for(const i of w.coastIdx)s.sail[i]=0.05;
@@ -1043,7 +1045,7 @@ function succession(o){
   else o.gen++;
 }
 function etOf(o){const c=o.capital,s=S;return 0.02*(1+s.admin[c]+0.5*s.coin[c]+0.5*s.law[c])}
-const WHY_LABEL={pN:'rule stretched over lands unlike its own',pT:'a government that cost more than it returned',pF:'an empty treasury and mounting debts',pQ:'a widening gulf between the great and the poor',pZ:'an empire grown too large to govern',pI:'restless, poorly integrated provinces',pM:'a dynasty that had lost its mandate',pP:'population pressing on the land',pE:'too many elites competing for office',pS:'weak cohesion',pX:'an overextended realm',pR:'an inept ruler',sh:'recent famine, plague, invasion or succession strife'};
+const WHY_LABEL={pN:'rule stretched over lands unlike its own',pT:'a government that cost more than it returned',pF:'an empty treasury and mounting debts',pQ:'a widening gulf between the great and the poor',pZ:'an empire grown too large to govern',pI:'restless, poorly integrated provinces',pM:'a dynasty that had lost its mandate',pP:'population pressing on the land',pE:'too many elites competing for office',pS:'weak cohesion',pX:'an overextended realm',pR:'an inept ruler',pC:'institutions clogged with entrenched interests',sh:'recent famine, plague, invasion or succession strife'};
 function topCauses(why){return Object.entries(why).filter(e=>e[1]>0.08).sort((a,b)=>b[1]-a[1]).slice(0,2).map(e=>WHY_LABEL[e[0]])}
 function polCells(id){const s=S,out=[];for(const i of WD.landIdx)if(s.pol[i]===id)out.push(i);return out}
 function civilWar(o,breakup){
@@ -1469,7 +1471,9 @@ function* politicsG(){
   for(let k=0;k<L.length;k++){const i=L[k],p=pol[i];if(p){const o=pols[p];if(w.lm[i]===w.lm[o.capital])o.lmN++}}
   yield;
   const infl=P.leaderInfl;
-  for(const id of next){const o=pols[id];if(!o.alive)continue;
+  // Successors created during this phase join next year, after aggregation.
+  // Iterating the live array processed newborn states with missing totals.
+  for(const id of next.slice()){const o=pols[id];if(!o.alive)continue;
     const R=o.ruler,c=o.capital;
     {const lm=w.lm[c],ls=w.lmSize[lm];
     o.island=ls>=4&&ls<=700&&s.lmPop[lm]>0&&o.lmN>=0.8*s.lmPop[lm];
@@ -1489,7 +1493,7 @@ function* politicsG(){
     statecraft(o,c,y);
     if(o.kind==='state'&&o.pop<FLOOR.chief*P.floor){o.lowY=o.lowY||y;if(y-o.lowY>25){if(o.maxCells>=8)chron('fall',`The ${o.full} dwindles below the numbers needed to sustain a ruler and his household; it dissolves back into villages and kin-groups.`,c,[R_(o)],'Too few people remained to feed a court, an army and their collectors.');for(const i of polCells(id))pol[i]=0;continue}}else o.lowY=0;
     const pP=Math.max(0,o.press-0.85)*3,pE=Math.max(0,o.E/Et-1.15)*1.1,pS=Math.max(0,0.42-o.S)*2.2,pX=Math.max(0,o.md/o.h-0.85)*(s.admin[c]<0.5?2.2:1.0),pR=Math.max(0,0.5-comp)*0.8,pI=Math.max(0,0.45-o.integ)*0.8,pM=Math.max(0,0.5-o.mandate)*1.2,pZ=o.kind==='state'?Math.max(0,o.cells/(170*(1+0.6*s.roads[c]+0.4*s.admin[c]+0.3*s.paper[c]))-1)*0.9:0;
-    const pT=o.pT||0,pF=o.pF||0,pQ=o.pQ||0,pC=Math.max(0,(o.scl||0)-0.35)*1.7;const pN=o.kind==='state'?P.eco*0.8*Math.max(0,(o.forS||0)-0.35):0;o.why={pP,pE,pS,pX,pR,pI,pM,pZ,pN,pT,pF,pQ,sh:o.shock};o.psi=pP+pE+pS+pX+pR+pI+pM+pZ+pT+pF+pQ+pN+pC+o.shock;
+    const pT=o.pT||0,pF=o.pF||0,pQ=o.pQ||0,pC=Math.max(0,(o.scl||0)-0.35)*1.7;const pN=o.kind==='state'?P.eco*0.8*Math.max(0,(o.forS||0)-0.35):0;o.why={pP,pE,pS,pX,pR,pI,pM,pZ,pN,pT,pF,pQ,pC,sh:o.shock};o.psi=pP+pE+pS+pX+pR+pI+pM+pZ+pT+pF+pQ+pN+pC+o.shock;
     const isl=o.island?0.4:1;
     if(o.kind==='state'&&o.cells>=40&&o.psi>2.2&&r()<P.crisis*0.008*(o.psi-2)*isl){o.shock+=0.4;if(o.cells>=80)chron('fall',`The ${o.full} shatters into rival kingdoms.`,o.capital,[R_(o)],'Driven by '+topCauses(o.why).join(' and ')+'.');civilWar(o,true)}
     else if(o.cells>=3&&r()<P.crisis*0.0035*o.psi*o.psi*isl)civilWar(o,(o.scl||0)>1.1&&o.cells>=10);
@@ -1731,7 +1735,7 @@ function* stepG(){
   else if(s.r()<0.0012*P.volcano)volcano();
   computeK();growth();yield;migrate();seaHop();
   if(s.year%3===0){techStep(0,0.34);yield;techStep(0.34,0.67);yield;techStep(0.67,1);yield}
-  disease();if(s.year%10===5)poolPass();if(s.year%20===7)caravanPass();yield;
+  disease();if(calendarPhase(s.year,10)===5)poolPass();if(calendarPhase(s.year,20)===7)caravanPass();yield;
   yield* politicsG();
   if(s.year%20===0){yield;ethPass(true);yield;relPass()}
   if(s.year%10===0){yield;recordStats();cityPass();yield;regionPass();yield;mixPass()}
@@ -1779,14 +1783,15 @@ function statecraft(o,c,y){
   if(o.cplx==null){o.cplx=0.2;o.treas=0.3;o.ineq=0.25;o.warC=0}
   if(o.kind!=='state'){o.pT=o.pF=o.pQ=0;o.burden=0;return}
   const real=Math.max(1,o.cells-(o.wasteN||0));
-  o.warC*=0.995;
+  const atWar=o.enemies.size>0;
+  // Sustained campaigning can build coordination; it fades gradually in peace.
+  o.warC=clamp((o.warC||0)*0.995+(atWar?0.005:0),0,1);
   const tgt=0.15+0.35*s.admin[c]+0.2*s.law[c]+0.2*s.roads[c]+0.15*s.paper[c]+0.3*Math.min(1,real/250)+0.1*Math.min(1,o.fortN/20)+0.2*Math.min(1,o.warC);
   o.cplx+=tgt>o.cplx?0.01*(tgt-o.cplx):0.0015*(tgt-o.cplx);
   const ledger=s.tk[27][c]>0.5;
   const upkeep=0.28*Math.pow(o.cplx,ledger?1.6:1.8)*o.pop,rev=(o.tax||0)*(ledger?1.1:1)+1;
   o.burden=upkeep/rev;
   o.pT=Math.max(0,o.burden-1)*1.2;
-  const atWar=o.enemies.size>0;
   o.treas=clamp(o.treas+0.04*(1-o.burden)-(atWar?0.02:0),-2,1);
   o.pF=Math.max(0,-o.treas)*0.6;
   if(o.treas<-1.2&&s.law[c]>0.5&&r()<0.02){
@@ -1817,13 +1822,13 @@ function exitPass(a0,b0){if(a0==null){a0=0;b0=1}
 }
 // disease pools (McNeill, Crosby): dense, connected farming and herding peoples build up crowd diseases and immunity to them
 function poolPass(){
-  const s=S,w=WD,L=w.landIdx,dp=s.dp,tmp=s.bfsPar;
-  for(const i of L){if(s.pop[i]<1){dp[i]*=0.98;continue}
+  const s=S,w=WD,L=w.landIdx,dp=s.dp,tmp=s.poolNext;tmp.fill(0);
+  for(const i of L){if(s.pop[i]<1){tmp[i]=clamp(dp[i]*0.98,0,1);continue}
     const dens=s.pop[i]/w.area[i],tgt=Math.min(1,0.22*Math.log10(1+dens)+0.3*s.herd[i]*s.farm[i]+(s.city[i]>=0?0.2:0));
     let m=dp[i];for(let d=0;d<4;d++){const j=w.nb[i*4+d];if(j<0||s.pop[j]<1)continue;const c=Math.min(1,Math.sqrt(s.pop[i]*s.pop[j])/20000+s.car[i]);m=Math.max(m,dp[j]*(0.9+0.08*c))}
     if(w.coast[i]&&s.sail[i]>0.5)for(let q=w.ls[i];q<w.ls[i+1];q++){const j=w.lt[q];if(s.pop[j]>=1)m=Math.max(m,dp[j]*0.92)}
-    tmp[i]=Math.round(1000*(dp[i]+0.06*(Math.max(tgt,m)-dp[i])))}
-  for(const i of L)dp[i]=tmp[i]/1000;
+    tmp[i]=clamp(dp[i]+0.06*(Math.max(tgt,m)-dp[i]),0,1)}
+  dp.set(tmp);
   // cattle plague
   const r=s.r;
   if(r()<0.04*P.disease){for(let t=0;t<60;t++){const c=L[(r()*L.length)|0];if(s.herd[c]<0.6||w.sH[c]<0.3||s.pop[c]<100)continue;
@@ -1854,6 +1859,7 @@ function caravanPass(){
     if(s.camel[i]<0.5&&s.tk[25][i]<0.5)continue;let ok=false;for(let d=0;d<4;d++){const j=w.nb[i*4+d];if(j>=0&&arid(j))ok=true}if(ok)srcs.push(i)}
   const mark=s.bfsMark||(s.bfsMark=new Int32Array(N));
   for(const a of srcs){
+    if(s.bfsStamp>=2147483646){mark.fill(0);s.bfsStamp=0}
     const st=++s.bfsStamp;
     const q=[a];mark[a]=st;par[a]=-1;dist[a]=0;let hit=-1;
     for(let h=0;h<q.length&&hit<0;h++){const i=q[h];if(dist[i]>70)break;

@@ -39,7 +39,7 @@ test('browser: startup, controls, pacing, and Pages-relative resources', async t
       await page.waitForFunction(() => typeof ui !== 'undefined' && ui.ready && document.getElementById('busy').hidden);
       assert.equal(await page.title(), 'World Engine');
       assert.equal(await page.locator('.brand .mark').innerText(), 'World Engine');
-      assert.match(await page.locator('.brand .sub').innerText(), /v0\.8\.0/i);
+      assert.match(await page.locator('.brand .sub').innerText(), /v0\.8\.1/i);
       assert.equal(await page.locator('meta[property="og:title"]').getAttribute('content'), 'World Engine');
       const manifest = await page.evaluate(async () => (await fetch(document.querySelector('link[rel="manifest"]').href)).json());
       assert.equal(manifest.name, 'World Engine');
@@ -139,6 +139,42 @@ test('browser: startup, controls, pacing, and Pages-relative resources', async t
       }), {first:2, afterReset:2, resumed:3, afterRateChange:3});
       assert.deepEqual(errors, []);
       assert.deepEqual(failedResources, []);
+      await page.evaluate(()=>{
+        const c=cellAt(30.5,112),id=newPolity(c,null),o=S.pols[id];S.pop[c]=10000;o.scl=1.5;
+        const previous=P.crisis;P.crisis=0;try{politics()}finally{P.crisis=previous}
+        openPage('pol',id);renderPage();
+      });
+      assert.match(await page.locator('#pane-insp').innerText(),/Institutional sclerosis/);
+      assert.match(await page.locator('#pane-insp').innerText(),/Poor integration/);
+      await page.getByRole('tab', {name:'Setup',exact:true}).click();
+      await page.locator('#p-growth').evaluate(el=>{el.value='.02';el.dispatchEvent(new Event('input',{bubbles:true}))});
+      await page.evaluate(()=>{CL.monsoon=.91});
+      await page.locator('#btn-world').click();
+      await page.waitForFunction(()=>ui.ready&&WD.climateRules.monsoon===.91&&S.initialRules.growth===.02);
+      await page.locator('#btn-share').click();
+      const shared=await page.locator('#share-link').inputValue();
+      assert.ok(shared.includes('#experiment='));
+      const downloadPromise=page.waitForEvent('download');
+      await page.locator('#btn-export-setup').click();
+      const download=await downloadPromise;
+      const exported=JSON.parse(fs.readFileSync(await download.path(),'utf8'));
+      assert.equal(exported.engineVersion,'0.8.1');assert.equal(exported.rules.growth,.02);
+      const other=await browser.newPage();
+      await other.route('https://fonts.googleapis.com/**',r=>r.abort());
+      await other.goto(shared);
+      await other.waitForFunction(()=>ui.ready);
+      assert.deepEqual(await other.evaluate(()=>exportExperiment()),exported,'shared link restores the entire starting configuration');
+      await other.close();
+      await page.locator('#experiment-file').setInputFiles({name:'setup.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(exported))});
+      await page.waitForFunction(()=>ui.ready&&document.getElementById('share-status').textContent.includes('setup loaded'));
+      assert.deepEqual(await page.evaluate(()=>exportExperiment()),exported);
+      await page.locator('#experiment-file').setInputFiles({name:'wrong-version.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify({...exported,engineVersion:'0.1.0'}))});
+      await page.waitForFunction(()=>document.getElementById('share-status').textContent.includes('needs World Engine'));
+      assert.equal(await page.evaluate(()=>ui.ready),true,'bad imports preserve the running world');
+      await page.getByRole('tab', {name:'Checks',exact:true}).click();
+      await page.locator('#btn-integrity').click();
+      assert.match(await page.locator('#integrity-status').innerText(),/Integrity checks passed/);
+      assert.deepEqual(errors, []);
       await page.close();
     });
   }

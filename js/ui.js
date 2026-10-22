@@ -364,7 +364,7 @@ function renderPage(){
       h+=`<h3 class="sec">Realm</h3><dl class="kv"><dt>Provinces</dt><dd>${o.cells} (peak ${o.maxCells})</dd>${o.shape?`<dt>Extent at peak</dt><dd>${o.shape.ew.toLocaleString()} km east–west × ${o.shape.ns.toLocaleString()} km north–south</dd>`:''}${o.fortN?`<dt>Fortified provinces</dt><dd>${o.fortN}</dd>`:''}<dt>Population</dt><dd>${fmtN(o.pop)}</dd><dt>Capital</dt><dd>${city?esc(city.name):'–'}</dd><dt>Social complexity</dt><dd>${o.spc.toFixed(1)} / 10</dd>${o.cplx!=null&&o.kind==='state'?`<dt>Cost of government</dt><dd>${Math.round((o.burden||0)*100)}% of what it can tax${(o.burden||0)>1?' — more than it returns':''}</dd><dt>Treasury</dt><dd>${o.treas>0.5?'full':o.treas>0?'solvent':o.treas>-1?'in debt':'bankrupt'}</dd><dt>Inequality</dt><dd>${Math.round(o.ineq*100)} / 100</dd><dt>Farming</dt><dd>${(o.plN||0)>0.5*(o.cells-(o.wasteN||0))?'plough':'hoe'} agriculture</dd>${o.wasteN?`<dt>Claimed wasteland</dt><dd>${o.wasteN} provinces</dd>`:''}`:''}<dt>Era</dt><dd>${ERAS[eraOf(c)]}</dd><dt>Faith of the realm</dt><dd>${o.rel>=0?lr(s.rels[o.rel]):'folk religion'}</dd><dt>Core people</dt><dd>${s.eths[o.core]?le(s.eths[o.core]):'?'}</dd><dt>Land use</dt><dd>${(o.press*100).toFixed(0)}% of capacity</dd><dt>Cohesion</dt><dd>${o.S.toFixed(2)}</dd><dt>Elites vs positions</dt><dd>${(o.E/etOf(o)).toFixed(2)}×</dd><dt>Reach</dt><dd>${o.h.toFixed(1)} cells</dd><dt>Civil wars</dt><dd>${o.crises}</dd></dl>`;
       h+=`<h3 class="sec">Relations</h3><dl class="kv"><dt>Allies</dt><dd>${allies.length?allies.map(lp).join(', '):'none'}</dd><dt>At war with</dt><dd>${en.length?en.map(lp).join(', '):'no one'}</dd>${wars.length?`<dt>Wars</dt><dd>${wars.map(lw).join(', ')}</dd>`:''}${o.over&&s.pols[o.over]?`<dt>Pays tribute to</dt><dd>${lp(s.pols[o.over])}</dd>`:''}${tribs.length?`<dt>Tributaries</dt><dd>${tribs.map(lp).join(', ')}</dd>`:''}</dl>`;
       if(o.why){const W2=o.why;
-        h+=`<h3 class="sec">Instability ${o.psi.toFixed(2)}</h3><div class="bars">${bar('Population pressure',W2.pP,2)}${bar('Elite overproduction',W2.pE,2)}${bar('Weak cohesion',W2.pS,2)}${bar('Overextension',W2.pX,2)}${bar('Ruler',W2.pR,2)}${bar('Cost of government',W2.pT||0,2)}${bar('Fiscal crisis',W2.pF||0,2)}${bar('Inequality',W2.pQ||0,2)}${bar('Recent shocks',W2.sh,2)}</div>`;
+        h+=`<h3 class="sec">Instability ${o.psi.toFixed(2)}</h3><div class="bars">${[['pP','Population pressure'],['pE','Elite overproduction'],['pS','Weak cohesion'],['pX','Overextension'],['pR','Ruler'],['pI','Poor integration'],['pM','Weak legitimacy'],['pZ','Administrative scale'],['pN','Ecological mismatch'],['pT','Cost of government'],['pF','Fiscal crisis'],['pQ','Inequality'],['pC','Institutional sclerosis'],['sh','Recent shocks']].map(([key,label])=>bar(label,W2[key]||0,2)).join('')}</div>`;
         const cs=topCauses(W2),risk=P.crisis*0.0035*o.psi*o.psi*100;
         h+=`<div class="verdict">${cs.length?`Main strains: ${esc(cs.join(' and '))}.`:'No major strains.'} Chance of civil war this year: ${risk<0.1?'under 0.1':risk.toFixed(1)}%.</div>`}
     }else{
@@ -521,6 +521,7 @@ $('plaguelist').addEventListener('click',e=>{const c=e.target.closest('.card');i
 let tuneRun=null;
 function renderChecks(){
   const el=$('pane-check'),w=WD,s=S;if(!w)return;let h='';
+  h+='<h3 class="sec" style="margin-top:0">Simulation integrity</h3><button type="button" class="btn" id="btn-integrity">Check simulation integrity</button><div class="status" id="integrity-status">Checks pause the simulation at a completed year.</div>';
   const g=w.grade;
   h+=`<h3 class="sec" style="margin-top:0">Climate model vs the real world</h3>`;
   if(g){
@@ -552,6 +553,12 @@ function renderChecks(){
   if(s&&s.epochs.length){h+=`<h3 class="sec">Climate epochs this run</h3><ul class="deeds">${s.epochs.map(e=>`<li><span>${fy(e.start)}</span><div>${e.k==='dry'?'Great drought in the '+esc(e.where):e.k==='cold'?'Cold epoch':'Warm epoch'}, ${e.end-e.start} years${e.k!=='dry'?` (${e.amp>0?'+':''}${e.amp.toFixed(1)} °C)`:''}</div></li>`).join('')}</ul>`}
   if(s){const M=s.orbM;h+=`<p class="note">Orbital monsoon boost now: ${Math.round(M*100)}% ${w.isEarth?'(on Earth it fades between about 4000 and 2500 BCE, drying the Sahara and Arabia)':''}.</p>`}
   el.innerHTML=h;
+  $('btn-integrity').onclick=()=>{
+    setRunning(false);
+    if(ui.gen){while(!ui.gen.next().done){}ui.gen=null;noteCompletedYear();ui.dirty=true}
+    const issues=simulationIssues();
+    $('integrity-status').textContent=issues.length?issues.join('; '):'Integrity checks passed at '+fy(S.year)+'. This checks state consistency, not historical accuracy.';
+  };
   if(w.isEarth&&s)drawChina();
   el.querySelectorAll('input[type=range]').forEach(inp=>inp.addEventListener('input',()=>{const k=inp.id.slice(2);CL[k]=+inp.value;const d=CDEF.find(x=>x[0]===k);$('co-'+k).textContent=(+CL[k]).toFixed(d[4]<0.01?3:d[4]<1?2:0)}));
   const st=$('clim-status');
@@ -766,25 +773,34 @@ try{const c=document.createElement('canvas');c.width=c.height=512;const g=c.getC
 
 /* ---------- world building ---------- */
 function busy(on,txt){const b=$('busy');b.hidden=!on;if(txt)b.textContent=txt}
-function startHistory(){
-  P.hearthMode=$('hearthh').checked?'historical':'random';P.shuffleNames=$('shufn').checked;
-  try{history.replaceState(null,'','#seed-'+($('hseed').value||'1').replace(/[^A-Za-z0-9]/g,''))}catch(e){}
-  newHistory($('hseed').value||'1');
+function finishHistory(){
+  try{const config=exportExperiment();history.replaceState(null,'',config.world.source==='import'?'#seed-'+encodeURIComponent(String(S.seed)):experimentHash(config))}catch(e){console.error(e)}
   ui.gen=null;ui.genS=S;ui.completedYear=S.year;ui.slowUntil=0;simClock.reset(performance.now());resetRateMeter();updateSpeedLabel();
   ui.page=null;ui.stack=[];ui.lastChronKey='';ui.lastSpotObj=null;$('toast').hidden=true;ui.pausedAtEnd=false;ui.dirty=true;ui.ready=true;$('play').disabled=false;
   showPane(ui.pane);updateTop();drawChart();drawLegend();
   const h0=S.hearths.find(h=>h.kind==='farm');if(h0)centerOn(h0.cell);
 }
-function buildWorld(src){
+function startHistory(){
+  P.hearthMode=$('hearthh').checked?'historical':'random';P.shuffleNames=$('shufn').checked;
+  newHistory($('hseed').value||'1');finishHistory();
+}
+function syncExperimentControls(config){
+  $('hseed').value=config.historySeed;$('wseed').value=config.world.seed;
+  $('hearthh').checked=P.hearthMode==='historical';$('shufn').checked=P.shuffleNames;$('fitc').checked=config.world.fitClimate;
+  for(const d of PDEF){$('p-'+d[1]).value=P[d[1]];$('o-'+d[1]).textContent=fmtP(d[1],P[d[1]])}
+  if(config.world.source==='import')IMPORTED={name:WD.seed,...WD.importSource};
+}
+function buildWorld(src,experiment=null){
   busy(true,'Shaping the world…');setRunning(false);ui.ready=false;
   setTimeout(()=>{
     try{
       const fit=$('fitc').checked;P.fitClimate=fit;
-      if(src==='earth')WD=genWorld({seed:'Earth',earth:true,height:EARTH.height,kg:EARTH.kg,fit});
+      if(experiment){const config=restoreExperiment(experiment,EARTH);syncExperimentControls(config)}
+      else if(src==='earth')WD=genWorld({seed:'Earth',earth:true,height:EARTH.height,kg:EARTH.kg,fit});
       else if(src==='import'&&IMPORTED)WD=genWorld(Object.assign({seed:IMPORTED.name},IMPORTED));
       else WD=genWorld({seed:$('wseed').value||'atlas-7',landFrac:P.landFrac});
       ui.src=src;for(const b of $('src').children)b.setAttribute('aria-pressed',b.dataset.v===src);
-      paintBase();startHistory();busy(false);
+      paintBase();if(experiment)finishHistory();else startHistory();busy(false);if(experiment)$('share-status').textContent='Starting setup loaded. The history has restarted.';
     }catch(err){console.error(err);busy(true,'World generation failed: '+err.message)}
   },30);
 }
@@ -792,9 +808,26 @@ $('src').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)r
 $('btn-world').addEventListener('click',()=>buildWorld(ui.src));
 $('btn-rerun').addEventListener('click',()=>{setRunning(false);startHistory()});
 $('btn-reroll').addEventListener('click',()=>{$('hseed').value=String(Math.floor(Math.random()*1e6));setRunning(false);startHistory()});
-$('btn-share').addEventListener('click',async()=>{const seed=($('hseed').value||'1').replace(/[^A-Za-z0-9]/g,'');let base='';try{base=(window.top===window?location.href:document.referrer||location.href).split('#')[0]}catch(e){base=location.href.split('#')[0]}
-  const link=base+'#seed-'+seed,st=$('share-status');$('share-link').value=link;
-  try{await navigator.clipboard.writeText(link);st.textContent='Link copied. It opens this exact history (with the default rules).'}catch(e){$('share-link').select();st.textContent='Copy the link above.'}});
+$('btn-share').addEventListener('click',async()=>{let base='';try{base=(window.top===window?location.href:document.referrer||location.href).split('#')[0]}catch(e){base=location.href.split('#')[0]}
+  const st=$('share-status');let link;try{link=base+experimentHash(exportExperiment())}catch(error){st.textContent=error.message;return}$('share-link').value=link;
+  try{await navigator.clipboard.writeText(link);st.textContent='Link copied. It recreates the starting setup, including custom rules, in this engine version.'}catch(e){$('share-link').select();st.textContent='Copy the link above.'}});
+$('btn-export-setup').addEventListener('click',()=>{
+  try{
+    const blob=new Blob([JSON.stringify(exportExperiment())],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=url;a.download='world-engine-'+ENGINE_VERSION+'-setup.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+    $('share-status').textContent='Starting setup exported. Progress and mid-run edits are not included.';
+  }catch(error){$('share-status').textContent=error.message}
+});
+$('experiment-file').addEventListener('change',async e=>{
+  const file=e.target.files[0];if(!file)return;
+  try{
+    if(file.size>32*1024*1024)throw new Error('Setup file is too large (maximum 32 MiB).');
+    const config=validateExperiment(JSON.parse(await file.text()));
+    $('share-status').textContent='Loading starting setup…';
+    buildWorld(config.world.source==='generated'?'gen':config.world.source,config);
+  }catch(error){$('share-status').textContent=error.message}
+  finally{e.target.value=''}
+});
 $('followc').addEventListener('change',e=>{ui.follow=e.target.checked});
 function readImage(file){return new Promise((res,rej)=>{const img=new Image();const url=URL.createObjectURL(file);img.onload=()=>{const c=document.createElement('canvas');c.width=HW;c.height=HH;const x=c.getContext('2d');x.imageSmoothingEnabled=true;x.imageSmoothingQuality='high';x.drawImage(img,0,0,HW,HH);const d=x.getImageData(0,0,HW,HH).data;const g=new Float32Array(HW*HH);for(let i=0;i<g.length;i++)g[i]=(d[i*4]*0.299+d[i*4+1]*0.587+d[i*4+2]*0.114)/255;URL.revokeObjectURL(url);res({g,w:img.naturalWidth,h:img.naturalHeight})};img.onerror=()=>rej(new Error('That file could not be read as an image.'));img.src=url})}
 $('btn-import').addEventListener('click',async()=>{
@@ -855,9 +888,11 @@ async function boot(){
     loadPrefs();busy(true,'Loading Earth…');
     const [e,k]=await Promise.all([inflateB64(EARTH_ELEV_B64),inflateB64(KOPPEN_B64)]);
     EARTH=decodeEarth(e,k);
+    let config=null;
+    try{config=experimentFromHash(location.hash||'')}catch(error){$('share-status').textContent=error.message;showPane('setup')}
     let seed=null;try{const m=/seed-([A-Za-z0-9]+)/.exec(location.hash||'');if(m)seed=m[1]}catch(err){}
     $('hseed').value=seed||String(Math.floor(Math.random()*1e6));
-    buildWorld('earth');
+    if(config)buildWorld(config.world.source==='generated'?'gen':config.world.source,config);else buildWorld('earth');
   }catch(err){console.error(err);busy(true,'Earth could not be loaded here, so a generated world is used instead.');setTimeout(()=>buildWorld('gen'),800)}
 }
 boot();
