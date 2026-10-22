@@ -57,8 +57,8 @@ const CDEF=[
 ['floor','Interior moisture floor',0,0.95,0.01,0.75],
 ['orog','Mountain rainfall',0,5000,100,2400],
 ['recycle','Rainforest moisture recycling',0,1,0.01,0.9],
-['monsoon','Monsoon reach',0,1.2,0.01,0.62],
-['monsoonP','Monsoon rainfall (mm)',0,2500,50,1400],
+['monsoon','Monsoon reach',0,1.2,0.01,0.75],
+['monsoonP','Monsoon rainfall (mm)',0,2500,50,1700],
 ['maritime','West-coast ocean warmth (°C)',0,8,0.25,5.5],
 ['contKm','Continentality distance (km)',300,3000,50,650],
 ['seas','Maritime seasonal swing',0.05,0.4,0.01,0.165],
@@ -117,7 +117,7 @@ function genClimate(eHi){
   // mode 0: prevailing wind; 1: onshore flow from an eastern coast; 2: summer flow from tropical oceans
   const march=(len,idx,km,bp,outM,outO,outC,mode)=>{
     // Summer ocean moisture is depleted inland; do not replenish it over deserts.
-    let m=mode===2?0:1,prev=0,ds=0;const fl=mode?0:Math.min(0.95,CL.floor+CL.recycle*bp/2000),dr=mode===1?CL.dry*0.45:mode===2?CL.dry*0.6:CL.dry,rc=mode?0.05:0.25;
+    let m=mode===2?0:1,prev=0,ds=0;const fl=mode?0:Math.min(0.95,CL.floor+CL.recycle*bp/2000),dr=mode===1?CL.dry*0.3:mode===2?CL.dry*0.35:CL.dry,rc=mode?0.05:0.25;
     for(let st=0;st<(mode===2?len:2*len);st++){const i=idx(st%len),e=eHi[i];let rain=0;
       if(e<=0){m+=(1-m)*rc;prev=0;ds=0}
       else{const dh=e-prev;if(dh>0){rain=m*(1-Math.exp(-dh/1500));m-=rain}m+=(fl-m)*dr*(km/31);prev=e;ds+=km}
@@ -197,8 +197,15 @@ function gradeClimate(w,rawT,rawP,rawA){
 }
 
 /* ---------- world ---------- */
-const BIOMES=['Ocean','Ice','Tundra','Boreal forest','Temperate forest','Grassland','Steppe','Desert','Savanna','Tropical forest'];
-function biomeOf(T,Pp){
+const BIOMES=['Ocean','Ice','Tundra','Boreal forest','Temperate forest','Grassland','Steppe','Desert','Savanna','Tropical forest','Seasonal woodland'];
+function biomeOf(T,Pp,observed=0){
+  // Köppen observations distinguish seasonal woodland from arid grassland.
+  // Annual mean temperature alone mislabels humid subtropical China as savanna.
+  const g=kgGroup(observed);
+  if(g===1)return 7;if(g===2)return 6;
+  if(g===0)return observed===4?(Pp>=900?10:8):9;
+  if(g===3)return observed>=12&&observed<=14?10:4;
+  if(g===4)return T<5?3:4;
   if(T<-9)return 1;if(T<-1)return 2;if(T<5)return Pp<250?2:3;
   const t=Math.max(T,0);if(Pp<150+8*t)return 7;if(Pp<330+13*t)return 6;if(T>=20)return Pp<1300?8:9;return Pp<700?5:4;
 }
@@ -292,18 +299,20 @@ function genWorld(o){
   // suitability
   const sF=new Float32Array(N),sH=new Float32Array(N),nomad=new Uint8Array(N),biome=new Uint8Array(N);
   for(const i of landList){
-    const t=T[i],p=Pr[i],tw=t+amp[i]/2;biome[i]=biomeOf(t,p);
+    const t=T[i],p=Pr[i],tw=t+amp[i]/2;biome[i]=biomeOf(t,p,w.fitted&&w.kgGrid?w.kgGrid[i]:0);
     if(t<-9)continue;
     const half=amp[i]/2,gs=half<0.5?(t>6?12:0):(t-half>=6?12:t+half<=6?0:12*Math.acos(clamp((6-t)/half,-1,1))/Math.PI);
     w.gs=w.gs||new Float32Array(N);w.gs[i]=gs;
-    const tS=clamp((gs-4.3)/2.2,0,1)*clamp((tw-14)/7,0,1)*clamp((31-t)/5,0,1)*(t<2?clamp((t+4)/6,0,1):1)*(biomeOf(t,p)===3?0.45:1);
+    const tS=clamp((gs-4.3)/2.2,0,1)*clamp((tw-10)/8,0,1)*clamp((31-t)/5,0,1)*(t<2?clamp((t+4)/6,0,1):1)*(biomeOf(t,p)===3?0.45:1);
     // loess and black-earth soils: semi-arid temperate grassland soils are deep and fertile once worked
     const pS=Math.max(clamp((p-280)/450,0,1)*clamp((3400-p)/1600,0.25,1),t>9.5&&t<18?0.62*clamp((p-330)/120,0,1)*clamp((850-p)/150,0,1):0);
     const irr=rv[i]*clamp((tw-14)/6,0,1);
     const leach=elev[i]<1500?clamp((p-1300)/900,0,1)*clamp((t-21)/3,0,1)*(1-clamp((rv[i]-0.55)*2.5,0,0.8)):0;
     w.leach=w.leach||new Float32Array(N);w.leach[i]=leach;
     w.trop=w.trop||new Float32Array(N);w.trop[i]=elev[i]<1200?clamp((t-22)/4,0,1)*clamp((p-1100)/800,0,1):0;
-    sF[i]=Math.max(tS*pS,tS*irr*0.95)*(1-0.65*rough[i])*(elev[i]>3500?0.3:1)*(1-0.7*leach);
+    // A coarse mountain cell includes farmable valleys; cool-season crops do not
+    // need cereal-style hot summers. Retain frost, aridity and elevation limits.
+    sF[i]=Math.max(tS*pS,tS*irr*0.95)*(1-0.45*rough[i])*clamp((5000-elev[i])/1700,0,1)*(1-0.7*leach);
     sH[i]=clamp((tw-4)/10,0,1)*clamp((27-t)/7,0,1)*clamp((p-120)/180,0,1)*clamp((1100-p)/500,0.15,1)*(1-0.4*rough[i]);
     nomad[i]=(sH[i]>0.45&&sF[i]<0.3)?1:0;
   }
@@ -311,7 +320,7 @@ function genWorld(o){
   // travel cost (units of a half flat cell), tsetse belt, orbital monsoon zone
   const tcost=new Uint8Array(N),tsetse=new Uint8Array(N),monZone=new Float32Array(N),desert=new Uint8Array(N);
   for(const i of landList){const b=biome[i],t=T[i],p=Pr[i],la=lat[i]*180/Math.PI;
-    let c=2;if(b===7){c=8;desert[i]=1}else if(b===9)c=6;else if(b===1||b===2)c=6;else if(b===3)c=3;
+    let c=2;if(b===7){c=8;desert[i]=1}else if(b===9)c=6;else if(b===10)c=4;else if(b===1||b===2)c=6;else if(b===3)c=3;
     c+=Math.round(rough[i]*8);if(rv[i]>0.3)c=Math.max(1,c>>1);tcost[i]=Math.min(20,c);
     tsetse[i]=(t>22&&p>900&&Math.abs(la)<14)?1:0;
     if(p<520)monZone[i]=clamp((33-Math.abs(la))/8,0,1)*clamp((Math.abs(la)-9)/5,0,1)*(la>0?1:0.45)*clamp((520-p)/250,0,1)}
@@ -463,23 +472,23 @@ const TECH=[
  {k:'copper',n:'Bronze',era:2,pre:[0]},
  {k:'horse',n:'Horse riding',era:2,pre:[1]},
  {k:'sail',n:'Seafaring',era:1},
- {k:'writing',n:'Writing',era:2,pre:[0,3],em:{b:1/5000,pop:1.5e6,cells:4}},
+ {k:'writing',n:'Writing and accounting',era:2,pre:[0],em:{b:1/5000,pop:1.5e6,cells:4}},
  {k:'wheel',n:'Wheel and chariot',era:2,pre:[3],em:{b:1/5000,pop:1e6}},
  {k:'iron',n:'Ironworking',era:3,pre:[3,7,6],em:{b:1/12000,pop:3e6}},
  {k:'coin',n:'Coinage',era:4,pre:[6,8],em:{b:1/3600,pop:4e6}},
  {k:'law',n:'Law codes',era:4,pre:[6],em:{b:1/3200,pop:3e6,cells:15}},
- {k:'roads',n:'Roads',era:4,pre:[10,8,9],em:{b:1/3200,pop:4e6,cells:25}},
- {k:'nav',n:'Navigation',era:4,pre:[5,6,8],em:{b:1/3600,pop:2e6,coast:1}},
+ {k:'roads',n:'Road networks',era:4,pre:[6,10],em:{b:1/3200,pop:4e6,cells:25}},
+ {k:'nav',n:'Celestial navigation',era:4,pre:[5,6],em:{b:1/3600,pop:2e6,coast:1}},
  {k:'caval',n:'Heavy cavalry',era:5,pre:[4,8,10,9],em:{b:1/5600,pop:3e6,horse:1}},
- {k:'paper',n:'Paper',era:5,pre:[9,10,11],em:{b:1/5600,pop:6e6}},
- {k:'crops',n:'Crop rotation',era:5,pre:[8,10,11],em:{b:1/6400,pop:4e6}},
+ {k:'paper',n:'Portable records',era:5,pre:[6,10],em:{b:1/5600,pop:6e6}},
+ {k:'crops',n:'Intensive cropping',era:5,pre:[0,6,10],em:{b:1/3600,pop:1e6},d:'Rotations, intercropping and managed fields raise yields without requiring iron tools or animal-drawn ploughs.'},
  {k:'gun',n:'Gunpowder',era:6,pre:[14,13],em:{b:1/8000,pop:12e6}},
- {k:'ocean',n:'Ocean navigation',era:7,pre:[12,14,15],em:{b:1/7000,pop:5e6,coast:1}},
+ {k:'ocean',n:'Ocean-going ships',era:7,pre:[5,12,14],em:{b:1/1800,pop:3e6,coast:1,after:800},d:'Long-range sailing, navigation and portable charts support ocean expeditions and return trade routes.'},
  {k:'camel',n:'Camels',era:2,pre:[1]},
- {k:'grain',n:'Grain crops',era:1,pre:[0]},
+ {k:'grain',n:'Storable staples',era:1,pre:[0]},
  {k:'ard',n:'Scratch plough',era:2,pre:[0,1],pos:[0.5,0.3]},
  {k:'plough',n:'Heavy plough',era:5,pre:[20,8],em:{b:1/5200,pop:1.5e6,press:1,heavy:1},pos:[0.6,0.6]},
- {k:'manure',n:'Intensive manuring',era:3,pre:[0,1],em:{b:1/3000,pop:5e5,press:1},pos:[0.8,-0.2]},
+ {k:'manure',n:'Compost and manuring',era:3,pre:[0],em:{b:1/3000,pop:5e5,press:1},pos:[0.8,-0.2]},
  {k:'xcrops',n:'Crops from across the ocean',era:7,pre:[0]},
  {k:'kitesig',n:'Kite signalling',era:4,pre:[6,5],em:{b:1/16000,pop:2e6},pos:[0.5,-0.3],synth:1,d:'Signal kites relay orders along frontiers: administrative reach +15%.'},
  {k:'windcart',n:'Wind wagons',era:5,pre:[7,12],em:{b:1/16000,pop:2e6},pos:[-0.3,0.9],synth:1,d:'Sail-driven carts cross flat deserts and steppe: they open caravan routes like camels do.'},
@@ -544,7 +553,7 @@ const EARTH_HEARTHS=[
  {kind:'farm',lat:35,lon:109,y:-7000,crop:'millet',anim:'pigs and dogs',grain:1},
  {kind:'farm',lat:-6,lon:145,y:-7000,crop:'taro and bananas',anim:'pigs',grain:0},
  {kind:'farm',lat:18,lon:-97,y:-5000,crop:'maize, beans and squash',anim:'turkeys and dogs',grain:1},
- {kind:'farm',lat:-13,lon:-72,y:-5000,crop:'potatoes and quinoa',anim:'llamas and guinea pigs',grain:0.6},
+ {kind:'farm',lat:-13,lon:-72,y:-5000,crop:'potatoes and quinoa',anim:'llamas and guinea pigs',grain:0.9},
  {kind:'farm',lat:14,lon:2,y:-3000,crop:'sorghum and pearl millet',anim:'cattle',grain:1},
  {kind:'farm',lat:37,lon:-88,y:-2500,crop:'sunflowers and squash',anim:'dogs',grain:0.6},
  {kind:'copper',lat:39,lon:35,y:-4700},
@@ -558,6 +567,7 @@ const EARTH_HEARTHS=[
  {kind:'irrig',lat:32,lon:45.5,y:-5500},
  {kind:'irrig',lat:26.5,lon:32.5,y:-4200},
  {kind:'irrig',lat:28,lon:68.5,y:-3800},
+ {kind:'irrig',lat:-10.8,lon:-77.2,y:-3000},
  {kind:'irrig',lat:35,lon:110.5,y:-2800},
 ];
 const EARTH_SEEDS=[[5,25,'afr'],[33,40,'afro'],[48,10,'ie'],[22,78,'indo'],[35,110,'sino'],[5,105,'aus'],[-25,134,'pama'],[60,100,'alt'],[40,-100,'nam'],[-10,-60,'sam']];
@@ -576,7 +586,7 @@ function newHistory(hseed){
     firstTech:new Array(TECH.length).fill(null),lmFound:new Uint8Array(w.lmCount),regionFirst:{},medBest:{share:0,y:null,pol:0},chinaHist:[],medHist:[],farmCheck:null};
   const s=S;
   s.farm=tk[0];s.herd=tk[1];s.irrig=tk[2];s.metal=tk[3];s.horse=tk[4];s.sail=tk[5];s.admin=tk[6];s.wheel=tk[7];s.iron=tk[8];s.coin=tk[9];s.law=tk[10];s.roads=tk[11];s.nav=tk[12];s.caval=tk[13];s.paper=tk[14];s.crops=tk[15];s.gun=tk[16];s.ocean=tk[17];s.camel=tk[18];s.grain=tk[19];s.ard=tk[20];s.plough=tk[21];s.manure=tk[22];s.xcrops=tk[23];s.integ=new Float32Array(N);s.uni=new Float32Array(N);s.uniFam=new Int32Array(N).fill(-1);
-  prepEco(w);Object.assign(s,{forest:Float32Array.from(w.forest0),salt:new Float32Array(N),adapt:new Float32Array(N),dp:new Float32Array(N),car:new Float32Array(N),exit:new Float32Array(N),circE:Float32Array.from(w.circ),rp:new Float32Array(N),routes:[],carPairs:new Set(),cropX:new Set(),bfsPar:new Int32Array(N),bfsD:new Int16Array(N),bfsMark:new Int32Array(N),bfsStamp:0});
+  prepEco(w);Object.assign(s,{forest:Float32Array.from(w.forest0),salt:new Float32Array(N),adapt:new Float32Array(N),dp:new Float32Array(N),car:new Float32Array(N),exit:new Float32Array(N),circE:Float32Array.from(w.circ),rp:new Float32Array(N),routes:[],carPairs:new Set(),cropX:new Set(),seaRoutes:new Map(),bfsPar:new Int32Array(N),bfsD:new Int16Array(N),bfsMark:new Int32Array(N),bfsStamp:0});
   for(const i of w.landIdx)s.adapt[i]=w.mal[i]*0.5;
   s.orb0=w.isEarth?null:(r()*23000);
   for(const i of w.coastIdx)s.sail[i]=0.05;
@@ -670,7 +680,9 @@ function computeK(){
     const irr=s.irrig[i]*rv;
     const wf=1+(Math.min(dry,1.25)-1)*(1-0.75*irr);
     const T_=s.tk,hv=w.heavy[i],lc=w.leach[i];
-    let Kfa=ar*3.5*Math.max(w.sF[i],0.7*w.rv[i]*s.irrig[i])*s.farm[i]*s.fert[i]*wf*(1+0.8*s.metal[i]+0.9*s.iron[i]*(1-0.4*lc)+1.0*s.crops[i]+0.7*s.admin[i]+0.55*s.ard[i]*(1-0.6*hv)+0.7*s.plough[i]*hv+0.6*s.manure[i]+s.xcrops[i]*(0.25+0.8*lc+0.5*w.trop[i]+0.3*(1-w.sF[i]))+0.4*T_[26][i]*Math.max(lc,s.forest[i])+0.15*T_[28][i]*w.coast[i])*(1+rv*(0.25+2.2*s.irrig[i]));
+    let Kfa=ar*3.5*Math.max(w.sF[i],0.7*w.rv[i]*s.irrig[i])*s.farm[i]*s.fert[i]*wf*(1+0.8*s.metal[i]+0.9*s.iron[i]*(1-0.4*lc)+3.0*s.crops[i]+0.7*s.admin[i]+0.55*s.ard[i]*(1-0.6*hv)+0.7*s.plough[i]*hv+0.6*s.manure[i]+s.xcrops[i]*(0.25+0.8*lc+0.5*w.trop[i]+0.3*(1-w.sF[i]))+0.4*T_[26][i]*Math.max(lc,s.forest[i])+0.15*T_[28][i]*w.coast[i])*(1+rv*(0.25+2.2*s.irrig[i]));
+    // Terraces, canals and managed fertility recover some highland valley yield.
+    Kfa*=1+0.65*w.rough[i]*Math.max(s.irrig[i],s.manure[i],s.admin[i]);
     Kfa*=(0.45+0.55*(1-s.forest[i]))*(1-0.6*s.salt[i])*(1-0.5*w.oncho[i]);
     if(w.T[i]<12)Kfa*=clamp(1+0.18*dT,0.4,1.35);
     // heavy, wet temperate forest soils: hard to clear and work until iron axes and ploughs
@@ -730,32 +742,90 @@ function virginSoil(tgt,src){
     s.outbreaks.push(o);s.infect[tgt]=3;s.ob[tgt]=o.id;s.inf.push(tgt);
   }
 }
-function seaHop(){
-  const s=S,w=WD,r=s.r,C=w.coastIdx;if(!C.length)return;
-  const ex=C.length*0.004*P.seafaring;let tries=Math.floor(ex)+(r()<ex%1?1:0);
-  while(tries-->0){
-    const i=C[(r()*C.length)|0];if(s.pop[i]<30)continue;
-    const sl=s.sail[i];if(r()>0.04+0.5*sl)continue;
-    const ang=r()*6.2832,dx=Math.cos(ang),dy=Math.sin(ang)*0.8;
-    const range=2+Math.floor(sl*28)+((r()*3)|0)+(s.nav[i]>0.5?14:0)+(s.ocean[i]>0.5?70:0);
-    let x=w.cxA[i]+0.5,y=w.cyA[i]+0.5,seen=0,tgt=-1;
-    for(let st=0;st<range*1.5;st++){x+=dx*0.7;y+=dy*0.7;if(y<0||y>=H)break;
-      const j=Math.floor(y)*W+((Math.floor(x)%W)+W)%W;if(!w.land[j]){seen=1;continue}if(seen){tgt=j;break}}
-    if(tgt<0||w.T[tgt]<-9)continue;
-    if(s.pop[tgt]<1){
-      s.pop[tgt]=Math.min(60+s.pop[i]*0.02,s.K[tgt]*0.5+1);s.eth[tgt]=s.eth[i];s.rel[tgt]=s.rel[i];s.s[tgt]=0.4;
-      for(const f of s.tk)f[tgt]=Math.max(f[tgt],f[i]*0.8);s.admin[tgt]*=0.3;
-      const lm=w.lm[tgt];
-      if(!s.lmFound[lm]){s.lmFound[lm]=1;if(w.lmSize[lm]>=4){const e=s.eths[s.eth[i]];chron('migration',`Seafarers of the ${e.name} reach an unpeopled ${w.lmSize[lm]>60?'land':'island'}.`,tgt,[RE(e)])}}
-    }else if(s.eth[tgt]!==s.eth[i]){
-      for(const f of s.tk)f[tgt]=Math.max(f[tgt],f[i]*0.5);
-      if(s.ocean[i]>0.5&&w.lm[tgt]!==w.lm[i]){
-        virginSoil(tgt,i);cropExchange(i,tgt);mixIn(tgt,s.eth[i],0.05);
-        const e1=s.eths[s.eth[i]],e2=s.eths[s.eth[tgt]],key=e1.fam+':'+e2.fam;
-        if(!s.contacts)s.contacts=new Set();
-        if(e1.fam!==e2.fam&&!s.contacts.has(key)&&w.lmSize[w.lm[tgt]]>200){s.contacts.add(key);chron('migration',`Ocean-going ships of the ${e1.name} make landfall among the ${e2.name}, across the open ocean.`,tgt,[RE(e1),RE(e2)]);spot(`Ships of the ${e1.name} reach the ${e2.name} across the ocean`,tgt,[RE(e1),RE(e2)])}
+// Voyage ranges are kilometres, independent of latitude and map resolution.
+function voyageRange(i){
+  return 120+1400*S.sail[i]+(S.nav[i]>0.5?1500:0)+(S.ocean[i]>0.5?8500:0);
+}
+function traceVoyage(i,bearing,rangeKm){
+  const w=WD,lat=w.lat[i],lon=(w.cxA[i]+0.5)/W*2*Math.PI-Math.PI;
+  const sinLat=Math.sin(lat),cosLat=Math.cos(lat),path=[i];let water=false;
+  // Great-circle arcs respect the date line and do not jump across continents.
+  for(let km=45;km<=rangeKm;km+=45){
+    const d=km/6371,la=Math.asin(clamp(sinLat*Math.cos(d)+cosLat*Math.sin(d)*Math.cos(bearing),-1,1));
+    const lo=lon+Math.atan2(Math.sin(bearing)*Math.sin(d)*cosLat,Math.cos(d)-sinLat*Math.sin(la));
+    const j=cellAt(la*180/Math.PI,lo*180/Math.PI);
+    if(path[path.length-1]!==j)path.push(j);
+    if(!w.land[j]){if(w.T[j]<-5)return null;water=true;continue}
+    if(water)return w.T[j]>-9?{from:i,to:j,km,path}:null;
+    if(km>180)return null; // leave the coastal cell, never march across land
+  }
+  return null;
+}
+function seaContact(voyage){
+  const s=S,w=WD,i=voyage.from,tgt=voyage.to;
+  if(s.pop[i]<30||s.eth[i]<0)return;
+  if(s.pop[tgt]<1){
+    s.pop[tgt]=Math.min(60+s.pop[i]*0.02,s.K[tgt]*0.5+1);s.eth[tgt]=s.eth[i];s.rel[tgt]=s.rel[i];s.s[tgt]=0.4;
+    for(const f of s.tk)f[tgt]=Math.max(f[tgt],f[i]*0.8);s.admin[tgt]*=0.3;
+    const lm=w.lm[tgt];
+    if(!s.lmFound[lm]){s.lmFound[lm]=1;if(w.lmSize[lm]>=4){const e=s.eths[s.eth[i]];chron('migration',`Seafarers of the ${e.name} reach an unpeopled ${w.lmSize[lm]>60?'land':'island'}.`,tgt,[RE(e)])}}
+  }else if(s.eth[tgt]!==s.eth[i]){
+    for(const f of s.tk)f[tgt]=Math.max(f[tgt],f[i]*0.5);
+    if(s.ocean[i]>0.5&&w.lm[tgt]!==w.lm[i]){
+      virginSoil(tgt,i);cropExchange(i,tgt);
+      const e1=s.eths[s.eth[i]],e2=s.eths[s.eth[tgt]],key=[e1.fam,e2.fam].sort().join(':');
+      if(!s.contacts)s.contacts=new Set();
+      if(e1.fam!==e2.fam&&!s.contacts.has(key)&&w.lmSize[w.lm[tgt]]>200){
+        s.contacts.add(key);chron('migration',`Ocean-going ships of the ${e1.name} make landfall among the ${e2.name}, across the open ocean. A return sea route opens for trade and ideas.`,tgt,[RE(e1),RE(e2)]);
+        spot(`Ships of the ${e1.name} reach the ${e2.name} across the ocean`,tgt,[RE(e1),RE(e2)]);
       }
     }
+  }
+  // First contact is not conquest: no automatic replacement of existing peoples.
+  if(voyage.km>=500&&s.nav[i]>0.5&&s.pop[tgt]>=1){
+    const key=[i,tgt].sort((a,b)=>a-b).join(':');
+    const route=s.seaRoutes.get(key);
+    if(route)route.last=s.year;
+    else{
+      if(s.seaRoutes.size>=128){
+        // Local traffic must not fill the route budget before an ocean discovery.
+        let drop=null;
+        for(const entry of s.seaRoutes){if(!drop||entry[1].last<drop[1].last||(entry[1].last===drop[1].last&&entry[1].km<drop[1].km))drop=entry}
+        s.seaRoutes.delete(drop[0]);
+      }
+      s.seaRoutes.set(key,{...voyage,last:s.year});
+    }
+  }
+}
+function seaTrade(){
+  const s=S;if(s.year%5!==0)return;
+  for(const [key,R] of s.seaRoutes){
+    const a=R.from,b=R.to;
+    if(s.pop[a]<1||s.pop[b]<1||Math.max(voyageRange(a),voyageRange(b))<R.km){
+      if(s.year-R.last>50)s.seaRoutes.delete(key);continue;
+    }
+    R.last=s.year;
+    // Return voyages carry knowledge both ways; mature techniques take decades.
+    for(const f of s.tk){const d=(f[a]-f[b])*0.08*P.techDiff;if(d>0)f[b]=Math.min(1,f[b]+d);else f[a]=Math.min(1,f[a]-d)}
+    cropExchange(a,b);virginSoil(b,a);virginSoil(a,b);
+  }
+}
+function seaHop(){
+  const s=S,w=WD,r=s.r,C=w.coastIdx;if(!C.length||P.seafaring<=0)return;
+  seaTrade();
+  // Developed ports actively outfit expeditions, instead of being drowned out
+  // by thousands of coast cells that know little about ocean sailing.
+  const ports=C.filter(i=>s.pop[i]>=1000&&s.nav[i]>0.5&&s.ocean[i]>0.5);
+  const ex=(C.length*0.004+Math.min(8,ports.length*0.025))*P.seafaring;
+  let tries=Math.floor(ex)+(r()<ex%1?1:0),attempt=0;
+  while(tries-->0){
+    const pool=ports.length&&attempt++%3===0?ports:C,i=pool[(r()*pool.length)|0];
+    if(s.pop[i]<30||s.eth[i]<0||r()>0.04+0.5*s.sail[i])continue;
+    let bearing=r()*2*Math.PI;
+    // Trade winds favour westward tropical passages; westerlies favour return
+    // passages further poleward. Other headings remain available to explorers.
+    if(s.ocean[i]>0.5&&r()<0.5)bearing=(Math.abs(w.lat[i])<Math.PI/6?1.5:0.5)*Math.PI+gauss(r)*0.65;
+    const voyage=traceVoyage(i,bearing,voyageRange(i));if(voyage)seaContact(voyage);
   }
 }
 function firstTech(k,cell,o){
@@ -763,7 +833,7 @@ function firstTech(k,cell,o){
   const t=TECH[k],e=s.eths[s.eth[cell]]||null;
   const where=o?`the ${o.full}`:e?`the ${e.name}`:'a distant people';
   const refs=o?[R_(o)]:e?[RE(e)]:[];
-  const verb={plough:'forge a heavy iron plough that turns the wet, clay soils',manure:'begin to gather manure and night soil to feed their fields',kitesig:'fly signal kites to send orders across the realm',windcart:'build sail-driven wagons that cross the flat deserts',fungal:'cultivate fungal gardens on the forest floor',ledger:'build geared engines to keep the treasury accounts',tidemill:'harness the tides to turn mills and forge hammers',feverbark:'brew a bark remedy that tames the marsh fevers',saltflush:'dig flushing canals that rinse the salt from their fields',pigeon:'train birds to carry messages between cities',irrig:'dig the first irrigation canals',wheel:'build the first wheeled carts and chariots',writing:'begin to keep written records',iron:'learn to smelt iron',coin:'strike the first coins',law:'write down the first law code',roads:'lay the first long paved roads',nav:'learn to steer by the stars across open seas',caval:'field the first armoured horsemen',paper:'make the first paper',crops:'rotate their fields and add fodder crops',gun:'make the first gunpowder weapons',ocean:'build ships that can cross oceans'}[t.k];
+  const verb={plough:'forge a heavy iron plough that turns the wet, clay soils',manure:'begin to gather manure and night soil to feed their fields',kitesig:'fly signal kites to send orders across the realm',windcart:'build sail-driven wagons that cross the flat deserts',fungal:'cultivate fungal gardens on the forest floor',ledger:'build geared engines to keep the treasury accounts',tidemill:'harness the tides to turn mills and forge hammers',feverbark:'brew a bark remedy that tames the marsh fevers',saltflush:'dig flushing canals that rinse the salt from their fields',pigeon:'train birds to carry messages between cities',irrig:'dig the first irrigation canals',wheel:'build the first wheeled carts and chariots',writing:'develop writing and accounting systems',iron:'learn to smelt iron',coin:'strike the first coins',law:'write down the first law code',roads:'lay the first long paved roads',nav:'learn to steer by the stars across open seas',caval:'field the first armoured horsemen',paper:'develop portable records for administration and navigation',crops:'intensify farming with managed fields, rotations and intercropping',gun:'make the first gunpowder weapons',ocean:'build ocean-going ships and prepare charts for long voyages'}[t.k];
   if(verb){chron('ideas',`Scholars and craftsmen of ${where} ${verb}${t.synth?', a path our own history never took':''}.`,cell,refs);if(k>=8)spot(`${t.n} first appears in ${where}`,cell,refs)}
 }
 function techStep(a0,b0){if(a0==null){a0=0;b0=1}
@@ -797,6 +867,11 @@ function techStep(a0,b0){if(a0==null){a0=0;b0=1}
         let m=0;if(nj0>=0)m=Math.max(m,T[f][nj0]);if(nj1>=0)m=Math.max(m,T[f][nj1]);if(nj2>=0)m=Math.max(m,T[f][nj2]);if(nj3>=0)m=Math.max(m,T[f][nj3]);if(m<0.5)t*=pi?0.994:0.985}
       if(lowC&&t>0)t*=1-loss*(f===0?0.3:1);
       A[i]=t;
+    }
+    // Village-scale soil management predates states and draft animals. Without
+    // this path highland farmers cannot grow the surplus needed to form a state.
+    if(s.farm[i]>0.75&&s.manure[i]<0.5&&w.sF[i]>0.2&&conn>12000&&s.pop[i]/Math.max(1,s.K[i])>0.75&&r()<0.001*P.invent){
+      seedTech(s.manure,i,1,1);firstTech(22,i,po);
     }
     if(!s.firstTech[2]||s.irrig[i]<0.5){if(s.farm[i]>0.8&&w.rv[i]>0.25&&w.Pr[i]<1000&&s.pop[i]/w.area[i]>4&&r()<0.0008*P.invent){seedTech(s.irrig,i,1,1);firstTech(2,i,po)}}
     const ri=s.rel[i];
@@ -1009,6 +1084,16 @@ function collapse(o){
   if(o.maxCells>=20&&lost>=5)chron('fall',`The ${o.full} loses its grip; ${lost} provinces fall away into stateless hands.`,o.capital,[R_(o)],'Its cohesion had decayed below the point where it could hold together.');
 }
 function milAt(c){const s=S,w=WD,ts=w.tsetse[c]?0.15:1;return 1+0.4*s.metal[c]+0.3*s.wheel[c]*ts+0.5*s.iron[c]+ts*(s.horse[c]*(0.3+(w.nomad[c]?0.9:0))+0.6*s.caval[c]*(w.nomad[c]?1:0.5))+1.2*s.gun[c]+0.2*s.admin[c]+0.3*s.camel[c]*w.desert[c]}
+function stateFormationChance(i){
+  const s=S,w=WD,dens=s.pop[i]/w.area[i],crop=cerealEff(i);
+  const agr=s.farm[i]*Math.max(w.sF[i],0.7*w.rv[i]*s.irrig[i]);
+  if(agr<=0.35||dens<=1.5||w.nomad[i]||localPop(i)<FLOOR.chief*3*P.floor)return 0;
+  const communal=0.35*s.farm[i]*crop*(0.4+0.6*s.circE[i]);
+  const organization=Math.max(communal,(s.irrig[i]+0.5*w.rv[i])*clamp(1-(w.Pr[i]-300)/700,0.2,1),0.5*s.metal[i],s.iron[i],0.8*s.admin[i]);
+  return P.formRate*0.0012*(0.2+1.6*P.circ*s.circE[i])*(0.4+s.s[i])*(1+Math.min(2,dens/15))
+    *Math.min(1,0.05+communal+s.metal[i]+s.admin[i]+s.horse[i]*0.5+Math.min(0.4,Math.max(0,dens-5)/25)+0.15*Math.max(0,s.circE[i]-0.5))
+    *(0.03+0.97*crop*crop)*Math.pow(0.05+0.95*organization,1.7);
+}
 function cerealEff(i){return S.grain[i]*(1-0.75*WD.leach[i])*(1-0.65*WD.trop[i])}
 function strength(o){return o.kind==='horde'?o.pop+o.loot*3:(o.tax||0)*1.6+0.25*o.pop}
 function power(o){return Math.pow(strength(o)+1,P.scaleExp)*(0.3+o.S)*milAt(o.capital)}
@@ -1439,11 +1524,9 @@ function* politicsG(){
     if(!o.fE&&o.cells>=100){o.fE=1;const f=figFor(o,Rn,'ruler');deed(f,`Ruled the ${o.full} at ${o.cells} provinces`,[R_(o)]);
       chron('rise',`The ${o.base} realm grows to ${o.cells} provinces under ${rulerName(o)}.`,c,[R_(o),RF(f)]);spot(`The ${o.full} reaches ${o.cells} provinces`,c,[R_(o)])}
     // invention, tied to cultural vigour
-    if(o.kind==='state')for(let k=6;k<TECH.length;k++){const T=TECH[k],em=T.em;if(!em||s.tk[k][c]>=0.5)continue;
-      const emP=em.pop*0.6;if(o.pop<emP*0.5||(em.cells&&o.cells<em.cells)||(em.coast&&!w.coast[c]&&o.coastN<2)||(em.horse&&s.horse[c]<0.6)||(em.heavy&&(o.hvN||0)<3))continue;
-      let ok=true;for(const p of T.pre)if(s.tk[p][c]<0.7){ok=false;break}if(!ok)continue;
-      const fit=techFit(o,k),bos=em.press?clamp((o.press-0.7)*5,0,2):1;
-      if(r()<em.b*P.invent*Math.min(3,Math.sqrt(o.pop/emP))*(0.7+0.9*o.cult)*bos*(T.synth?fit*fit*2.5:0.6+0.8*fit)){
+    if(o.kind==='state')for(let k=6;k<TECH.length;k++){
+      const chance=inventionChance(o,k);if(!chance)continue;
+      if(r()<chance){
         seedTech(s.tk[k],c,1,1);if(k===6)for(const i of L)if(pol[i]===id)s.admin[i]=Math.max(s.admin[i],0.35);
         firstTech(k,c,o)}}
     // faith
@@ -1515,9 +1598,10 @@ function* politicsG(){
       if(threat&&!horde&&o.S>0.45&&o.gate>0.7&&s.admin[o.capital]>0.3&&s.fort[i]<1)s.fort[i]=Math.min(1,s.fort[i]+0.006*fz*(1+s.roads[i]));
     }else{
       sv+=fr?asR*0.6*sv*(1-sv):(0.3-sv)*0.02;s.s[i]=clamp(sv,0.02,1);
-      if(pi>=1){const dens=pi/w.area[i],agr=s.farm[i]*Math.max(w.sF[i],0.7*w.rv[i]*s.irrig[i]),past=s.herd[i]*Math.max(w.sH[i],w.desert[i]*s.camel[i]*0.6);
-        if(agr>0.35&&dens>(s.irrig[i]>0.5?3.5:4.5)&&!w.nomad[i]&&localPop(i)>=FLOOR.chief*3*P.floor){
-          if(r()<P.formRate*0.0012*(0.2+1.6*P.circ*s.circE[i])*(0.4+s.s[i])*(1+Math.min(2,dens/15))*Math.min(1,0.05+s.metal[i]+s.admin[i]+s.horse[i]*0.5+Math.min(0.4,Math.max(0,dens-5)/25)+0.15*Math.max(0,s.circE[i]-0.5))*(0.03+0.97*cerealEff(i)*cerealEff(i))*Math.pow(0.05+0.95*Math.max((s.irrig[i]+0.5*w.rv[i])*clamp(1-(w.Pr[i]-300)/700,0.2,1),0.5*s.metal[i],s.iron[i],0.8*s.admin[i]),1.7)){
+      if(pi>=1){const dens=pi/w.area[i],past=s.herd[i]*Math.max(w.sH[i],w.desert[i]*s.camel[i]*0.6);
+        const founding=stateFormationChance(i);
+        if(founding>0){
+          if(r()<founding){
             const id=newPolity(i,null);
             for(let d=0;d<4;d++){const j=w.nb[i*4+d];if(j>=0&&w.land[j]&&!pol[j]&&s.eth[j]===ei&&pop[j]>=1&&r()<0.5){pol[j]=id;s.dist[j]=2}}}}
         else if(past>0.3&&dens>0.5&&(w.nomad[i]||w.desert[i])&&fr){
@@ -1596,8 +1680,8 @@ function cityPass(){
   for(const id of s.alive)pols[id].cityPop=0;
   for(const i of w.landIdx){const p=s.pol[i];
     if(s.city[i]>=0){if(p)pols[p].cityPop+=s.pop[i];continue}
-    if(s.pop[i]<120000||s.farm[i]<0.5||!p)continue;
-    const o=pols[p];if(i!==o.capital&&s.pop[i]<Math.max(150000,o.mp*0.6))continue;
+    if(s.pop[i]<60000||s.farm[i]<0.5||!p)continue;
+    const o=pols[p];if(i!==o.capital&&s.pop[i]<Math.max(90000,o.mp*0.6))continue;
     const L=langAt(i);s.city[i]=s.cities.length;s.cities.push({name:cityWord(L,r),cell:i,born:s.year,eth:s.eth[i],peak:s.pop[i]})}
   for(const c of s.cities)if(s.pop[c.cell]>c.peak)c.peak=s.pop[c.cell];
 }
@@ -1673,6 +1757,17 @@ function prepEco(w){
   Object.assign(w,{forest0,heavy,mal,oncho,circ,nT,nM,nN,nD,ecoReady:true});
 }
 // how strongly a place's people are tied to a technique's ecological niche
+// Multiple societies developed accounting and roads without iron, wheels or
+// coinage. Gate the practical skills themselves rather than one regional sequence.
+function inventionChance(o,k){
+  const s=S,w=WD,T=TECH[k],em=T.em,c=o.capital;
+  if(!em||s.tk[k][c]>=0.5)return 0;
+  const emP=em.pop*0.6;
+  if((em.after&&w.isEarth&&s.year<em.after)||o.pop<emP*0.5||(em.cells&&o.cells<em.cells)||(em.coast&&!w.coast[c]&&o.coastN<2)||(em.horse&&s.horse[c]<0.6)||(em.heavy&&(o.hvN||0)<3))return 0;
+  if(T.pre.some(p=>s.tk[p][c]<0.7))return 0;
+  const fit=techFit(o,k),bos=em.press?clamp((o.press-0.7)*5,0,2):1;
+  return em.b*P.invent*Math.min(3,Math.sqrt(o.pop/emP))*(0.7+0.9*o.cult)*bos*(T.synth?fit*fit*2.5:0.6+0.8*fit);
+}
 function techFit(o,k){const p=TECH[k].pos;if(!p||!o.fac)return 1;const dx=p[0]-o.fac[0],dy=p[1]-o.fac[1];return Math.exp(-(dx*dx+dy*dy)/0.6)}
 function ecoD(i,o){const v=o.ni;if(!v)return 0;const w=WD,a=w.nT[i]-v[0],b=w.nM[i]-v[1],c=w.nN[i]-v[2],d=w.nD[i]-v[3];return Math.sqrt(a*a+b*b+c*c+d*d)}
 // land with nothing a state can tax: empty, or held by foragers with no fields or herds worth the name
@@ -1781,7 +1876,7 @@ function caravanPass(){
 }
 // the exchange of crops between long-separated farming worlds (Crosby)
 function cropExchange(a,b){
-  const s=S,w=WD;if(s.farm[a]<0.5||s.farm[b]<0.5||w.lm[a]===w.lm[b]||w.lmSize[w.lm[a]]<200||w.lmSize[w.lm[b]]<200)return;
+  const s=S,w=WD;if(s.farm[a]<0.5||s.farm[b]<0.5||Math.max(s.ocean[a],s.ocean[b])<=0.5||w.lm[a]===w.lm[b]||Math.max(w.lmSize[w.lm[a]],w.lmSize[w.lm[b]])<200)return;
   const key=[w.lm[a],w.lm[b]].sort().join(':');if(s.cropX.has(key))return;s.cropX.add(key);
   seedTech(s.xcrops,a,1,1);seedTech(s.xcrops,b,1,1);s.firstTech[23]=s.firstTech[23]||{y:s.year,cell:b};
   const ca=cropFor(w.T[a],w.Pr[a],w.rv[a])[0],cb=cropFor(w.T[b],w.Pr[b],w.rv[b])[0],ea=s.eths[s.eth[a]],eb=s.eths[s.eth[b]];

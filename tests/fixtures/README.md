@@ -12,3 +12,10 @@ is scientifically accurate or cover every long-term simulation outcome.
 
 If an intentional simulation change requires updating these expectations, review
 and explain the changed results rather than regenerating fixtures just to pass.
+
+Version 0.8.0 intentionally changes climate, agricultural suitability, technology
+and voyages. Current tests retain the original **elevation and land-cell** checks;
+the old climate and population hashes remain here as historical reference.
+Climate and history are now checked for fixed-seed reproducibility, with targeted
+regional assertions in `../regional.test.cjs`. No new expected hashes were generated
+to hide the behavior changes.

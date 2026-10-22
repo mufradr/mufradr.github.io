@@ -1,6 +1,5 @@
 const fs = require('node:fs');
 const path = require('node:path');
-const vm = require('node:vm');
 const { inflateSync } = require('node:zlib');
 const { createHash } = require('node:crypto');
 const root = path.resolve(__dirname, '..');
@@ -9,19 +8,17 @@ const root = path.resolve(__dirname, '..');
 function loadCore() {
   const source = ['assets/earth.js', 'js/core.js']
     .map(f => fs.readFileSync(path.join(root, f), 'utf8')).join('\n');
-  const context = vm.createContext({ inflateSync, atob });
-  vm.runInContext(source + `
-    globalThis.app = {
+  return Function('inflateSync', source + `
+    return {
       earth() {
         const e = decodeEarth(inflateSync(Uint8Array.from(atob(EARTH_ELEV_B64), c => c.charCodeAt(0))), inflateSync(Uint8Array.from(atob(KOPPEN_B64), c => c.charCodeAt(0))));
         WD = genWorld({seed:'Earth', earth:true, height:e.height, kg:e.kg, fit:true});
       },
       generated() { WD = genWorld({seed:'regression-world', landFrac:P.landFrac}); },
       start() { newHistory('regression-history'); },
-      step, get world() {return WD;}, get state() {return S;}
+      step, inspect(code) {return eval(code);}, get world() {return WD;}, get state() {return S;}
     };
-  `, context, {filename:'simulation.js'});
-  return context.app;
+  `)(inflateSync);
 }
 function hash(array) {
   return createHash('sha256').update(Buffer.from(array.buffer, array.byteOffset, array.byteLength)).digest('hex');

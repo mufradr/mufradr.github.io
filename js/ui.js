@@ -25,7 +25,7 @@ async function inflateB64(b64){
 }
 
 /* ---------- base painting ---------- */
-const BCOL=[[0,0,0],[234,239,240],[170,175,158],[104,124,98],[121,145,96],[174,178,121],[196,186,137],[216,199,160],[188,177,112],[84,126,79]];
+const BCOL=[[0,0,0],[234,239,240],[170,175,158],[104,124,98],[121,145,96],[174,178,121],[196,186,137],[216,199,160],[188,177,112],[84,126,79],[139,160,91]];
 function paintBase(){
   const w=WD,c=document.createElement('canvas');c.width=HW;c.height=HH;const ctx=c.getContext('2d'),img=ctx.createImageData(HW,HH),d=img.data,e=w.eHi;
   for(let y=0;y<HH;y++)for(let x=0;x<HW;x++){
@@ -33,7 +33,7 @@ function paintBase(){
     const sh=clamp(1+((e[xl]-v)*0.0011+(e[yu]-v)*0.0011)*(v>0?1:0.2),0.6,1.3);
     let R,G,B;
     if(v<=0){const t=clamp(-v/5500,0,1);R=94-62*t;G=142-80*t;B=162-72*t;if(v>-200){R+=18;G+=14;B+=8}}
-    else{const b=biomeOf(w.tHi[i],w.pHi[i]);[R,G,B]=BCOL[b];
+    else{const b=biomeOf(w.tHi[i],w.pHi[i],w.fitted&&w.kgHi?w.kgHi[i]:0);[R,G,B]=BCOL[b];
       if(v>2200&&b!==1){const t=clamp((v-2200)/2600,0,1);R+=(158-R)*t;G+=(150-G)*t;B+=(140-B)*t}
       if(v>4600&&w.tHi[i]<2){R=G=B=232}}
     d[i*4]=R*sh;d[i*4+1]=G*sh;d[i*4+2]=B*sh;d[i*4+3]=255;
@@ -162,6 +162,16 @@ function drawMap(){
       each(pts[0][0],pts[0][1],(sx0,sy0)=>{ctx.beginPath();let px=pts[0][0];ctx.moveTo(sx0,sy0);
         for(let k=1;k<pts.length;k++){let dx=pts[k][0]-px;if(Math.abs(dx)>HW/2){dx-=Math.sign(dx)*HW}px+=dx;ctx.lineTo(sx0+(px-pts[0][0])*k_,sy0+(pts[k][1]-pts[0][1])*k_)}ctx.stroke()})}
     ctx.setLineDash([])}
+  // Established overseas routes, retained after the first expedition returns.
+  if(['political','alliances','peoples','religion','knowledge'].includes(m)&&s.seaRoutes){
+    ctx.lineWidth=1.5;ctx.strokeStyle='rgba(65,160,210,.9)';ctx.setLineDash([5,4]);
+    for(const R of s.seaRoutes.values()){
+      const pts=R.path.map(cellXY);if(pts.length<2)continue;
+      each(pts[0][0],pts[0][1],(sx0,sy0)=>{ctx.beginPath();let px=pts[0][0];ctx.moveTo(sx0,sy0);
+        for(let q=1;q<pts.length;q++){let dx=pts[q][0]-px;if(Math.abs(dx)>HW/2)dx-=Math.sign(dx)*HW;px+=dx;ctx.lineTo(sx0+(px-pts[0][0])*k_,sy0+(pts[q][1]-pts[0][1])*k_)}ctx.stroke()});
+    }
+    ctx.setLineDash([]);
+  }
   // migrations
   if(m==='political'||m==='alliances'||m==='peoples'||m==='mixing'){
     for(const M of s.migs){if(M.done&&s.year-M.end>25)continue;if(M.path.length<2)continue;
@@ -209,7 +219,7 @@ function drawLegend(){
   const rampBox=(t,a,b)=>`<div>${t}</div><div class="ramp" style="background:${rampCss()}"></div><div class="row"><span>${a}</span><span>${b}</span></div>`;
   const keys=list=>'<div class="keys">'+list.map(([c,l])=>`<span><i style="background:rgb(${c})"></i>${l}</span>`).join('')+'</div>';
   switch(m){
-    case'political':h='Each colour is a state. Hatched, faint areas are nomad confederations; pale areas are wasteland a state only claims. Dotted tan lines are caravan routes. Red borders are war fronts; dark dashed lines are fortified frontiers; amber trails are peoples on the move. Click a state to open its page.';break;
+    case'political':h='Each colour is a state. Hatched, faint areas are nomad confederations; pale areas are wasteland a state only claims. Dotted tan lines are caravan routes; dashed blue lines are overseas trade routes. Red borders are war fronts; dark dashed lines are fortified frontiers; amber trails are peoples on the move. Click a state to open its page.';break;
     case'soil':h=rampBox('Soil fertility (farmland only; worn-out soils are cool, fresh ones warm)','depleted','fresh')+keys([[[235,235,225],'Salt-poisoned fields']])+'<p style="margin:6px 0 0;opacity:.85">Crowded fields wear out unless rested, manured or rotated; floodplains renew each year; irrigation in dry lands slowly salts the soil.</p>';break;
     case'forest':h=keys([[[34,110,52],'Standing forest'],[[196,120,60],'Cleared or lost forest']])+'<p style="margin:6px 0 0;opacity:.85">Farmers clear forest to plant; smelting eats charcoal; abandoned land grows back. Stripped hillsides erode.</p>';break;
     case'inequality':h=rampBox('Inequality within each state','equal','extreme')+'<p style="margin:6px 0 0;opacity:.85">Crowding and long peace concentrate wealth, faster where the plough makes land the prize. War, revolution, collapse and plague level it.</p>';break;
@@ -224,7 +234,7 @@ function drawLegend(){
     case'knowledge':{
       let share='';if(S&&S.stats.length){}
       const tp=worldPop();
-      h=`Pick techniques. Gold: knows all picked; blue: knows some.${ui.know.size?'':' With none picked, colour shows how many techniques each place knows.'}<div class="kchips">`+TECH.map(t=>`<button type="button" data-k="${t.k}" aria-pressed="${ui.know.has(t.k)}" title="${t.synth?esc('Synthesized: '+t.d):''}">${t.synth?'✦ ':''}${t.n}<small>${tp?Math.round(techShare(TI[t.k])/tp*100)+'%':''}</small></button>`).join('')+'</div>';
+      h=`Pick techniques. Gold: knows all picked; blue: knows some.${ui.know.size?'':' With none picked, colour shows how many techniques each place knows.'}<div class="kchips">`+TECH.map(t=>`<button type="button" data-k="${t.k}" aria-pressed="${ui.know.has(t.k)}" title="${esc([t.synth?'Synthesized technique.':'',t.d||'',t.pre?'Requires: '+t.pre.map(k=>TECH[k].n).join(', ')+'.':'',t.em&&t.em.after?'Earth: available from '+t.em.after+' CE.':''].filter(Boolean).join(' '))}">${t.synth?'✦ ':''}${t.n}<small>${tp?Math.round(techShare(TI[t.k])/tp*100)+'%':''}</small></button>`).join('')+'</div>';
       break}
     case'era':h='Era each place has reached, from what it knows.'+keys(ERAS.map((n,k)=>[ERA_COL[k],n]));break;
     case'density':h=rampBox('People per km²','0.01','100');break;
@@ -533,10 +543,10 @@ function renderChecks(){
     const fc=s.farmCheck,fn=s.farmNow;
     if(fn){h+=`<h3 class="sec">Farming where there was none</h3><p class="note" style="margin-top:0">Share of peopled provinces farming in regions that had little or no farming in the real world by 1 CE (southern Africa got it from about 300 CE).</p><div class="tablewrap"><table class="table"><thead><tr><th>Region</th><th>1 CE</th><th>${fy(fn.y)}</th></tr></thead><tbody>${fn.res.map((r2,k)=>{const a=fc?fc.res[k].share:null;return`<tr><td>${r2.n}</td><td class="n ${a==null?'':a<0.1?'ok':'bad'}">${a==null?'–':Math.round(a*100)+'%'}</td><td class="n">${Math.round(r2.share*100)}%</td></tr>`}).join('')}</tbody></table></div>`}
     {let f0=0,f=0,salt=0,worn=0,farmN=0;for(const i of w.landIdx){f0+=w.forest0[i];f+=s.forest[i];if(s.salt[i]>0.3)salt++;if(s.farm[i]>0.5&&w.sF[i]>0.1&&s.pop[i]>=1){farmN++;if(s.fert[i]<0.6)worn++}}
-      h+=`<h3 class="sec">Land and ecology</h3><dl class="kv"><dt>Forest still standing</dt><dd>${Math.round(f/Math.max(1,f0)*100)}% of the original cover</dd><dt>Worn-out farmland</dt><dd>${Math.round(worn/Math.max(1,farmN)*100)}% of farmed provinces</dd><dt>Salt-poisoned provinces</dt><dd>${salt}</dd><dt>Caravan routes in use</dt><dd>${s.routes.length}</dd></dl>`}
+      h+=`<h3 class="sec">Land and ecology</h3><dl class="kv"><dt>Forest still standing</dt><dd>${Math.round(f/Math.max(1,f0)*100)}% of the original cover</dd><dt>Worn-out farmland</dt><dd>${Math.round(worn/Math.max(1,farmN)*100)}% of farmed provinces</dd><dt>Salt-poisoned provinces</dt><dd>${salt}</dd><dt>Caravan routes in use</dt><dd>${s.routes.length}</dd><dt>Overseas routes in use</dt><dd>${s.seaRoutes.size}</dd></dl>`}
     {const sh=(s.shapes||[]).map(id=>s.pols[id]).filter(o=>o&&o.shape);if(sh.length){const ew=sh.filter(o=>o.shape.ew>o.shape.ns).length;const top=sh.slice().sort((a,b)=>b.shapeN-a.shapeN).slice(0,6);
       h+=`<h3 class="sec">Shape of empires</h3><p class="note" style="margin-top:0">Each large state measured at its peak, in kilometres. Most large Afro-Eurasian empires stretched east–west along one climate belt; the long north–south exceptions follow a river, a coast or a mountain range (Turchin, Adams &amp; Hall 2006).</p><p style="margin:0 0 6px">${sh.length} large states so far; <b>${Math.round(100*ew/sh.length)}%</b> longer east–west than north–south.</p><div class="tablewrap"><table class="table"><thead><tr><th>State</th><th>E–W</th><th>N–S</th></tr></thead><tbody>${top.map(o=>`<tr><td>${lp(o)}</td><td class="n">${o.shape.ew.toLocaleString()} km</td><td class="n">${o.shape.ns.toLocaleString()} km</td></tr>`).join('')}</tbody></table></div>`}}
-    const sn=s.stateNow;if(sn){h+=`<h3 class="sec">Where states should be rare</h3><p class="note" style="margin-top:0">Share of peopled provinces under a kingdom or larger in places that stayed mostly stateless in the real world (New Guinea farmed early but never built a state; leached rainforest soils, tubers that cannot be taxed, and disease held the Congo and Amazon interiors back).</p><div class="tablewrap"><table class="table"><thead><tr><th>Region</th><th>${fy(sn.y)}</th></tr></thead><tbody>${sn.res.map(r2=>`<tr><td>${r2.n}</td><td class="n ${r2.share<0.25?'ok':'bad'}">${Math.round(r2.share*100)}%</td></tr>`).join('')}</tbody></table></div>`}
+    const sn=s.stateNow;if(sn){h+=`<h3 class="sec">Where states should be rare</h3><p class="note" style="margin-top:0">Share of peopled provinces under a kingdom or larger in regions used to check how difficult transport, dispersed settlement, crop storage and disease limit large centralized states.</p><div class="tablewrap"><table class="table"><thead><tr><th>Region</th><th>${fy(sn.y)}</th></tr></thead><tbody>${sn.res.map(r2=>`<tr><td>${r2.n}</td><td class="n ${r2.share<0.25?'ok':'bad'}">${Math.round(r2.share*100)}%</td></tr>`).join('')}</tbody></table></div>`}
     h+=`<h3 class="sec">China: unity and division</h3><p style="margin:0">Share of China's heartland held by its largest state. The dashed line is a rough reading of the real record.${cmax&&cmax[1]?` Peak so far: <b>${Math.round(cmax[1]*100)}%</b> in ${fy(cmax[0])}.`:''}</p><canvas class="sparkc" id="chinachart" style="height:120px"></canvas>`;
   }
   if(s&&s.epochs.length){h+=`<h3 class="sec">Climate epochs this run</h3><ul class="deeds">${s.epochs.map(e=>`<li><span>${fy(e.start)}</span><div>${e.k==='dry'?'Great drought in the '+esc(e.where):e.k==='cold'?'Cold epoch':'Warm epoch'}, ${e.end-e.start} years${e.k!=='dry'?` (${e.amp>0?'+':''}${e.amp.toFixed(1)} °C)`:''}</div></li>`).join('')}</ul>`}

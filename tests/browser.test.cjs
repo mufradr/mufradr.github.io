@@ -39,7 +39,7 @@ test('browser: startup, controls, pacing, and Pages-relative resources', async t
       await page.waitForFunction(() => typeof ui !== 'undefined' && ui.ready && document.getElementById('busy').hidden);
       assert.equal(await page.title(), 'World Engine');
       assert.equal(await page.locator('.brand .mark').innerText(), 'World Engine');
-      assert.match(await page.locator('.brand .sub').innerText(), /v0\.7\.3/i);
+      assert.match(await page.locator('.brand .sub').innerText(), /v0\.8\.0/i);
       assert.equal(await page.locator('meta[property="og:title"]').getAttribute('content'), 'World Engine');
       const manifest = await page.evaluate(async () => (await fetch(document.querySelector('link[rel="manifest"]').href)).json());
       assert.equal(manifest.name, 'World Engine');
@@ -55,6 +55,21 @@ test('browser: startup, controls, pacing, and Pages-relative resources', async t
       const paused = await page.evaluate(() => S.year);
       await page.waitForTimeout(350);
       assert.equal(await page.evaluate(() => S.year), paused, 'pause stops simulation advancement');
+      await page.getByRole('button', {name:'Knowledge', exact:true}).click();
+      const ships = page.locator('#legend [data-k="ocean"]');
+      assert.match(await ships.innerText(), /Ocean-going ships/);
+      assert.match(await ships.getAttribute('title'), /Celestial navigation.*Portable records/);
+      assert.match(await ships.getAttribute('title'), /800 CE/);
+      assert.ok(await page.evaluate(() => {
+        const v=traceVoyage(15790,240*Math.PI/180,11520);
+        if(!v)return false;
+        S.seaRoutes.set('browser-test',{...v,last:S.year});
+        const original=mapCtx.stroke;let strokes=0;
+        try{
+          mapCtx.stroke=function(...args){if(this.getLineDash().join(',')==='5,4')strokes++;return original.apply(this,args)};
+          buildComp();drawMap();return strokes>0;
+        }finally{mapCtx.stroke=original;S.seaRoutes.delete('browser-test');drawMap()}
+      }), 'overseas routes render on the knowledge map');
       await page.getByRole('button', {name:'Cohesion', exact:true}).click();
       assert.equal(await page.evaluate(() => ui.mode), 'asabiya');
       assert.match(await page.locator('#legend').innerText(), /Social cohesion/);
