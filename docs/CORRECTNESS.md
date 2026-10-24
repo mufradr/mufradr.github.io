@@ -95,6 +95,25 @@ calibration aid; a successful run is not proof of historically correct dates or
 that every seed will give the same regional ordering. The grid is too coarse to
 resolve individual Mesopotamian city-states accurately.
 
+## Atlas and maritime checks (0.11.0)
+
+State area uses km² from world cells rather than a count. Annual maxima survive
+territorial loss, religious population peaks are recorded, and completed wars
+freeze duration even at year zero. Atlas scoring and screen-space selection are
+read-only. City/route detail changes affect only rendering; route simplification
+retains original paths and endpoints. Browser checks compare repeated composite
+pixels and exercise independent annotation limits, desktop/mobile layouts,
+knowledge-filter inactivity/keyboard focus, entity rankings and setup links.
+
+Organized immigrant/passenger transfers subtract source population and maintain
+source minority counts. Recent passenger arrivals support small diasporas without
+replacing a third group. Failed small hybrid cultures restore both original
+identities and fractions, as well as clearing scratch labels. Route prospecting
+uses real voyage traces and a fixed per-period budget. Host acceptance and war
+restrictions preserve local ownership. See [ATLAS.md](ATLAS.md) for mechanics and
+bounded ledgers; the prepared 300-year scenario checks maritime integrity every
+ten completed years.
+
 ## Known next modeling work
 
 Civil-war partitioning and cohesion collapse can redistribute many provinces in

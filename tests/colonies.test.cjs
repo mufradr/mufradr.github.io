@@ -32,6 +32,13 @@ test('independent overseas communities',async t=>{
     assert.equal(app.state.pop[site.source]+app.state.pop[site.cell],source+8000);
     assert.equal(app.state.pol[site.cell],0);assert.equal(colony.status,'active');
   });
+  await t.test('an existing emigrant majority can organize without erasing its local minority',()=>{
+    const site=prepare();app.inspect(`S.eth[${site.cell}]=${site.founder};S.eth2[${site.cell}]=${site.native};S.mix[${site.cell}]=.2`);
+    const nativePopulation=app.state.pop[site.cell]*app.state.mix[site.cell],colony=found();
+    assert.ok(colony);assert.equal(app.state.eth2[site.cell],site.native);
+    assert.ok(Math.abs(app.state.pop[site.cell]*app.state.mix[site.cell]-nativePopulation)<.01);
+    assert.deepEqual(app.inspect('simulationIssues()'),[]);
+  });
   await t.test('early ships, crowded shores, foreign ownership and existing minorities block founding',()=>{
     for(const change of ['S.year=1200','S.ocean[colonyVoyage.from]=.4','S.pop[colonyVoyage.from]=5000','S.pol[colonyVoyage.to]=S.pol[colonyVoyage.from]',
       'S.pop[colonyVoyage.to]=WD.area[colonyVoyage.to]*5','P.migration=0','P.seafaring=0',
@@ -69,6 +76,44 @@ test('independent overseas communities',async t=>{
     const site=prepare();found();app.inspect(`S.pop[${site.cell}]=0;S.eth[${site.cell}]=-1;S.eth2[${site.cell}]=-1;S.mix[${site.cell}]=0;S.year=1510;colonyStep()`);
     assert.equal(app.state.colonies.get(site.cell).status,'failed');assert.equal(app.state.colonies.get(site.cell).settlers,0);
     app.inspect('S.year=1520;colonyStep()');assert.equal(app.state.pop[site.cell],0);
+    assert.deepEqual(app.inspect('simulationIssues()'),[]);
+  });
+  await t.test('revisited ocean trade can found a community without forcing random success',()=>{
+    const site=prepare(25000);app.inspect(`S.seaRoutes.set('known',{...colonyVoyage,born:1480,last:1500})`);
+    for(let n=1;n<=30&&!app.state.colonies.has(site.cell);n++)app.inspect(`S.year=${1500+n*5};seaTrade();colonyStep()`);
+    assert.ok(app.state.colonies.has(site.cell));assert.equal(app.state.pol[site.cell],0);
+    assert.deepEqual(app.inspect('simulationIssues()'),[]);
+  });
+  await t.test('peaceful treaty settlements keep the host government and existing majority',()=>{
+    const site=prepare(25000);
+    const host=app.inspect(`(()=>{const id=newPolity(${site.cell},null);S.pols[id].allies.push(${site.home});S.pols[${site.home}].allies.push(id);return id})()`);
+    const native=app.state.eth[site.cell],colony=found();
+    assert.ok(colony);assert.equal(app.state.pol[site.cell],host);assert.equal(app.state.eth[site.cell],native);
+    assert.equal(app.state.eth2[site.cell],site.founder);
+    app.inspect(`declareWar([S.pols[${site.home}]],[S.pols[${host}]],null,false,false,false)`);
+    assert.equal(app.inspect(`colonyHostAllows(${site.source},${site.cell})`),false);
+  });
+  await t.test('trade carries real migrants and small diasporas persist while supported',()=>{
+    const site=prepare(25000),before=app.state.pop[site.source]+app.state.pop[site.cell];
+    app.inspect(`S.seaRoutes.set('passengers',{...colonyVoyage,born:1480,last:1500});S.year=1520;maritimePassengerExchange(S.seaRoutes.get('passengers'))`);
+    assert.ok(Math.abs(app.state.pop[site.source]+app.state.pop[site.cell]-before)<.1);
+    assert.equal(app.state.eth2[site.cell],site.founder);assert.ok(app.state.mix[site.cell]<.03);
+    app.inspect('mixPass()');assert.equal(app.state.eth2[site.cell],site.founder,'trade-supported minority is retained');
+    assert.ok(app.state.seaRoutes.get('passengers').migrants>0);
+    app.inspect('S.year=1600;mixPass()');assert.equal(app.state.eth2[site.cell],-1,'unsupported tiny minority eventually merges');
+    assert.deepEqual(app.inspect('simulationIssues()'),[]);
+  });
+  await t.test('passenger exchange respects third minorities and disabled migration',()=>{
+    const site=prepare(25000);app.inspect(`S.year=1520;S.eth2[${site.cell}]=0;S.mix[${site.cell}]=.1`);
+    const pop=app.state.pop[site.source];app.inspect('maritimePassengerExchange(colonyVoyage)');assert.equal(app.state.pop[site.source],pop);
+    app.inspect(`S.eth2[${site.cell}]=-1;S.mix[${site.cell}]=0;P.migration=0;maritimePassengerExchange(colonyVoyage)`);
+    assert.equal(app.state.pop[site.source],pop);assert.equal(app.state.eth2[site.cell],-1);
+  });
+  await t.test('a small port does not lose its minority when a hybrid culture cannot form',()=>{
+    const site=prepare(25000);app.inspect(`S.eth2[${site.cell}]=${site.founder};S.mix[${site.cell}]=.35;S.mixT[${site.cell}]=15`);
+    const before=app.state.mix[site.cell];
+    app.inspect('(()=>{const r=S.r;S.r=()=>0;try{mixPass()}finally{S.r=r}})()');
+    assert.equal(app.state.eth[site.cell],site.native);assert.equal(app.state.eth2[site.cell],site.founder);assert.equal(app.state.mix[site.cell],before);
     assert.deepEqual(app.inspect('simulationIssues()'),[]);
   });
   await t.test('real yearly processes preserve colony integrity through growth, migration and disease',()=>{

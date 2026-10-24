@@ -5,9 +5,9 @@ const $=id=>document.getElementById(id);
 const fmtN=n=>n>=1e9?(n/1e9).toFixed(2)+'B':n>=1e6?(n/1e6).toFixed(n>=1e8?0:1)+'M':n>=1e3?Math.round(n/1e3)+'k':Math.round(n)+'';
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const TYPES={rise:['Rise','#c08a2a'],war:['War','#b2452c'],fall:['Fall','#6e5a8c'],diplomacy:['Diplomacy','#4f7f6a'],faith:['Faith','#b0729a'],migration:['Migrations','#a0703a'],culture:['Culture','#4f78a8'],ideas:['Ideas','#3f8a5c'],plague:['Plague','#8a2f4a'],famine:['Famine','#9a7b45'],people:['Peoples','#3d7a99'],nature:['Nature & climate','#6f7d84']};
-const MODES=[['political','States'],['alliances','Alliances'],['peoples','Peoples'],['mixing','Mixing'],['unity','Identity'],['loyalty','Loyalty'],['niche','Home ground'],['soil','Soil'],['forest','Forest'],['inequality','Inequality'],['circ','Exit option'],['religion','Religion'],['knowledge','Knowledge'],['era','Era'],['density','Population'],['capacity','Capacity'],['asabiya','Cohesion'],['disease','Disease'],['weather','Weather'],['climate','Climate check'],['terrain','Terrain']];
+const MODES=[['political','States'],['alliances','Alliances'],['peoples','Peoples'],['traditions','Traditions'],['mixing','Mixing'],['unity','Identity'],['loyalty','Loyalty'],['niche','Home ground'],['soil','Soil'],['forest','Forest'],['inequality','Inequality'],['circ','Exit option'],['religion','Religion'],['knowledge','Knowledge'],['era','Era'],['density','Population'],['capacity','Capacity'],['asabiya','Cohesion'],['disease','Disease'],['weather','Weather'],['climate','Climate check'],['terrain','Terrain']];
 const SPEEDS=[[0.5,'0.5'],[2,'2'],[10,'10'],[50,'50'],[250,'250'],[1e9,'Max']];
-const mapLayers={states:true,peoples:true,faiths:true,cityMarkers:true,cityNames:true,colonies:true,routes:true};
+const mapLayers={states:true,peoples:true,faiths:true,cityMarkers:true,cityNames:true,colonies:true,routes:true,optimizeCities:true,optimizeRoutes:true,borders:true,fortifications:true};
 const ERA_COL=[[120,128,130],[118,150,86],[196,140,64],[150,96,72],[178,74,58],[122,84,150],[64,96,150],[40,130,140]];
 const GROUP_COL=[[40,140,70],[222,190,120],[206,170,90],[110,170,110],[90,120,170],[200,215,225]];
 const ui={running:false,speed:2,mode:'political',page:null,stack:[],z:1,ox:0,oy:0,bs:1,filters:new Set(Object.keys(TYPES)),q:'',lastChronKey:'',dirty:true,lastRender:0,lastSide:0,pausedAtEnd:false,pane:'chron',know:new Set(),figFilter:'all',fq:'',plagueSort:'deaths',climView:'mismatch',src:'earth',ready:false,lastSpot:0,toastT:0,ringCell:-1,ringT:0,follow:false};
@@ -72,6 +72,7 @@ function buildOverlay(){
   const s=S,w=WD,d=ovImg.data,m=ui.mode;d.fill(0);
   const bc=m==='alliances'?blocs():null,know=[...ui.know].map(k=>TI[k]);
   const g=w.grade;
+  if(m==='traditions'){ui.traditions=new Map();ui.traditionGrid=new Int32Array(N)}
   if(m!=='terrain')for(const i of w.landIdx){
     let c=null,a=0;const p=s.pop[i];
     switch(m){
@@ -85,6 +86,7 @@ function buildOverlay(){
       case'loyalty':if(s.pol[i]&&s.pols[s.pol[i]].kind==='state'){c=ramp(s.integ[i]);a=190}break;
       case'mixing':if(p>=1&&s.eth[i]>=0){if(s.eth2[i]>=0){c=ramp(0.35+s.mix[i]*1.3);a=210}else{c=[150,150,140];a=40}}break;
       case'alliances':if(s.pol[i]){const v=bc.get(s.pol[i]);if(v){c=v[0];a=s.pols[s.pol[i]].kind==='horde'?Math.min(70,v[1]):v[1]}}break;
+      case'traditions':if(p>=1){const t=traditionAt(i);if(t){let g=ui.traditions.get(t.key);if(!g){g={...t,index:ui.traditions.size+1,rgb:traditionColor(t.key),cos:0,sin:0,y:0,count:0};ui.traditions.set(t.key,g)}g.cos+=w.cosLon[i];g.sin+=w.sinLon[i];g.y+=w.cyA[i];g.count++;ui.traditionGrid[i]=g.index;c=g.rgb;a=180}}break;
       case'peoples':if(p>=1&&s.eth[i]>=0){c=s.eths[s.eth[i]].rgb;a=178}break;
       case'religion':if(p>=1){if(s.rel[i]>=0){c=s.rels[s.rel[i]].rgb;a=185}else{c=[150,150,140];a=45}}break;
       case'knowledge':if(p>=1){
@@ -108,11 +110,11 @@ function buildOverlay(){
 }
 function buildComp(){
   const s=S,w=WD,ctx=compCtx;
-  ctx.globalAlpha=1;ctx.drawImage(baseCv,0,0);
+  ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';ctx.clearRect(0,0,HW,HH);ctx.setLineDash([]);ctx.beginPath();ctx.drawImage(baseCv,0,0);
   buildOverlay();ctx.imageSmoothingEnabled=true;ctx.drawImage(ovCv,0,0,HW,HH);
   const m=ui.mode;
-  if(m==='political'||m==='alliances'||m==='peoples'||m==='religion'){
-    const key=m==='peoples'?s.eth:m==='religion'?s.rel:s.pol,polMode=m==='political'||m==='alliances';
+  if(mapLayers.borders&&['political','alliances','peoples','religion','traditions'].includes(m)){
+    const key=m==='traditions'?ui.traditionGrid:m==='peoples'?s.eth:m==='religion'?s.rel:s.pol,polMode=m==='political'||m==='alliances';
     let selP=0;if(ui.page){if(polMode&&ui.page.t==='pol')selP=ui.page.id;else if(m==='peoples'&&ui.page.t==='eth')selP=ui.page.id;else if(m==='religion'&&ui.page.t==='rel')selP=ui.page.id;else if(ui.page.t==='cell')selP=key[ui.page.id]}
     const thin=new Path2D(),hi=new Path2D(),war=new Path2D();
     const seg=(p,x1,y1,x2,y2)=>{p.moveTo(x1,y1);p.lineTo(x2,y2)};
@@ -127,11 +129,11 @@ function buildComp(){
     if(polMode){const hatch=new Path2D(),fortP=new Path2D();
       for(const i of w.landIdx){const p=s.pol[i];if(!p)continue;const o=s.pols[p],x=w.cxA[i]*SC,y=w.cyA[i]*SC;
         if(o.kind==='horde'&&((w.cxA[i]+w.cyA[i])&1)){hatch.moveTo(x,y+SC);hatch.lineTo(x+SC,y)}
-        if(s.fort[i]>0.4){for(let d=0;d<4;d++){const j=w.nb[i*4+d];if(j<0||!w.land[j]||s.pol[j]===p)continue;
+        if(mapLayers.fortifications&&s.fort[i]>0.4){for(let d=0;d<4;d++){const j=w.nb[i*4+d];if(j<0||!w.land[j]||s.pol[j]===p)continue;
           if(d===0){fortP.moveTo(x,y);fortP.lineTo(x,y+SC)}else if(d===1){fortP.moveTo(x+SC,y);fortP.lineTo(x+SC,y+SC)}else if(d===2){fortP.moveTo(x,y);fortP.lineTo(x+SC,y)}else{fortP.moveTo(x,y+SC);fortP.lineTo(x+SC,y+SC)}}}}
       ctx.strokeStyle='rgba(60,40,20,.55)';ctx.lineWidth=0.9;ctx.stroke(hatch);
-      ctx.save();ctx.strokeStyle='#3a2614';ctx.lineWidth=3.2;ctx.setLineDash([2.5,1.5]);ctx.stroke(fortP);ctx.restore()}
-    ctx.strokeStyle=polMode?'rgba(20,24,28,.6)':'rgba(20,24,28,.3)';ctx.lineWidth=polMode?1.1:0.8;ctx.stroke(thin);
+      ctx.save();ctx.strokeStyle='rgba(58,38,20,.45)';ctx.lineWidth=0.7+Math.min(1.1,ui.z/8);ctx.setLineDash([2.5,1.5]);ctx.stroke(fortP);ctx.restore()}
+    ctx.strokeStyle=polMode?'rgba(20,24,28,.38)':'rgba(20,24,28,.24)';ctx.lineWidth=(polMode?0.65:0.5)*Math.min(1.5,1+(ui.z-1)/10);ctx.stroke(thin);
     if(polMode){ctx.strokeStyle='rgba(214,40,30,.95)';ctx.lineWidth=2.2;ctx.stroke(war)}
     ctx.strokeStyle='#fff6e8';ctx.lineWidth=2.6;ctx.stroke(hi);ctx.strokeStyle='rgba(20,24,28,.9)';ctx.lineWidth=1;ctx.stroke(hi);
   }
@@ -150,6 +152,8 @@ function drawMap(){
   ctx.imageSmoothingEnabled=ui.z<2.5;
   for(let c=0;c<3;c++){const x=ui.ox+c*mw;if(x>w)break;ctx.drawImage(compCv,x,ui.oy,mw,mh)}
   const k_=k,s=S,W2=WD,each=(mx,my,f)=>{for(let c=-1;c<3;c++){const sx=ui.ox+c*mw+mx*k,sy=ui.oy+my*k;if(sx>-80&&sx<w+80&&sy>-40&&sy<h+40)f(sx,sy)}};
+  const view={scale:k,zoom:ui.z,ox:ui.ox,oy:ui.oy,width:w,height:h};
+  const displayRoutes=mapLayers.routes?selectAtlasRoutes([...s.routes.map(r=>({...r,from:r.a,to:r.b,kind:'land'})),...[...s.seaRoutes.values()].map(r=>({...r,kind:'sea'}))],view,mapLayers.optimizeRoutes):[];
   const cellXY=i=>[(W2.cxA[i]+0.5)*SC,(W2.cyA[i]+0.5)*SC];
   // alliance lines
   if(m==='alliances'){ctx.strokeStyle='rgba(255,246,230,.75)';ctx.lineWidth=1.3;ctx.setLineDash([4,3]);
@@ -159,15 +163,15 @@ function drawMap(){
     ctx.setLineDash([])}
   // caravan routes
   if(mapLayers.routes&&(m==='political'||m==='alliances'||m==='religion'||m==='peoples')&&s.routes){ctx.lineWidth=1.6;ctx.strokeStyle='rgba(232,200,140,.85)';ctx.setLineDash([2,3]);
-    for(const R of s.routes){const pts=R.path.map(cellXY);if(pts.length<2)continue;
+    for(const R of displayRoutes.filter(r=>r.kind==='land')){const pts=R.displayPath.map(cellXY);if(pts.length<2)continue;
       each(pts[0][0],pts[0][1],(sx0,sy0)=>{ctx.beginPath();let px=pts[0][0];ctx.moveTo(sx0,sy0);
         for(let k=1;k<pts.length;k++){let dx=pts[k][0]-px;if(Math.abs(dx)>HW/2){dx-=Math.sign(dx)*HW}px+=dx;ctx.lineTo(sx0+(px-pts[0][0])*k_,sy0+(pts[k][1]-pts[0][1])*k_)}ctx.stroke()})}
     ctx.setLineDash([])}
   // Established overseas routes, retained after the first expedition returns.
-  if(mapLayers.routes&&['political','alliances','peoples','religion','knowledge'].includes(m)&&s.seaRoutes){
+  if(mapLayers.routes&&['political','alliances','peoples','religion','traditions','knowledge'].includes(m)&&s.seaRoutes){
     ctx.lineWidth=1.5;ctx.strokeStyle='rgba(65,160,210,.9)';ctx.setLineDash([5,4]);
-    for(const R of s.seaRoutes.values()){
-      const pts=R.path.map(cellXY);if(pts.length<2)continue;
+    for(const R of displayRoutes.filter(r=>r.kind==='sea')){
+      const pts=R.displayPath.map(cellXY);if(pts.length<2)continue;
       each(pts[0][0],pts[0][1],(sx0,sy0)=>{ctx.beginPath();let px=pts[0][0];ctx.moveTo(sx0,sy0);
         for(let q=1;q<pts.length;q++){let dx=pts[q][0]-px;if(Math.abs(dx)>HW/2)dx-=Math.sign(dx)*HW;px+=dx;ctx.lineTo(sx0+(px-pts[0][0])*k_,sy0+(pts[q][1]-pts[0][1])*k_)}ctx.stroke()});
     }
@@ -185,15 +189,15 @@ function drawMap(){
   if(ui.ringCell>=0&&performance.now()<ui.ringT){const [mx,my]=cellXY(ui.ringCell),ph=(ui.ringT-performance.now())/4000;
     each(mx,my,(sx,sy)=>{ctx.strokeStyle=`rgba(255,240,200,${0.4+0.6*ph})`;ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(sx,sy,10+18*(1-ph)*((performance.now()/600)%1+0.2),0,7);ctx.stroke()})}
   // cities
-  if((mapLayers.cityMarkers||mapLayers.cityNames)&&(m==='political'||m==='alliances'||m==='peoples'||m==='religion')&&ui.z>=1.4){
-    ctx.font=`11px ${cssVar('--f-ui')}`;ctx.textAlign='left';ctx.textBaseline='middle';
-    for(const c of s.cities){const p=s.pop[c.cell];if(p<60000)continue;const isCap=s.pol[c.cell]&&s.pols[s.pol[c.cell]].capital===c.cell;
+  if((mapLayers.cityMarkers||mapLayers.cityNames)&&['political','alliances','peoples','religion','traditions'].includes(m)&&(ui.z>=1.4||!mapLayers.optimizeCities)){
+    const cityLabels=[];ctx.font=`11px ${cssVar('--f-ui')}`;ctx.textAlign='left';ctx.textBaseline='middle';
+    for(const c of selectAtlasCities(s.cities,view,mapLayers.optimizeCities)){const p=s.pop[c.cell];if(p<60000)continue;const isCap=s.pol[c.cell]&&s.pols[s.pol[c.cell]].capital===c.cell;
       const [mx,my]=cellXY(c.cell);
       each(mx,my,(sx,sy)=>{ctx.fillStyle='#14202a';ctx.strokeStyle='#f5f3ec';ctx.lineWidth=1.5;
         if(mapLayers.cityMarkers){if(isCap){ctx.fillRect(sx-3,sy-3,6,6);ctx.strokeRect(sx-3,sy-3,6,6)}else{ctx.beginPath();ctx.arc(sx,sy,2.5,0,7);ctx.fill();ctx.stroke()}}
-        if(mapLayers.cityNames&&ui.z>=2.6){ctx.lineWidth=3;ctx.strokeText(c.name,sx+6,sy);ctx.fillText(c.name,sx+6,sy)}})}}
+        if(mapLayers.cityNames&&(ui.z>=2.6||!mapLayers.optimizeCities)){const box=[sx+6,sy-7,ctx.measureText(c.name).width,14];if(!mapLayers.optimizeCities||!cityLabels.some(b=>box[0]<b[0]+b[2]&&box[0]+box[2]>b[0]&&box[1]<b[1]+b[3]&&box[1]+box[3]>b[1])){cityLabels.push(box);ctx.lineWidth=3;ctx.strokeText(c.name,sx+6,sy);ctx.fillText(c.name,sx+6,sy)}}})}}
   // Small independent settlements are visible before they grow into cities.
-  if(mapLayers.colonies&&['political','alliances','peoples','religion'].includes(m)){
+  if(mapLayers.colonies&&['political','alliances','peoples','religion','traditions'].includes(m)){
     for(const c of s.colonies.values())if(c.status==='active'&&s.city[c.cell]<0){
       const [mx,my]=cellXY(c.cell);each(mx,my,(sx,sy)=>{
         ctx.beginPath();ctx.moveTo(sx,sy-4);ctx.lineTo(sx+4,sy);ctx.lineTo(sx,sy+4);ctx.lineTo(sx-4,sy);ctx.closePath();
@@ -205,12 +209,13 @@ function drawMap(){
   // labels
   const lab=[];
   if(m==='political'||m==='alliances'){for(const id of s.alive){const o=s.pols[id];if(o.cells>=6)lab.push([lonToMx(o.lx),(o.ly+0.5)*SC,o.base,o.cells,o.tier==='Empire'||o.tier==='Khaganate'])}}
+  else if(m==='traditions'){for(const g of ui.traditions?.values()||[])if(g.count>=6)lab.push([lonToMx(Math.atan2(g.sin,g.cos)),(g.y/g.count+0.5)*SC,g.name,g.count,false])}
   else if(m==='peoples'){for(const e of s.eths)if(e.alive&&e.cells>=18)lab.push([lonToMx(e.lon),laToMy(e.la),e.name,e.cells,false])}
   else if(m==='religion'){for(const R of s.rels)if(R.alive&&R.cells>=12&&R.lon!=null)lab.push([lonToMx(R.lon),laToMy(R.la),R.name.replace(/^the /,''),R.cells,false])}
   lab.sort((a,b)=>b[3]-a[3]);
   ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';
   const placed=[],narrow=mapDim.w<640;
-  const showNames=(m==='political'||m==='alliances')?mapLayers.states:m==='peoples'?mapLayers.peoples:mapLayers.faiths;
+  const showNames=(m==='political'||m==='alliances'||m==='traditions')?mapLayers.states:m==='peoples'?mapLayers.peoples:mapLayers.faiths;
   for(const [mx,my,name,n,big] of showNames?lab.slice(0,narrow?40:110):[]){
     const size=clamp(9+Math.sqrt(n)*1.3,10,30)*Math.min(1.6,Math.sqrt(ui.z))*(narrow?0.7:1);
     ctx.font=`${big?'':'italic '}${size}px ${DISPLAY_FONT}`;
@@ -227,10 +232,11 @@ function centerOn(i){if(i==null||i<0)return;const k=ui.bs*ui.z;ui.ox=mapDim.w/2-
 
 /* ---------- legend ---------- */
 function drawLegend(){
-  const m=ui.mode,el=$('legend');let h='';
+  const m=ui.mode,el=$('legend');let h='';el.classList.toggle('knowledge-selector',m==='knowledge');$('legtog').classList.toggle('knowledge-toggle',m==='knowledge');$('legtog').textContent=m==='knowledge'?'Knowledge filters':'Legend';
   const rampBox=(t,a,b)=>`<div>${t}</div><div class="ramp" style="background:${rampCss()}"></div><div class="row"><span>${a}</span><span>${b}</span></div>`;
   const keys=list=>'<div class="keys">'+list.map(([c,l])=>`<span><i style="background:rgb(${c})"></i>${l}</span>`).join('')+'</div>';
   switch(m){
+    case'traditions':h='Shared colours show inherited state traditions, including successor realms. Stateless peoples show their ancestral cultural family. Traditions are distinct from present borders and faiths.';break;
     case'political':h='Each colour is an independent polity; early societies may be small chiefdoms. Hatched, faint areas are nomad confederations; pale areas are wasteland a state only claims. Teal diamonds mark independent overseas communities. Dotted tan lines are caravan routes; dashed blue lines are overseas trade routes. Red borders are war fronts; dark dashed lines are fortified frontiers; amber trails are peoples on the move. Click a state to open its page.';break;
     case'soil':h=rampBox('Soil fertility (farmland only; worn-out soils are cool, fresh ones warm)','depleted','fresh')+keys([[[235,235,225],'Salt-poisoned fields']])+'<p style="margin:6px 0 0;opacity:.85">Crowded fields wear out unless rested, manured or rotated; floodplains renew each year; irrigation in dry lands slowly salts the soil.</p>';break;
     case'forest':h=keys([[[34,110,52],'Standing forest'],[[196,120,60],'Cleared or lost forest']])+'<p style="margin:6px 0 0;opacity:.85">Farmers clear forest to plant; smelting eats charcoal; abandoned land grows back. Stripped hillsides erode.</p>';break;
@@ -265,10 +271,21 @@ function drawLegend(){
 }
 function worldPop(){if(!S)return 0;let t=0;for(const i of WD.landIdx)t+=S.pop[i];return t}
 function techShare(k){let t=0;const f=S.tk[k];for(const i of WD.landIdx)if(f[i]>0.5)t+=S.pop[i];return t}
+let knowledgeTimer=null;
+function wakeKnowledgeSelector(){
+ const el=$('legend');el.classList.remove('selector-idle');el.inert=false;clearTimeout(knowledgeTimer);
+ if(ui.mode==='knowledge'){
+  el.classList.add('open');$('legtog').setAttribute('aria-expanded','true');
+  knowledgeTimer=setTimeout(()=>{if(ui.mode==='knowledge'&&!el.querySelector(':focus-visible')){el.classList.add('selector-idle');el.inert=true;$('legtog').setAttribute('aria-expanded','false')}},10000);
+ }
+}
+for(const event of ['pointerenter','pointerdown','focusin','input','click','wheel','touchmove','keydown'])$('legend').addEventListener(event,wakeKnowledgeSelector);
+$('legend').addEventListener('focusout',()=>{if(!$('legend').inert)wakeKnowledgeSelector()});
+$('legend').addEventListener('pointerleave',()=>{if(!$('legend').inert)wakeKnowledgeSelector()});
 $('legend').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
   if(b.dataset.k){const k=b.dataset.k;ui.know.has(k)?ui.know.delete(k):ui.know.add(k)}
   if(b.dataset.cv)ui.climView=b.dataset.cv;
-  drawLegend();ui.dirty=true});
+  drawLegend();wakeKnowledgeSelector();ui.dirty=true});
 
 /* ---------- chart ---------- */
 function drawChart(){
@@ -328,7 +345,7 @@ function entityCell(t,id){const s=S;
     case'plague':return s.outbreaks[id].origin;case'war':return s.pols[s.wars[id].d[0]].capital;case'mig':{const M=s.migs[id];return M.done?M.path[M.path.length-1]:M.cell}}return-1}
 function openPage(t,id,noPush){if(ui.page&&!noPush&&!(ui.page.t===t&&ui.page.id===id))ui.stack.push(ui.page);if(ui.stack.length>40)ui.stack.shift();ui.page={t,id:+id};showPane('insp');ui.dirty=true}
 document.querySelector('.side').addEventListener('click',e=>{const a=e.target.closest('.lnk');if(!a)return;e.preventDefault();openPage(a.dataset.t,+a.dataset.id);centerOn(entityCell(a.dataset.t,+a.dataset.id))});
-document.querySelector('.side').addEventListener('keydown',e=>{if(e.key!=='Enter')return;const a=e.target.closest('.lnk,.card');if(a)a.click()});
+document.querySelector('.side').addEventListener('keydown',e=>{if(e.key!=='Enter')return;const a=e.target.closest('.lnk,.card');if(a&&a.tagName!=='BUTTON')a.click()});
 function bar(label,v,max,cls){const t=clamp(v/max,0,1);return`<div class="barrow"><span>${label}</span><div class="track"><div class="fill ${cls||''}" style="width:${(t*100).toFixed(0)}%"></div></div><span class="v">${v.toFixed(2)}</span></div>`}
 function chronFor(pred,max){const out=[];const c=S.chron;for(let k=c.length-1;k>=0&&out.length<(max||25);k--){if(pred(c[k]))out.push(c[k])}return out}
 function chronList(list){return list.length?'<div class="entries">'+list.map(entryHTML).join('')+'</div>':'<div class="note">No recorded events yet.</div>'}
@@ -357,7 +374,7 @@ function renderPage(){
     else{
       const p=s.pol[i]?s.pols[s.pol[i]]:null,e=s.eth[i]>=0?s.eths[s.eth[i]]:null,R=s.rel[i]>=0?s.rels[s.rel[i]]:null,city=s.city[i]>=0?s.cities[s.city[i]]:null;
       h+=`<div class="kind">Province</div><h2 class="name">${city?esc(city.name):e?'Lands of the '+esc(e.name):'Empty land'}</h2><p class="sub2">${latd}°, ${lond}° · ${ERAS[eraOf(i)]}</p>`;
-      h+=`<dl class="kv" style="margin-top:10px"><dt>State</dt><dd>${p?lp(p):'none'}</dd><dt>People</dt><dd>${e?le(e):'none'}</dd><dt>Faith</dt><dd>${R?lr(R):e?'folk religion':'–'}</dd><dt>Population</dt><dd>${fmtN(s.pop[i])} / ${fmtN(s.K[i])}</dd>${city?`<dt>City</dt><dd>${esc(city.name)}${p&&p.capital===i?' (capital)':''}, since ${fy(city.born)}</dd>`:''}</dl>`;
+      h+=`<dl class="kv" style="margin-top:10px"><dt>State</dt><dd>${p?lp(p):'none'}</dd><dt>People</dt><dd>${e?le(e):'none'}</dd><dt>Faith</dt><dd>${R?lr(R):e?'folk religion':'–'}</dd><dt>Tradition</dt><dd>${esc(traditionAt(i)?.name||'none')}</dd><dt>Population</dt><dd>${fmtN(s.pop[i])} / ${fmtN(s.K[i])}</dd>${city?`<dt>City</dt><dd>${esc(city.name)}${p&&p.capital===i?' (capital)':''}, since ${fy(city.born)}</dd>`:''}</dl>`;
       const settlement=s.colonies.get(i);
       if(settlement)h+=`<h3 class="sec">${settlement.status==='active'?'Overseas community':'Former overseas community'}: ${esc(settlement.name)}</h3><dl class="kv"><dt>Founded</dt><dd>${fy(settlement.founded)}</dd><dt>Origin people</dt><dd>${le(s.eths[settlement.founderPeople])}</dd><dt>Local people</dt><dd>${le(s.eths[settlement.people])}</dd><dt>Settler descendants</dt><dd>${fmtN(settlement.settlers)}</dd><dt>Local government</dt><dd>${p?lp(p):'Independent settlement; no centralized state'}</dd></dl>`;
       h+=`<h3 class="sec">Land</h3><dl class="kv"><dt>Terrain</dt><dd>${BIOMES[w.biome[i]]}, ${Math.round(w.elev[i])} m</dd><dt>Simulation climate</dt><dd>${w.T[i].toFixed(1)} °C, ${Math.round(w.Pr[i])} mm/year</dd><dt>Seasonal swing</dt><dd>${w.amp[i].toFixed(0)} °C</dd>${w.kgGrid&&w.kgGrid[i]?`<dt>Observed zone</dt><dd>${KG_CODES[w.kgGrid[i]]}</dd><dt>Raw model zone</dt><dd>${KG_GROUPS[simGroup(w.rawT[i],w.rawP[i],w.rawA[i])]}</dd><dt>Raw model rain</dt><dd>${Math.round(w.rawP[i])} mm/year</dd><dt>Climate source</dt><dd>${w.fitted?'Observed-zone anchored':'Climate model'}</dd>`:''}<dt>This year's rain</dt><dd>${Math.round((s.wm[i]-1)*100)>=0?'+':''}${Math.round((s.wm[i]-1)*100)}%</dd><dt>River</dt><dd>${w.rv[i]>0?(w.rv[i]>0.6?'major':'yes'):'no'}</dd><dt>Soil fertility</dt><dd>${(s.fert[i]*100).toFixed(0)}%</dd><dt>Immunity</dt><dd>${(s.immune[i]*100).toFixed(0)}%</dd><dt>Cohesion</dt><dd>${s.s[i].toFixed(2)}</dd></dl>`;
@@ -435,8 +452,8 @@ function renderPage(){
     h+=`<h3 class="sec">Chronicle</h3>`+chronList(chronFor(x=>refHas(x,'mig',id)));
   }else if(t==='war'){
     const war=s.wars[id],A=war.a.map(k=>s.pols[k]),D=war.d.map(k=>s.pols[k]);
-    h+=`<div class="kind">${war.civil?'Civil war':'War'}</div><h2 class="name">${esc(cap(war.name))}</h2><p class="sub2">${fy(war.start)}${war.end?` – ${fy(war.end)}`:' · ongoing'}</p>`;
-    h+=`<dl class="kv" style="margin-top:10px"><dt>${war.civil?'Rebels':'Attackers'}</dt><dd>${A.map(lp).join(', ')}</dd><dt>${war.civil?'Old regime':'Defenders'}</dt><dd>${D.map(lp).join(', ')}</dd><dt>Provinces taken</dt><dd>${war.gA} by ${war.civil?'rebels':'attackers'}, ${war.gD} by ${war.civil?'the regime':'defenders'}</dd>${war.end?`<dt>Outcome</dt><dd style="text-align:left;font-family:var(--f-ui)">${esc(cap(war.outcome))}</dd>`:''}</dl>`;
+    h+=`<div class="kind">${war.civil?'Civil war':'War'}</div><h2 class="name">${esc(cap(war.name))}</h2><p class="sub2">${fy(war.start)}${war.finished?` – ${fy(war.end)}`:' · ongoing'}</p>`;
+    h+=`<dl class="kv" style="margin-top:10px"><dt>${war.civil?'Rebels':'Attackers'}</dt><dd>${A.map(lp).join(', ')}</dd><dt>${war.civil?'Old regime':'Defenders'}</dt><dd>${D.map(lp).join(', ')}</dd><dt>Provinces taken</dt><dd>${war.gA} by ${war.civil?'rebels':'attackers'}, ${war.gD} by ${war.civil?'the regime':'defenders'}</dd>${war.finished?`<dt>Outcome</dt><dd style="text-align:left;font-family:var(--f-ui)">${esc(cap(war.outcome))}</dd>`:''}</dl>`;
     if(war.why)h+=`<div class="verdict">${esc(war.why)}</div>`;
     h+=`<h3 class="sec">Chronicle</h3>`+chronList(chronFor(x=>refHas(x,'war',id)));
   }
@@ -629,8 +646,8 @@ function fmtP(k,v){if(k==='startYear')return fy(v);if(k==='landFrac')return Math
 
 /* ---------- tabs ---------- */
 function showPane(p){ui.pane=p;for(const b of document.querySelectorAll('.tabs button'))b.setAttribute('aria-selected',b.dataset.pane===p);
-  for(const k of ['chron','figs','plague','insp','check','setup'])$('pane-'+k).hidden=k!==p;
-  if(p==='insp')renderPage();if(p==='chron')renderChron(true);if(p==='figs')renderFigs();if(p==='plague')renderPlagues();if(p==='check')renderChecks()}
+  for(const k of ['chron','figs','plague','insp','stats','check','setup'])$('pane-'+k).hidden=k!==p;
+  if(p==='stats')renderAtlasStats();if(p==='insp')renderPage();if(p==='chron')renderChron(true);if(p==='figs')renderFigs();if(p==='plague')renderPlagues();if(p==='check')renderChecks()}
 document.querySelector('.tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b)showPane(b.dataset.pane)});
 
 /* ---------- controls ---------- */
@@ -696,9 +713,9 @@ $('speed').innerHTML=SPEEDS.map(([v,l])=>`<button type="button" data-v="${v}" ar
 $('speed').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setRate(+b.dataset.v)});
 $('speedr').addEventListener('input',()=>setRate(rateFromSlider(+$('speedr').value)));
 $('autoslow').addEventListener('change',()=>{ui.slowUntil=0;simClock.reset(performance.now());resetRateMeter();updateSpeedLabel()});
-$('map-layers').addEventListener('change',e=>{const k=e.target.dataset.layer;if(k in mapLayers){mapLayers[k]=e.target.checked;drawMap()}});
+$('map-layers').addEventListener('change',e=>{const k=e.target.dataset.layer;if(k in mapLayers){mapLayers[k]=e.target.checked;ui.dirty=true;buildComp();drawMap()}});
 document.addEventListener('click',e=>{if(!e.target.closest('#map-layers,[data-z="lab"]')){$('map-layers').hidden=true;$('zoomc').querySelector('[data-z="lab"]').setAttribute('aria-expanded','false')}});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('map-layers').hidden=true;$('zoomc').querySelector('[data-z="lab"]').setAttribute('aria-expanded','false')}if(e.target.matches('input,textarea')||e.ctrlKey||e.metaKey)return;
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('map-layers').hidden=true;$('zoomc').querySelector('[data-z="lab"]').setAttribute('aria-expanded','false')}if(e.target.matches('input,textarea,select,button,a,[contenteditable="true"]')||e.ctrlKey||e.metaKey)return;
   if(e.key===']')setRate((ui.target>=1e9?1000:ui.target)*1.5);else if(e.key==='[')setRate((ui.target>=1e9?1000:ui.target)/1.5)});
 setRate(window.matchMedia('(max-width:900px)').matches?10:25);
 function setRunning(on){
@@ -708,10 +725,10 @@ function setRunning(on){
 }
 $('play').addEventListener('click',()=>setRunning(!ui.running));
 $('modes').innerHTML=MODES.map(([k,l])=>`<button type="button" data-m="${k}" aria-pressed="${k===ui.mode}">${l}</button>`).join('');
-$('modes').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;ui.mode=b.dataset.m;for(const x of $('modes').children)x.setAttribute('aria-pressed',x===b);drawLegend();ui.dirty=true});
-$('map-layers').addEventListener('change',e=>{const k=e.target.dataset.layer;if(k in mapLayers){mapLayers[k]=e.target.checked;drawMap()}});
+$('modes').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;ui.mode=b.dataset.m;for(const x of $('modes').children)x.setAttribute('aria-pressed',x===b);drawLegend();wakeKnowledgeSelector();ui.dirty=true});
+$('map-layers').addEventListener('change',e=>{const k=e.target.dataset.layer;if(k in mapLayers){mapLayers[k]=e.target.checked;ui.dirty=true;buildComp();drawMap()}});
 document.addEventListener('click',e=>{if(!e.target.closest('#map-layers,[data-z="lab"]')){$('map-layers').hidden=true;$('zoomc').querySelector('[data-z="lab"]').setAttribute('aria-expanded','false')}});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('map-layers').hidden=true;$('zoomc').querySelector('[data-z="lab"]').setAttribute('aria-expanded','false')}if(e.target.matches('input,textarea'))return;if(e.code==='Space'){e.preventDefault();setRunning(!ui.running)}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('map-layers').hidden=true;$('zoomc').querySelector('[data-z="lab"]').setAttribute('aria-expanded','false')}if(e.target.matches('input,textarea,select,button,a,[contenteditable="true"]'))return;if(e.code==='Space'){e.preventDefault();setRunning(!ui.running)}});
 let drag=null;
 const ZMAX=12,pts=new Map();let pinch=null,lastTap={t:0,x:0,y:0};
 const isMob=()=>window.matchMedia('(max-width:900px)').matches;
@@ -749,11 +766,11 @@ mapCv.addEventListener('wheel',e=>{e.preventDefault();const r=mapCv.getBoundingC
   zoomAt(sx,sy,Math.exp(-e.deltaY*(e.ctrlKey?0.01:0.0025)))},{passive:false});
 $('zoomc').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const v=b.dataset.z;
   if(v==='play')$('play').click();else if(v==='lab'){const panel=$('map-layers');panel.hidden=!panel.hidden;b.setAttribute('aria-expanded',String(!panel.hidden))}else if(v==='reset'){ui.z=1;ui.ox=0;ui.oy=0;clampView();drawMap()}else zoomAt(mapDim.w/2,mapDim.h/2,v==='in'?1.6:1/1.6)});
-$('map-layers').addEventListener('change',e=>{const k=e.target.dataset.layer;if(k in mapLayers){mapLayers[k]=e.target.checked;drawMap()}});
+$('map-layers').addEventListener('change',e=>{const k=e.target.dataset.layer;if(k in mapLayers){mapLayers[k]=e.target.checked;ui.dirty=true;buildComp();drawMap()}});
 document.addEventListener('click',e=>{if(!e.target.closest('#map-layers,[data-z="lab"]')){$('map-layers').hidden=true;$('zoomc').querySelector('[data-z="lab"]').setAttribute('aria-expanded','false')}});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('map-layers').hidden=true;$('zoomc').querySelector('[data-z="lab"]').setAttribute('aria-expanded','false')}if(e.target.matches('input,textarea')||e.ctrlKey||e.metaKey)return;
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('map-layers').hidden=true;$('zoomc').querySelector('[data-z="lab"]').setAttribute('aria-expanded','false')}if(e.target.matches('input,textarea,select,button,a,[contenteditable="true"]')||e.ctrlKey||e.metaKey)return;
   if(e.key==='+'||e.key==='=')zoomAt(mapDim.w/2,mapDim.h/2,1.4);else if(e.key==='-')zoomAt(mapDim.w/2,mapDim.h/2,1/1.4)});
-$('legtog').addEventListener('click',()=>{const o=$('legend').classList.toggle('open');$('legtog').setAttribute('aria-expanded',o)});
+$('legtog').addEventListener('click',()=>{if(ui.mode==='knowledge'){wakeKnowledgeSelector();return}const o=$('legend').classList.toggle('open');$('legtog').setAttribute('aria-expanded',o)});
 const jumpB=$('jump');let jumpMode=null,mapVis=true;
 function updJump(){if(!isMob()){jumpB.hidden=true;return}
   if(!mapVis){jumpB.textContent='↑ Map';jumpB.dataset.m='map';jumpB.hidden=false}
@@ -795,10 +812,11 @@ try{const c=document.createElement('canvas');c.width=c.height=512;const g=c.getC
 /* ---------- world building ---------- */
 function busy(on,txt){const b=$('busy');b.hidden=!on;if(txt)b.textContent=txt}
 function finishHistory(){
-  try{const config=exportExperiment();history.replaceState(null,'',config.world.source==='import'?'#seed-'+encodeURIComponent(String(S.seed)):experimentHash(config))}catch(e){console.error(e)}
+  // Compact ordinary addresses; custom and explicitly shared setups remain reproducible.
+  try{history.replaceState(null,'',experimentAddressHash(exportExperiment(),location.hash.startsWith('#experiment=')))}catch(error){console.error(error)}
   ui.gen=null;ui.genS=S;ui.completedYear=S.year;ui.slowUntil=0;simClock.reset(performance.now());resetRateMeter();updateSpeedLabel();
   ui.page=null;ui.stack=[];ui.lastChronKey='';ui.lastSpotObj=null;$('toast').hidden=true;ui.pausedAtEnd=false;ui.dirty=true;ui.ready=true;$('play').disabled=false;
-  showPane(ui.pane);updateTop();drawChart();drawLegend();
+  showPane(ui.pane);updateTop();drawChart();drawLegend();wakeKnowledgeSelector();
   const h0=S.hearths.find(h=>h.kind==='farm');if(h0)centerOn(h0.cell);
 }
 function startHistory(){
@@ -893,8 +911,8 @@ function frame(t){
   if(ui.ringT&&performance.now()<ui.ringT)ui.dirty=true;
   if(ui.dirty&&S&&baseCv&&t-ui.lastRender>110){ui.lastRender=t;ui.dirty=false;buildComp();drawMap();updateTop()}
   if(S&&t-ui.lastSide>700){ui.lastSide=t;
-    if(ui.pane==='chron')renderChron();else if(ui.running){if(ui.pane==='insp')renderPage();else if(ui.pane==='figs')renderFigs();else if(ui.pane==='plague')renderPlagues()}
-    if(ui.mode==='knowledge'&&ui.running&&t%3000<700)drawLegend();
+    if(ui.pane==='chron')renderChron();else if(ui.running){if(ui.pane==='insp')renderPage();else if(ui.pane==='figs')renderFigs();else if(ui.pane==='plague')renderPlagues();else if(ui.pane==='stats'&&t-(ui.lastStats||0)>3000){ui.lastStats=t;renderAtlasStats()}}
+    if(ui.mode==='knowledge'&&ui.running&&t%3000<700&&!$('legend').matches(':focus-within'))drawLegend();
     drawChart()}
   requestAnimationFrame(frame);
 }
@@ -911,10 +929,24 @@ async function boot(){
     EARTH=decodeEarth(e,k);
     let config=null;
     try{config=experimentFromHash(location.hash||'')}catch(error){$('share-status').textContent=error.message;showPane('setup')}
-    let seed=null;try{const m=/seed-([A-Za-z0-9]+)/.exec(location.hash||'');if(m)seed=m[1]}catch(err){}
+    let seed=null;try{const m=/^#seed-(.*)$/.exec(location.hash||'');if(m)seed=decodeURIComponent(m[1])}catch(err){}
     $('hseed').value=seed||String(Math.floor(Math.random()*1e6));
     if(config)buildWorld(config.world.source==='generated'?'gen':config.world.source,config);else buildWorld('earth');
   }catch(err){console.error(err);busy(true,'Earth could not be loaded here, so a generated world is used instead.');setTimeout(()=>buildWorld('gen'),800)}
 }
 boot();
 
+
+function renderAtlasStats(){
+ if(!S)return;const kind=$('rank-kind').value,metric=kind==='state'?$('rank-metric').value:'renown';
+ $('rank-metric').disabled=kind!=='state';if(kind!=='state')$('rank-metric').value='renown';
+ const scope=$('rank-living').checked?'living':'all',rows=atlasRanking(kind,metric,scope).slice(0,100);
+ const notes=kind==='state'?'Renown combines peak population and area, longevity, recorded works and conquests. Area is km² of claimed territory; peaks are independent maxima.':kind==='religion'?'Renown combines peak followers and reach, longevity, sponsoring states and descendant faiths.':'War scale combines population of participating realms at entry, participants, duration and provinces taken. It is not a casualty or moral greatness estimate.';
+ $('ranking-note').textContent=notes;
+ $('rankings').innerHTML=rows.length?'<div class="tablewrap"><table class="table"><thead><tr><th>#</th><th>Name</th><th>'+esc(kind==='state'?$('rank-metric').selectedOptions[0].textContent:'Renown / scale')+'</th></tr></thead><tbody>'+rows.map((r,n)=>{
+  const o=r.entity,t=kind==='state'?'pol':kind==='religion'?'rel':'war',name=kind==='state'?(o.alive?o.full:o.peak):o.name;
+  const value=metric==='area'||metric==='peakArea'?fmtN(r.score)+' km²':metric==='population'||metric==='peakPopulation'?fmtN(r.score):r.score.toFixed(1);
+  return `<tr><td>${n+1}</td><td><button class="lnk" data-t="${t}" data-id="${o.id}">${esc(name)}</button>${kind==='state'&&!o.alive?' · fallen':''}</td><td class="n">${value}</td></tr>`;
+ }).join('')+'</tbody></table></div>':'<div class="empty">No entries yet.</div>';
+}
+for(const id of ['rank-kind','rank-metric','rank-living'])$(id).addEventListener('change',renderAtlasStats);

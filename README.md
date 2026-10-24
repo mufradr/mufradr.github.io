@@ -3,7 +3,7 @@
 An interactive browser simulation of populations, states, cultures, and climate,
 hosted on GitHub Pages at https://mufradr.github.io/.
 
-The app identifies itself as version 0.10.0. It is a static site: no package
+The app identifies itself as version 0.11.0. It is a static site: no package
 installation or build step is required to run or publish it. `.nojekyll` enables
 direct static serving on GitHub Pages.
 
@@ -18,7 +18,9 @@ python3 -m http.server 8000 --bind 127.0.0.1
 Open `http://127.0.0.1:8000/` in a modern browser. Click **Play** to advance the
 simulation and **Pause** to stop it. Use the map controls to explore views such as
 Terrain, Population, Cohesion (the ability to act together), and Climate check.
-The **Aa** menu independently controls country, people and religion names, city
+The **Aa** menu also has independent city-density and route-detail optimizations
+that can each be disabled, plus border and fortification switches. It controls country, people and religion
+names, city
 markers, city names, colony annotations, and trade routes. Choices are remembered
 in this browser. You can keep country names visible while hiding cities, or the reverse.
 
@@ -34,12 +36,13 @@ Google Fonts are optional external resources; fallback fonts work offline.
 | `assets/earth.js` | Compressed elevation and Köppen climate data |
 | `js/core.js` | World generation, climate, and simulation rules; no DOM dependency |
 | `js/colonies.js` | Independent overseas settlements, immigration, and cultural development |
+| `js/atlas.js` | Tradition identities, historical rankings and map detail selection |
 | `js/experiments.js` | Versioned starting setups, sharing, and JSON import/export |
 | `js/diagnostics.js` | On-demand simulation state consistency checks |
 | `js/ui.js` | Map rendering, controls, simulation pacing, and startup |
 | `tests/` | Simulation regression fixtures and browser checks |
 
-Scripts load in order: Earth data, simulation core, colonies, experiments, diagnostics, then interface. They use
+Scripts load in order: Earth data, simulation core, colonies, atlas analysis, experiments, diagnostics, then interface. They use
 classic scripts with shared bindings; preserve that order. Edit the relevant
 file and reload the browser. Keep all these directories alongside `index.html`
 when serving or publishing the site. Relative asset URLs also support hosting
@@ -63,6 +66,8 @@ set `CHROMIUM_PATH` to its executable. The tests automatically use
 - `npm run test:core` checks Earth and generated-world elevations against the original
   terrain baseline, fixed-seed climate and history reproducibility, three simulation
   years, and finite, nonnegative population values.
+- `npm run validate:maritime` checks 300 years of prepared ocean ports, settlements,
+  passenger minorities and integrity without forcing founding success.
 - `npm run validate:states` reports 6,500 years of early political development,
   including regional polity counts and the population shares held by states and
   tributary blocs. Use `npm run validate:states -- another-seed 6500` to compare seeds.
@@ -79,6 +84,29 @@ For manual validation, start the local server, check that the simulation date
 advances with Play and stops with Pause, try the map views, and inspect the
 browser console for errors. Simulation-rule changes need additional checks of
 the affected behavior; the regression suite does not cover all long-term outcomes.
+
+See [atlas and maritime development notes](docs/ATLAS.md) for score formulas,
+rendering limits, URL behaviour and settlement rules.
+
+## Atlas and statistics in 0.11.0
+
+**Traditions** colours successor states by inherited political tradition and stateless
+peoples by ancestral family. **Stats** ranks states, religions and wars by an
+explained renown/scale index; state rankings also offer current and peak area and
+population. Area means claimed territory, measured in km², and separate peaks
+need not occur in the same year. War scale uses populations of participating realms,
+not casualties or mobilized soldiers.
+
+City detail prioritizes the largest visible cities and avoids crowded markers and
+names in screen pixels. Route detail limits visible routes and simplifies only the
+drawn paths; hidden routes still trade and populations still develop. Each limit
+can be disabled independently in **Aa**. Knowledge filters fade after ten inactive
+seconds and return through **Knowledge filters**; active keyboard use keeps them open.
+
+Default Earth addresses use a short seed fragment. Custom setups and explicitly
+shared links retain the full starting configuration to make refreshes reproducible.
+**Setup → Copy link** always produces the full versioned setup. Neither address
+format saves current progress; imported maps still require an exported setup file.
 
 ## Early states in 0.10.0
 
@@ -155,7 +183,8 @@ existing inhabited shores are not automatically annexed.
 ## Independent overseas communities in 0.9.0
 
 Late-game ocean voyages can found independent settler communities on suitable,
-unclaimed coasts. Earth requires 1300 CE or later, ocean-going ships, navigation,
+unclaimed coasts, or small enclaves accepted through peaceful treaties or mature
+trade under a local government. Earth requires 1300 CE or later, ocean-going ships, navigation,
 farming, a substantial sending population, and room to sustain newcomers. Founding
 is probabilistic; it does not annex land belonging to another state.
 
@@ -168,9 +197,13 @@ into neighbours or lose their connection to the homeland.
 
 Teal diamonds mark active communities on political, alliance, peoples and religion
 maps. Zoom in for names or inspect the province for founding people, local culture,
-settler descendants and current government. The map names toggle hides these
-markers too. At most 128 community records are retained; failed records can be
+settler descendants and current government. The Aa colony annotation switch controls these markers and names. At most 128 community records are retained; failed records can be
 replaced when new communities form.
+
+Maintained ocean trade retries settlement opportunities, supports immigration and
+small two-way passenger movements, and preserves trade-supported minorities.
+If a tiny mixed community cannot form a new people, both existing groups survive.
+Host governments retain ownership; war blocks their acceptance of new arrivals.
 
 National colony ownership, imperial administration and overseas conquest remain
 future work. JSON setups still reproduce starting conditions rather than saving

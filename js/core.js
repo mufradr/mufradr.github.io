@@ -1,7 +1,7 @@
 
 "use strict";
 /* ================= SIMULATION CORE (no DOM) ================= */
-const ENGINE_VERSION='0.10.0';
+const ENGINE_VERSION='0.11.0';
 const calendarPhase=(year,period)=>((year%period)+period)%period;
 const W=400,H=200,N=W*H,SC=4,HW=W*SC,HH=H*SC,AGW=40,AGH=20;
 const PDEF=[
@@ -588,7 +588,7 @@ function newHistory(hseed){
     firstTech:new Array(TECH.length).fill(null),lmFound:new Uint8Array(w.lmCount),regionFirst:{},medBest:{share:0,y:null,pol:0},chinaHist:[],medHist:[],farmCheck:null};
   const s=S;
   s.farm=tk[0];s.herd=tk[1];s.irrig=tk[2];s.metal=tk[3];s.horse=tk[4];s.sail=tk[5];s.admin=tk[6];s.wheel=tk[7];s.iron=tk[8];s.coin=tk[9];s.law=tk[10];s.roads=tk[11];s.nav=tk[12];s.caval=tk[13];s.paper=tk[14];s.crops=tk[15];s.gun=tk[16];s.ocean=tk[17];s.camel=tk[18];s.grain=tk[19];s.ard=tk[20];s.plough=tk[21];s.manure=tk[22];s.xcrops=tk[23];s.integ=new Float32Array(N);s.uni=new Float32Array(N);s.uniFam=new Int32Array(N).fill(-1);
-  prepEco(w);Object.assign(s,{forest:Float32Array.from(w.forest0),salt:new Float32Array(N),adapt:new Float32Array(N),dp:new Float32Array(N),poolNext:new Float32Array(N),car:new Float32Array(N),exit:new Float32Array(N),circE:Float32Array.from(w.circ),rp:new Float32Array(N),routes:[],carPairs:new Set(),cropX:new Set(),seaRoutes:new Map(),colonies:new Map(),bfsPar:new Int32Array(N),bfsD:new Int16Array(N),bfsMark:new Int32Array(N),bfsStamp:0});
+  prepEco(w);Object.assign(s,{forest:Float32Array.from(w.forest0),salt:new Float32Array(N),adapt:new Float32Array(N),dp:new Float32Array(N),poolNext:new Float32Array(N),car:new Float32Array(N),exit:new Float32Array(N),circE:Float32Array.from(w.circ),rp:new Float32Array(N),routes:[],carPairs:new Set(),cropX:new Set(),seaRoutes:new Map(),seaDiasporas:new Map(),colonies:new Map(),bfsPar:new Int32Array(N),bfsD:new Int16Array(N),bfsMark:new Int32Array(N),bfsStamp:0});
   for(const i of w.landIdx)s.adapt[i]=w.mal[i]*0.5;
   s.orb0=w.isEarth?null:(r()*23000);
   for(const i of w.coastIdx)s.sail[i]=0.05;
@@ -760,7 +760,7 @@ function traceVoyage(i,bearing,rangeKm){
     const j=cellAt(la*180/Math.PI,lo*180/Math.PI);
     if(path[path.length-1]!==j)path.push(j);
     if(!w.land[j]){if(w.T[j]<-5)return null;water=true;continue}
-    if(water)return w.T[j]>-9?{from:i,to:j,km,path}:null;
+    if(water)return w.T[j]>-9?{from:i,to:j,km,path,bearing}:null;
     if(km>180)return null; // leave the coastal cell, never march across land
   }
   return null;
@@ -798,18 +798,23 @@ function seaContact(voyage){
         for(const entry of s.seaRoutes){if(!drop||entry[1].last<drop[1].last||(entry[1].last===drop[1].last&&entry[1].km<drop[1].km))drop=entry}
         s.seaRoutes.delete(drop[0]);
       }
-      s.seaRoutes.set(key,{...voyage,last:s.year});
+      s.seaRoutes.set(key,{...voyage,born:s.year,last:s.year});
     }
   }
 }
 function seaTrade(){
   const s=S;if(s.year%5!==0)return;
-  for(const [key,R] of s.seaRoutes){
+  let scouts=0;
+  for(const [key,R] of [...s.seaRoutes]){
+    if(!s.seaRoutes.has(key))continue;
     const a=R.from,b=R.to;
     if(s.pop[a]<1||s.pop[b]<1||Math.max(voyageRange(a),voyageRange(b))<R.km){
       if(s.year-R.last>50)s.seaRoutes.delete(key);continue;
     }
     R.last=s.year;
+    tryIndependentColony(R);
+    tryIndependentColony({...R,from:b,to:a});maritimePassengerExchange(R);
+    if(s.year%20===0&&scouts<8&&s.pop[a]>=20000&&s.ocean[a]>=0.7&&!s.colonies.has(b)){scouts++;scoutColonyCoast(R)}
     // Return voyages carry knowledge both ways; mature techniques take decades.
     for(const f of s.tk){const d=(f[a]-f[b])*0.08*P.techDiff;if(d>0)f[b]=Math.min(1,f[b]+d);else f[a]=Math.min(1,f[a]-d)}
     cropExchange(a,b);virginSoil(b,a);virginSoil(a,b);
@@ -1011,7 +1016,7 @@ function newPolity(c,from,opt){
   let base=opt.base||L.lex.place;
   if(!opt.base&&(from||s.alive.some(k=>s.pols[k].base===base)))base=placeWord(L,r);
   const o={id,base,core:e,capital:c,rgb:hsl(r()*360,0.42+0.22*r(),0.5+0.1*r()),born:s.year,dyn:personName(L,r),gen:1,kind:opt.kind||'state',
-    E:0.02,shock:0,S:0.5,press:0.5,md:0,adm:0,nomF:0,cells:1,pop:s.pop[c],K:1,maxCells:1,maxPop:0,conq:0,alive:true,wet:0,p5:0,famY:-1e9,
+    E:0.02,shock:0,S:0.5,press:0.5,md:0,adm:0,nomF:0,cells:1,pop:s.pop[c],K:1,maxCells:1,maxPop:0,area:WD.area[c],peakArea:0,conq:0,alive:true,wet:0,p5:0,famY:-1e9,
     h:P.reach,gate:1,aggrM:1,psi:0,why:null,hist:[],tier:'Chiefdom',full:'',peak:'',from:from?from.id:0,lastBy:0,fK:0,fE:0,lx:0,ly:0,crises:0,
     rel:s.rel[c],allies:[],enemies:new Map(),truce:new Map(),nb:new Map(),over:0,tribs:0,spc:0,era:0,rulers:[],warsF:[],kids:[],
     origin:opt.origin||(from?{type:'rebellion',from:from.id}:s.colonies.has(c)&&s.colonies.get(c).status==='active'&&colonyDescendant(e,s.colonies.get(c).founderPeople)?{type:'colony',people:s.colonies.get(c).founderPeople,settlement:s.colonies.get(c).name,year:s.colonies.get(c).founded}:{type:'emerged',people:e}),loot:0,cult:0.2,works:[],golds:[],goldStart:0,sample:[],succ:null,fortN:0,cityPop:0,island:false,assimT:0,conqDyn:!!opt.conqDyn,settledY:0,restores:opt.restores||0};
@@ -1206,6 +1211,7 @@ function declareWar(As,Ds,name,notable,civil,holy){
     for(const al of D.allies){const p=s.pols[al];if(p&&p.alive&&!war.a.includes(al)&&!war.d.includes(al)&&r()<0.75)war.d.push(al)}
     if(holy){for(const [q] of D.nb){const p=s.pols[q];if(p&&p.alive&&p.kind==='state'&&p.rel===A.rel&&!war.a.includes(q)&&!war.d.includes(q)&&!p.enemies.has(D.id)&&r()<0.3*P.zeal)war.a.push(q)}}
   }
+  war.populationAtStart=[...new Set(war.a.concat(war.d))].reduce((n,k)=>n+(s.pols[k]?.pop||0),0);war.finished=false;
   war.aSet=new Set(war.a);
   for(const a of war.a)for(const d of war.d){const pa=s.pols[a],pd=s.pols[d];if(!pa.enemies.has(d)){pa.enemies.set(d,id);pd.enemies.set(a,id)}}
   for(const k of war.a.concat(war.d))s.pols[k].warsF.push(id);
@@ -1213,7 +1219,7 @@ function declareWar(As,Ds,name,notable,civil,holy){
   return war;
 }
 function endWar(war){
-  const s=S;war.end=s.year;
+  const s=S;war.end=s.year;war.finished=true;
   for(const a of war.a)for(const d of war.d){const pa=s.pols[a],pd=s.pols[d];
     if(pa.enemies.get(d)===war.id){pa.enemies.delete(d);pd.enemies.delete(a)}
     pa.truce.set(d,s.year+25);pd.truce.set(a,s.year+25)}
@@ -1293,7 +1299,7 @@ function relPass(){
   const s=S,w=WD,E=s.rels,n=E.length;if(!n)return;
   const L=w.landIdx,sx=new Float64Array(n),sy=new Float64Array(n),sz=new Float64Array(n),cnt=new Int32Array(n),pp=new Float64Array(n);
   for(let k=0;k<L.length;k++){const i=L[k],e=s.rel[i];if(e<0||s.pop[i]<1)continue;sx[e]+=w.x3[i];sy[e]+=w.y3[i];sz[e]+=w.z3[i];cnt[e]++;pp[e]+=s.pop[i]}
-  for(let e=0;e<n;e++){const R=E[e];R.cells=cnt[e];R.pop=pp[e];if(cnt[e]>R.peak)R.peak=cnt[e];
+  for(let e=0;e<n;e++){const R=E[e];R.cells=cnt[e];R.pop=pp[e];R.peakPop=Math.max(R.peakPop||0,R.pop);if(cnt[e]>R.peak)R.peak=cnt[e];
     if(R.alive&&!cnt[e]){R.alive=false;R.died=s.year;if(R.peak>=30)chron('faith',`The last followers of ${R.name} are gone; at its height it held ${R.peak} provinces.`,R.origin,[RR(R)])}
     if(cnt[e]){const m=Math.hypot(sx[e],sy[e],sz[e])||1;sx[e]/=m;sy[e]/=m;sz[e]/=m;R.lon=Math.atan2(sy[e],sx[e]);R.la=Math.asin(clamp(sz[e],-1,1))}
     if(!R.alive)continue;
@@ -1459,9 +1465,9 @@ function politics(){for(const _ of politicsG());}
 function* politicsG(){
   const s=S,w=WD,r=s.r,y=s.year,pols=s.pols,L=w.landIdx,pol=s.pol,pop=s.pop;
   const sampleNow=y%10===0;
-  for(const id of s.alive){const o=pols[id];o.pop=0;o.K=0;o.cells=0;o.sS=0;o.dS=0;o.ad=0;o.nom=0;o.cx=0;o.cy=0;o.yy=0;o.mp=-1;o.mc=-1;o.coastN=0;o.farmN=0;o.fortN=0;o.lmN=0;o.tax=0;o.ig=0;o.wasteN=0;o.plN=0;o.hvN=0;o.trade=0;o.n0=0;o.n1=0;o.n2=0;o.n3=0;o.nw=0;o.forP=0;if(sampleNow)o.sample=[]}
+  for(const id of s.alive){const o=pols[id];o.pop=0;o.K=0;o.cells=0;o.area=0;o.sS=0;o.dS=0;o.ad=0;o.nom=0;o.cx=0;o.cy=0;o.yy=0;o.mp=-1;o.mc=-1;o.coastN=0;o.farmN=0;o.fortN=0;o.lmN=0;o.tax=0;o.ig=0;o.wasteN=0;o.plN=0;o.hvN=0;o.trade=0;o.n0=0;o.n1=0;o.n2=0;o.n3=0;o.nw=0;o.forP=0;if(sampleNow)o.sample=[]}
   for(let k=0;k<L.length;k++){const i=L[k],p=pol[i];if(!p)continue;const o=pols[p],pp=pop[i];
-    o.pop+=pp;o.K+=s.K[i];o.cells++;o.sS+=s.s[i];const di=dd(i);o.dS+=di;let eD=0;if(pp>=1){o.n0+=pp*w.nT[i];o.n1+=pp*w.nM[i];o.n2+=pp*w.nN[i];o.n3+=pp*w.nD[i];o.nw+=pp;if(o.ni){eD=ecoD(i,o);if(eD>0.8)o.forP+=pp}}o.ad+=s.admin[i];o.ig+=s.integ[i];const pl=s.ard[i]>0.5&&!w.tsetse[i];o.tax+=pp>=1?pp*s.farm[i]*cerealEff(i)*Math.exp(-di/(o.h||6))*(0.5+0.5*s.integ[i])*(0.6+0.4*s.circE[i])*(pl?1.1:0.8)/(1+0.3*P.eco*eD):0;if(pl)o.plN++;if(w.heavy[i]>0.4)o.hvN++;if(isWaste(i,o.kind==="horde"))o.wasteN++;if(s.car[i]>0.3){const tl=1500*s.car[i];o.tax+=tl;o.trade+=tl}
+    o.pop+=pp;o.K+=s.K[i];o.cells++;o.area+=w.area[i];o.sS+=s.s[i];const di=dd(i);o.dS+=di;let eD=0;if(pp>=1){o.n0+=pp*w.nT[i];o.n1+=pp*w.nM[i];o.n2+=pp*w.nN[i];o.n3+=pp*w.nD[i];o.nw+=pp;if(o.ni){eD=ecoD(i,o);if(eD>0.8)o.forP+=pp}}o.ad+=s.admin[i];o.ig+=s.integ[i];const pl=s.ard[i]>0.5&&!w.tsetse[i];o.tax+=pp>=1?pp*s.farm[i]*cerealEff(i)*Math.exp(-di/(o.h||6))*(0.5+0.5*s.integ[i])*(0.6+0.4*s.circE[i])*(pl?1.1:0.8)/(1+0.3*P.eco*eD):0;if(pl)o.plN++;if(w.heavy[i]>0.4)o.hvN++;if(isWaste(i,o.kind==="horde"))o.wasteN++;if(s.car[i]>0.3){const tl=1500*s.car[i];o.tax+=tl;o.trade+=tl}
     if(w.nomad[i])o.nom++;if(w.coast[i])o.coastN++;if(s.farm[i]>0.5&&w.sF[i]>0.25&&pp/w.area[i]>2)o.farmN++;if(s.fort[i]>0.5)o.fortN++;
     o.cx+=w.cosLon[i];o.cy+=w.sinLon[i];o.yy+=w.cyA[i];if(pp>o.mp){o.mp=pp;o.mc=i}
     if(sampleNow){if(o.sample.length<24)o.sample.push(i);else if(r()<24/o.cells)o.sample[(r()*24)|0]=i}}
@@ -1489,6 +1495,7 @@ function* politicsG(){
     o.tier=tierOf(o);o.full=fullName(o);
     if(o.cells>o.maxCells){o.maxCells=o.cells;o.peak=o.full}
     if(o.pop>o.maxPop)o.maxPop=o.pop;
+    o.peakArea=Math.max(o.peakArea||0,o.area||0);
     o.lx=Math.atan2(o.cy,o.cx);o.ly=o.yy/o.cells;
     const c=o.capital;
     o.spc=clamp(0.9*Math.log10(Math.max(o.pop,1e3))-2.7+0.6*Math.log10(o.cells+1)+(o.tier==='Empire'||o.tier==='Khaganate'?1.6:o.tier==='Kingdom'||o.tier==='Khanate'?0.8:0)+s.admin[c]+0.8*s.law[c]+0.6*s.coin[c]+0.5*s.paper[c]+0.5*s.roads[c],0,10);
@@ -1690,18 +1697,19 @@ function mixPass(){
     if(s.pop[i]<1||b===s.eth[i]){s.eth2[i]=-1;continue}
     let m=s.mix[i];
     if(m>0.5){const a=s.eth[i];s.eth[i]=b;s.eth2[i]=a;m=1-m;s.mix[i]=m}
-    if(m<0.03){s.eth2[i]=-1;s.mixT[i]=0;continue}
+    const diaspora=s.seaDiasporas.get(i),supported=diaspora&&diaspora.people===s.eth2[i]&&s.year-diaspora.last<=40;
+    if(m<0.03&&!supported){s.eth2[i]=-1;s.mixT[i]=0;continue}
     if(m>0.25)s.mixT[i]=Math.min(255,s.mixT[i]+1);else s.mixT[i]=Math.max(0,s.mixT[i]-1);
     if(s.mixT[i]>=15&&born<2&&r()<0.08*P.mixing){
       const A=s.eth[i];if(A<0)continue;
       const nid=newEth(A,b);born++;
-      const q=s.q;let h=0,t=0,cnt=0,pp=0;q[t++]=i;s.lab[i]=-7;
+      const q=s.q,changed=[];let h=0,t=0,cnt=0,pp=0;q[t++]=i;s.lab[i]=-7;
       while(h<t&&cnt<60){const c=q[h++];const ea=s.eth[c],eb=s.eth2[c];
-        if((ea===A&&eb===b)||(ea===b&&eb===A)){s.eth[c]=nid;s.eth2[c]=-1;s.mix[c]=0;s.mixT[c]=0;cnt++;pp+=s.pop[c];
+        if((ea===A&&eb===b)||(ea===b&&eb===A)){changed.push({cell:c,eth:ea,eth2:eb,mix:s.mix[c],time:s.mixT[c]});s.eth[c]=nid;s.eth2[c]=-1;s.mix[c]=0;s.mixT[c]=0;cnt++;pp+=s.pop[c];
           for(let d=0;d<4;d++){const j=w.nb[c*4+d];if(j>=0&&w.land[j]&&s.lab[j]!==-7){s.lab[j]=-7;q[t++]=j}}}}
       for(let z=0;z<t;z++)s.lab[q[z]]=0;
       const E=s.eths,ne=E[nid];
-      if(cnt<5){for(let z=0;z<t;z++){const c=q[z];if(s.eth[c]===nid){s.eth[c]=A;s.eth2[c]=-1}}ne.alive=false;ne.stillborn=true;continue}
+      if(cnt<5){for(const old of changed){const c=old.cell;s.eth[c]=old.eth;s.eth2[c]=old.eth2;s.mix[c]=old.mix;s.mixT[c]=old.time}ne.alive=false;ne.stillborn=true;continue}
       if(pp>300000){chron('people',`From long mingling of the ${E[A].name} and the ${E[b].name}, a new people emerges: the ${ne.name}.`,i,[RE(E[A]),RE(E[b]),RE(ne)]);spot(`A new people, the ${ne.name}, is born of the ${E[A].name} and ${E[b].name}`,i,[RE(ne)])}
     }
   }

@@ -1,5 +1,34 @@
 # Release history
 
+## 0.11.0 — Traditions, renown and maritime exchange
+
+- Added a Traditions map for inherited state traditions and ancestral families.
+- Added Stats rankings for state, religion and war renown, plus current and peak
+  state area in km² and population. Scores are explained in the interface.
+- Added population-prioritized, screen-space city spacing and label collision
+  avoidance, and zoom-based route budgets and display-only path simplification.
+  Both detail limits have independent persistent switches in the Aa menu.
+- Reduced heavy fortification strokes, added border display switches, and reset
+  the composite canvas before each redraw to prevent drawing-state accumulation.
+- Knowledge filters fade after ten inactive seconds; a compact Knowledge filters
+  button restores them. Keyboard focus keeps the controls accessible.
+- Ordinary Earth addresses use compact seed links. Custom worlds/rules and
+  explicitly shared setups keep complete reproducible links; Share setup always
+  produces the full configuration. Progress is still not saved by a URL.
+- Maintained ocean routes revisit settlement opportunities in both directions,
+  support larger sustainable immigrant waves and small passenger diasporas,
+  prospect nearby landfalls with a bounded fleet budget, and
+  can establish peaceful host-approved enclaves without annexing the host state.
+- Fixed minority loss when a small community cannot form a hybrid culture, and
+  preserve source minority proportions when members of the majority emigrate.
+
+
+Validation: all 65 automated checks passed, including desktop/phone atlas controls,
+repeatable border pixels, score/area calculations, route/city detail selection,
+setup links, minority preservation and maritime settlement. A controlled 300-year
+maritime scenario ended with five active communities and ten diaspora records;
+integrity checks passed every ten years. Outcomes are not historical guarantees.
+
 ## 0.10.0 — Early states and map display controls
 
 - Farming communities now need at least 600 years of sustained settlement before

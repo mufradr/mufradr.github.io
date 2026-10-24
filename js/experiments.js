@@ -68,3 +68,11 @@ function restoreExperiment(input,earth){
   catch(error){Object.assign(P,previous.rules);Object.assign(CL,previous.climate);WD=previous.world;S=previous.state;throw error}
   return config;
 }
+
+// Keep ordinary Earth addresses compact; preserve full links for custom/reproducible setups.
+function experimentAddressHash(config,preserveFull=false){
+ if(config.world.source==='import')return '#seed-'+encodeURIComponent(config.historySeed);
+ const defaults=config.world.source==='earth'&&config.world.fitClimate&&config.rules.hearthMode==='historical'&&!config.rules.shuffleNames
+  &&PDEF.every(d=>config.rules[d[1]]===d[6])&&CDEF.every(d=>config.climate[d[0]]===d[5]);
+ return defaults&&!preserveFull?'#seed-'+encodeURIComponent(config.historySeed):experimentHash(config);
+}
