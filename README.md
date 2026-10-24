@@ -3,7 +3,7 @@
 An interactive browser simulation of populations, states, cultures, and climate,
 hosted on GitHub Pages at https://mufradr.github.io/.
 
-The app identifies itself as version 0.12.0. It is a static site: no package
+The app identifies itself as version 0.13.0. It is a static site: no package
 installation or build step is required to run or publish it. `.nojekyll` enables
 direct static serving on GitHub Pages.
 
@@ -36,6 +36,8 @@ Google Fonts are optional external resources; fallback fonts work offline.
 | `assets/earth.js` | Compressed elevation and Köppen climate data |
 | `js/core.js` | World generation, climate, and simulation rules; no DOM dependency |
 | `js/colonies.js` | Independent overseas settlements, immigration, and cultural development |
+| `js/saves.js`, `js/save-codec.js` | Validated world checkpoints and binary graph format |
+| `js/save-ui.js`, `js/save-store.js`, `js/save-worker.js` | Slots, IndexedDB, autosaves and background file processing |
 | `js/history.js` | Compressed dated peak footprints and war map records |
 | `js/history-ui.js` | Historical inspector previews and paused map views |
 | `js/atlas.js` | Tradition identities, historical rankings and map detail selection |
@@ -90,7 +92,23 @@ the affected behavior; the regression suite does not cover all long-term outcome
 See [atlas and maritime development notes](docs/ATLAS.md) for score formulas,
 rendering limits, URL behaviour and settlement rules.
 
-## Atlas and statistics in 0.12.0
+## Save and continue a world in 0.13.0
+
+Open **Saves** for three named manual slots, previous-save backups, and three
+rotating autosaves. Saving finishes the current year and pauses playback; loading
+resumes paused. Autosaves run every minute of active play and when pausing, and
+never overwrite manual slots. Loading keeps a separate recovery checkpoint.
+
+Use **Export current world** or a slot's **Export file** to keep a `.worldengine`
+file in Files/iCloud Drive. **Import world file** opens it on another device.
+Local slots stay in this browser and may be cleared by browser/iOS storage
+cleanup, so export important worlds. No account or server is needed. World saves
+include custom terrain, simulation progress, histories, peak maps and RNG state;
+setup links/files still only reproduce starting conditions. Schema 1 accepts the
+exact engine version and validates imports before replacing the live world.
+See [save format and device-storage notes](docs/SAVES.md).
+
+## Atlas and statistics
 
 Stats rankings for states/empires, religions, traditions and peoples include
 current and peak area/population. Selecting a peak opens its recorded territory

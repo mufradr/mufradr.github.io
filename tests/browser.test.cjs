@@ -39,7 +39,7 @@ test('browser: startup, controls, pacing, and Pages-relative resources', async t
       await page.waitForFunction(() => typeof ui !== 'undefined' && ui.ready && document.getElementById('busy').hidden);
       assert.equal(await page.title(), 'World Engine');
       assert.equal(await page.locator('.brand .mark').innerText(), 'World Engine');
-      assert.match(await page.locator('.brand .sub').innerText(), /v0\.12\.0/i);
+      assert.match(await page.locator('.brand .sub').innerText(), /v0\.13\.0/i);
       assert.equal(await page.locator('meta[property="og:title"]').getAttribute('content'), 'World Engine');
       const manifest = await page.evaluate(async () => (await fetch(document.querySelector('link[rel="manifest"]').href)).json());
       assert.equal(manifest.name, 'World Engine');
@@ -184,7 +184,7 @@ test('browser: startup, controls, pacing, and Pages-relative resources', async t
       await page.locator('#btn-export-setup').click();
       const download=await downloadPromise;
       const exported=JSON.parse(fs.readFileSync(await download.path(),'utf8'));
-      assert.equal(exported.engineVersion,'0.12.0');assert.equal(exported.rules.growth,.02);
+      assert.equal(exported.engineVersion,'0.13.0');assert.equal(exported.rules.growth,.02);
       const other=await browser.newPage();
       await other.route('https://fonts.googleapis.com/**',r=>r.abort());
       await other.goto(shared);

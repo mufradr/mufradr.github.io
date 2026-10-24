@@ -653,8 +653,8 @@ function fmtP(k,v){if(k==='startYear')return fy(v);if(k==='landFrac')return Math
 
 /* ---------- tabs ---------- */
 function showPane(p){ui.pane=p;for(const b of document.querySelectorAll('.tabs button'))b.setAttribute('aria-selected',b.dataset.pane===p);
-  for(const k of ['chron','figs','plague','insp','stats','check','setup'])$('pane-'+k).hidden=k!==p;
-  if(p==='stats')renderAtlasStats();if(p==='insp')renderPage();if(p==='chron')renderChron(true);if(p==='figs')renderFigs();if(p==='plague')renderPlagues();if(p==='check')renderChecks()}
+  for(const k of ['chron','figs','plague','insp','stats','check','saves','setup'])$('pane-'+k).hidden=k!==p;
+  if(p==='saves'&&typeof renderWorldSaves==='function')refreshWorldSlots();if(p==='stats')renderAtlasStats();if(p==='insp')renderPage();if(p==='chron')renderChron(true);if(p==='figs')renderFigs();if(p==='plague')renderPlagues();if(p==='check')renderChecks()}
 document.querySelector('.tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b)showPane(b.dataset.pane)});
 
 /* ---------- controls ---------- */
@@ -695,7 +695,7 @@ function resetRateMeter(now=performance.now()){
   ui.rate=0;ui.rateReady=false;ui.rateSince=now;ui.rateYears=0;
 }
 function noteCompletedYear(now=performance.now()){
-  ui.completedYear=S.year;ui.rateYears++;
+  ui.completedYear=S.year;ui.rateYears++;if(typeof maybeAutosave==='function')maybeAutosave();
 }
 function sampleRate(now=performance.now()){
   if(!ui.running)return;
@@ -726,10 +726,12 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('map-layers').hid
   if(e.key===']')setRate((ui.target>=1e9?1000:ui.target)*1.5);else if(e.key==='[')setRate((ui.target>=1e9?1000:ui.target)/1.5)});
 setRate(window.matchMedia('(max-width:900px)').matches?10:25);
 function setRunning(on){
+  const wasRunning=ui.running;
   if(on&&ui.historical)closeHistorical();
   const running=!!(on&&ui.ready);
   if(running!==ui.running){ui.running=running;simClock.reset(performance.now());resetRateMeter();ui.slowUntil=0}
   $('play').textContent=ui.running?'Pause':'Play';updateSpeedLabel();if(S)updateTop();
+  if(wasRunning&&!ui.running&&typeof autosaveOnPause==='function')autosaveOnPause();
 }
 $('play').addEventListener('click',()=>setRunning(!ui.running));
 $('modes').innerHTML=MODES.map(([k,l])=>`<button type="button" data-m="${k}" aria-pressed="${k===ui.mode}">${l}</button>`).join('');
@@ -828,6 +830,7 @@ try{const c=document.createElement('canvas');c.width=c.height=512;const g=c.getC
 /* ---------- world building ---------- */
 function busy(on,txt){const b=$('busy');b.hidden=!on;if(txt)b.textContent=txt}
 function finishHistory(){
+  if(typeof saveUI!=='undefined'){saveUI.name='';saveUI.lastAuto=Date.now();saveUI.lastState=S;saveUI.lastYear=S.year}
   ui.historical=null;historicalCache=null;$('historical-banner').hidden=true;$('legend').hidden=false;$('legtog').hidden=false;
   // Compact ordinary addresses; custom and explicitly shared setups remain reproducible.
   try{history.replaceState(null,'',experimentAddressHash(exportExperiment(),location.hash.startsWith('#experiment=')))}catch(error){console.error(error)}

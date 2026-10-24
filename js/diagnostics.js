@@ -1,7 +1,7 @@
 "use strict";
 // Run at completed-year boundaries in tests/debugging; never in the render loop.
-function simulationIssues(limit=50){
-  const errors=[],s=S,w=WD;
+function simulationIssues(limit=50,state=S,world=WD){
+  const errors=[],s=state,w=world;
   const report=message=>{if(errors.length<limit)errors.push(message)};
   if(!s||!w)return ['No simulation is loaded.'];
   const index=(v,list,empty=-1)=>Number.isInteger(v)&&(v===empty||(v>=0&&v<list.length&&list[v]!=null));

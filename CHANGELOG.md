@@ -1,5 +1,20 @@
 # Release history
 
+## 0.13.0 — World saves and portable histories
+
+- Added a Saves tab with three named manual slots and previous-save backups.
+- Added three rotating autosaves after each minute of play and on pause, using
+  completed-year checkpoints independently of manual slots.
+- Added compressed .worldengine file export/import for moving worlds through
+  Files/iCloud Drive, including custom terrain, histories and historical peak maps.
+- Loading validates format, checksum, version and simulation structure first,
+  asks before replacing the world, and keeps a separate recovery checkpoint.
+- Stored full RNG state and shared data references for consistent continuation.
+  Processing runs in a worker, and IndexedDB transactions protect existing saves
+  if a replacement fails. Browser-storage limitations are explained in Saves.
+- New saves resume paused. Configuration links still reproduce starting setups;
+  they do not contain progress. Save schema 1 requires this exact engine version.
+
 ## 0.12.0 — Historical peak maps and compact map controls
 
 - Map legends fade after eight inactive seconds (ten for Knowledge) and return

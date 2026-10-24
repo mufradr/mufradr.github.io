@@ -1,15 +1,15 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="stylesheet" href="styles/base.css"></head><body>
-<!-- World Engine v0.12.0 — dated peak maps for states, religions, traditions and peoples. -->
+<!-- World Engine v0.13.0 — world save slots, rotating autosaves and portable save files. -->
 <title>World Engine</title><meta name="theme-color" content="#1c262c"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="World Engine"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="A browser-based world history simulator on real Earth terrain and climate."><meta property="og:title" content="World Engine"><meta property="og:description" content="Watch states, peoples, faiths and plagues rise and fall on a real-Earth map.">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="styles/app.css?v=0.12.0">
+<link rel="stylesheet" href="styles/app.css?v=0.13.0">
 
 <div class="app">
   <header class="bar">
-    <div class="brand"><span class="mark">World Engine</span><span class="sub">history engine · v0.12.0</span></div>
+    <div class="brand"><span class="mark">World Engine</span><span class="sub">history engine · v0.13.0</span></div>
     <div class="clock">
       <button id="play" class="btn primary" type="button" disabled>Play</button>
       <div class="seg" id="speed" role="group" aria-label="Years per second"></div>
@@ -54,6 +54,7 @@
         <button role="tab" aria-selected="false" data-pane="insp">Inspect</button>
         <button role="tab" aria-selected="false" data-pane="stats">Stats</button>
         <button role="tab" aria-selected="false" data-pane="check">Checks</button>
+        <button role="tab" aria-selected="false" data-pane="saves">Saves</button>
         <button role="tab" aria-selected="false" data-pane="setup">Setup</button>
       </nav>
       <div class="pane" id="pane-chron">
@@ -80,6 +81,18 @@
         <div id="ranking-note" class="note"></div><div id="rankings"></div>
       </div>
       <div class="pane" id="pane-check" hidden></div>
+      <div class="pane" id="pane-saves" hidden>
+        <h3 class="sec" style="margin-top:0">Saved worlds</h3>
+        <p class="note">Three manual slots for different histories. Saving finishes the current year and pauses; loading resumes paused. Replacing a manual slot keeps its previous save.</p>
+        <div class="actions"><button class="btn" id="export-world" type="button">Export current world</button><label class="btn" for="import-world" role="button" tabindex="0">Import world file</label><input id="import-world" type="file" hidden></div>
+        <p class="status" id="saves-status" role="status" aria-live="polite"></p>
+        <p class="note" id="saves-storage-note"></p>
+        <div id="save-slots"></div>
+        <h3 class="sec">Autosave backups</h3>
+        <label class="check"><input type="checkbox" id="autosave-enabled" checked><span>Autosave every minute of active play and when pausing. Keep three rotating backups, separate from manual slots.</span></label>
+        <p class="note">Autosaves capture completed years. Export important worlds: private browsing, clearing site data or iOS storage cleanup can remove local slots. Save files use .worldengine. Share/setup links still restart history.</p>
+        <div id="autosave-slots"></div>
+      </div>
       <div class="pane" id="pane-setup" hidden>
         <h3 class="sec" style="margin-top:0">World</h3>
         <div class="seg" id="src" role="group" aria-label="World source">
@@ -103,7 +116,7 @@
         <div class="field"><label for="share-link">Share starting setup</label><div class="search" style="margin:0"><input type="text" id="share-link" readonly placeholder="Press Copy link"><button class="btn" id="btn-share" type="button">Copy link</button></div><div class="status" id="share-status"></div></div>
         <div class="actions"><button class="btn" id="btn-export-setup" type="button">Export setup</button><label class="btn" for="experiment-file">Import setup</label><input id="experiment-file" type="file" accept=".json,application/json" hidden></div>
         <p class="note">Links and setup files reproduce the starting world, seeds and rules in this engine version. They do not save progress or edits made during a run. Imported maps must be shared as a setup file.</p>
-        <p class="note">Each visit starts a new random history. The same world, history seed and rules always give the same history. Change only the history seed to see which outcomes are structural and which were luck.</p>
+        <p class="note">Each visit starts a new random history unless you load a world from Saves. The same world, history seed and rules always give the same history. Change only the history seed to see which outcomes are structural and which were luck.</p>
         <div id="rules"></div>
         <h3 class="sec">Import a world</h3>
         <p class="note">A greyscale equirectangular heightmap, such as a Draggable World export. Set the elevation that pure black and pure white stand for. Draggable World's WCL export uses −11,000 and +9,000 m with sea level at mid-grey.</p>
@@ -133,13 +146,17 @@
 </div>
 
 <script id="assets" src="assets/earth.js"></script>
-<script id="core" src="js/core.js?v=0.12.0"></script>
-<script src="js/colonies.js?v=0.12.0"></script>
-<script src="js/atlas.js?v=0.12.0"></script>
-<script src="js/history.js?v=0.12.0"></script>
-<script src="js/experiments.js?v=0.12.0"></script>
-<script src="js/diagnostics.js?v=0.12.0"></script>
-<script src="js/history-ui.js?v=0.12.0"></script>
-<script src="js/ui.js?v=0.12.0"></script>
+<script id="core" src="js/core.js?v=0.13.0"></script>
+<script src="js/colonies.js?v=0.13.0"></script>
+<script src="js/atlas.js?v=0.13.0"></script>
+<script src="js/history.js?v=0.13.0"></script>
+<script src="js/experiments.js?v=0.13.0"></script>
+<script src="js/diagnostics.js?v=0.13.0"></script>
+<script src="js/history-ui.js?v=0.13.0"></script>
+<script src="js/save-codec.js?v=0.13.0"></script>
+<script src="js/saves.js?v=0.13.0"></script>
+<script src="js/save-store.js?v=0.13.0"></script>
+<script src="js/ui.js?v=0.13.0"></script>
 
+<script src="js/save-ui.js?v=0.13.0"></script>
 </body></html>

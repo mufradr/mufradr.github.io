@@ -6,7 +6,7 @@ const root = path.resolve(__dirname, '..');
 
 // Evaluate the DOM-free engine without adding a production testing API.
 function loadCore() {
-  const source = ['assets/earth.js', 'js/core.js', 'js/colonies.js', 'js/atlas.js', 'js/history.js', 'js/experiments.js', 'js/diagnostics.js']
+  const source = ['assets/earth.js', 'js/core.js', 'js/colonies.js', 'js/atlas.js', 'js/history.js', 'js/experiments.js', 'js/diagnostics.js', 'js/save-codec.js', 'js/saves.js']
     .map(f => fs.readFileSync(path.join(root, f), 'utf8')).join('\n');
   return Function('inflateSync', source + `
     return {
@@ -16,6 +16,7 @@ function loadCore() {
       },
       generated() { WD = genWorld({seed:'regression-world', landFrac:P.landFrac}); },
       start() { newHistory('regression-history'); },
+      save:captureWorldSave, encode:encodeWorldFile, decode:decodeWorldFile, restore:applyWorldSave,
       step, inspect(code) {return eval(code);}, get world() {return WD;}, get state() {return S;}
     };
   `)(inflateSync);
