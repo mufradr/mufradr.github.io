@@ -1,4 +1,4 @@
-# Atlas and maritime development — 0.11.0
+# Atlas and maritime development — 0.12.0
 
 ## Traditions and historical rankings
 
@@ -9,13 +9,15 @@ separate from the Peoples and Religion maps; it is not a new simulated instituti
 Colours are stable hashes of identities. Labels use the geographic centre of
 currently represented cells and the existing annotation controls.
 
-The Stats tab includes all recorded states, religions and wars, with an optional
+The Stats tab includes recorded states, religions, traditions, peoples and wars, with an optional
 living/ongoing filter. The first 100 ranked entries are displayed. Rows link to
-entity histories. State rankings also offer current area/population and independent
+entity histories. All four territorial groups offer current area/population and independent
 historical maxima. Area is the sum of claimed cell areas in km², including claims
 on sparse land; it is not cell count or effective administrative control. Area
-and population maxima are sampled at annual aggregation, while religious reach
-and follower maxima use the existing religious update cadence.
+and population footprints are sampled at initial history creation and annual
+polity aggregation, before that phase changes ownership. Religious renown still
+uses the existing religious update cadence; its new peak maps and peak metrics
+use annual samples. Brief changes between samples are not retained.
 
 Renown is an explanatory index rather than a historical or moral judgement:
 
@@ -87,3 +89,41 @@ minority-support records. Display optimizations never change these mechanics.
 known Atlantic route without forcing colony founding RNG. It is a controlled
 mechanics scenario, not a historical replay or a promise that every full history
 will reach the same outcome.
+
+## Historical footprint storage and display
+
+`js/history.js` observes the same annual cell arrays without random draws or
+changes to simulation rules. Each entity retains an area peak and an independent
+population peak with year, area, population, cell count and color. Footprints use
+sorted `(start, length)` runs in Uint32 arrays, including cell IDs above 65535.
+A snapshot shared by both peaks is stored once; replacing one peak cannot mutate
+the other. A snapshot survives an entity's extinction but resets on a new run.
+Traditions aggregate all successor states sharing `civ`; stateless cells use
+the ancestral people family. Religion and people maps represent the cell's
+dominant identity and count its whole population, rather than minority shares.
+Uninhabited claims count toward state area, but not cultural footprints.
+
+`js/history-ui.js` supplies inspector mini maps fitted around each footprint,
+including footprints crossing the date line, and one shared raster cache.
+Peak ranking links pause playback and open the historical extent on the main
+map. A banner identifies the date and a return button restores the prior camera.
+The simulation's current year and arrays are not rewound. Current city, label,
+route and border layers and current-cell tooltips are suppressed while viewing
+a historical footprint. The underlying terrain is the current base map.
+
+War records store initial attacker/defender footprints at declaration and a
+unique set of provinces captured in recorded battles. These are explicitly
+labelled outbreak/capture maps, not maximum controlled territory or casualty
+maps. Captures exclude peaceful transfers and initial rebel partitions.
+
+Storage grows with recorded entities and compressed peak extents, not with every
+simulated year. There is no replay archive or progress persistence: share/setup
+URLs reproduce configuration only. Unrecorded footprints are shown as
+unavailable rather than reconstructed from present-day ownership.
+
+Map view buttons live in a collapsed cog panel on desktop and phones. Selection,
+outside clicks and Escape close the panel; keyboard dismissal returns focus to
+the cog. Its label shows the active view. All map legends fade after eight
+inactive seconds (Knowledge retains ten seconds). The Legend button restores or
+hides them. Focused controls stay accessible; faded legends are inert and do not
+intercept map gestures.

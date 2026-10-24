@@ -39,7 +39,7 @@ test('browser: startup, controls, pacing, and Pages-relative resources', async t
       await page.waitForFunction(() => typeof ui !== 'undefined' && ui.ready && document.getElementById('busy').hidden);
       assert.equal(await page.title(), 'World Engine');
       assert.equal(await page.locator('.brand .mark').innerText(), 'World Engine');
-      assert.match(await page.locator('.brand .sub').innerText(), /v0\.11\.0/i);
+      assert.match(await page.locator('.brand .sub').innerText(), /v0\.12\.0/i);
       assert.equal(await page.locator('meta[property="og:title"]').getAttribute('content'), 'World Engine');
       const manifest = await page.evaluate(async () => (await fetch(document.querySelector('link[rel="manifest"]').href)).json());
       assert.equal(manifest.name, 'World Engine');
@@ -55,6 +55,7 @@ test('browser: startup, controls, pacing, and Pages-relative resources', async t
       const paused = await page.evaluate(() => S.year);
       await page.waitForTimeout(350);
       assert.equal(await page.evaluate(() => S.year), paused, 'pause stops simulation advancement');
+      await page.getByRole('button',{name:'Map options',exact:true}).click();
       await page.getByRole('button', {name:'Knowledge', exact:true}).click();
       const ships = page.locator('#legend [data-k="ocean"]');
       assert.match(await ships.innerText(), /Ocean-going ships/);
@@ -70,9 +71,11 @@ test('browser: startup, controls, pacing, and Pages-relative resources', async t
           buildComp();drawMap();return strokes>0;
         }finally{mapCtx.stroke=original;S.seaRoutes.delete('browser-test');drawMap()}
       }), 'overseas routes render on the knowledge map');
+      await page.getByRole('button',{name:'Map options',exact:true}).click();
       await page.getByRole('button', {name:'Cohesion', exact:true}).click();
       assert.equal(await page.evaluate(() => ui.mode), 'asabiya');
       assert.match(await page.locator('#legend').innerText(), /Social cohesion/);
+      await page.getByRole('button',{name:'Map options',exact:true}).click();
       await page.getByRole('button', {name:'States', exact:true}).click();
       const labels = page.getByRole('button', {name:'Map display options', exact:true});
       await page.evaluate(()=>{mapLayers.optimizeCities=false});
@@ -139,8 +142,9 @@ test('browser: startup, controls, pacing, and Pages-relative resources', async t
       await page.evaluate(()=>{mapLayers.optimizeCities=true});
       await page.keyboard.press('Escape');
       assert.equal(await labels.getAttribute('aria-expanded'),'false');
+      await page.getByRole('button',{name:'Map options',exact:true}).click();
       await page.getByRole('button', {name:'Terrain', exact:true}).click();
-      assert.equal(await page.getByRole('button', {name:'Terrain', exact:true}).getAttribute('aria-pressed'), 'true');
+      assert.equal(await page.locator('#modes [data-m=terrain]').getAttribute('aria-pressed'), 'true');
       assert.equal(await page.evaluate(() => ui.mode), 'terrain');
       // Inspect a substantial set of map pixels, not just the presence of a canvas.
       assert.ok(await page.evaluate(() => {
@@ -180,7 +184,7 @@ test('browser: startup, controls, pacing, and Pages-relative resources', async t
       await page.locator('#btn-export-setup').click();
       const download=await downloadPromise;
       const exported=JSON.parse(fs.readFileSync(await download.path(),'utf8'));
-      assert.equal(exported.engineVersion,'0.11.0');assert.equal(exported.rules.growth,.02);
+      assert.equal(exported.engineVersion,'0.12.0');assert.equal(exported.rules.growth,.02);
       const other=await browser.newPage();
       await other.route('https://fonts.googleapis.com/**',r=>r.abort());
       await other.goto(shared);
@@ -213,6 +217,26 @@ test('atlas: traditions, rankings, knowledge fade, borders and independent detai
   await page.waitForFunction(()=>typeof ui!=='undefined'&&ui.ready&&document.getElementById('busy').hidden);
   assert.equal(await page.locator('#hseed').inputValue(),'atlas test 中');assert.match(new URL(page.url()).hash,/^#seed-/);
   await page.clock.install();
+  assert.equal(await page.locator('#modes').isVisible(),false);
+  const mapBox=await page.locator('#map').boundingBox();
+  await page.getByRole('button',{name:'Map options',exact:true}).click();
+  assert.equal(await page.locator('#modes').isVisible(),true);
+  assert.deepEqual(await page.locator('#map').boundingBox(),mapBox,'expanded options do not consume map height');
+  await page.keyboard.press('Escape');
+  assert.equal(await page.locator('#modes').isVisible(),false);
+  assert.equal(await page.locator('#map-options-toggle').evaluate(el=>el===document.activeElement),true);
+  await page.getByRole('button',{name:'Map options',exact:true}).click();
+  await page.getByRole('button',{name:'States',exact:true}).click();
+  assert.equal(await page.locator('#modes').isVisible(),false,'selecting a view closes the panel');
+  await page.locator('#map').click({position:{x:170,y:140}});
+  await page.clock.fastForward(9000);
+  assert.equal(await page.locator('#legend').evaluate(el=>el.classList.contains('selector-idle')&&el.inert),true,'ordinary map explanation fades too');
+  await page.getByRole('button',{name:'Legend',exact:true}).click();
+  assert.equal(await page.locator('#legend').evaluate(el=>el.classList.contains('selector-idle')||el.inert),false);
+  await page.getByRole('button',{name:'Map options',exact:true}).click();
+  await page.locator('#map').click({position:{x:mapBox.width/2,y:mapBox.height-20}});
+  assert.equal(await page.locator('#modes').isVisible(),false,'outside click closes options');
+  await page.getByRole('button',{name:'Map options',exact:true}).click();
   await page.getByRole('button',{name:'Knowledge',exact:true}).click();
   await page.locator('#map').click({position:{x:170,y:140}});
   await page.clock.fastForward(11000);
@@ -229,6 +253,7 @@ test('atlas: traditions, rankings, knowledge fade, borders and independent detai
    const stable=first.every((v,k)=>v===next[k]);mapLayers.borders=false;buildComp();const hidden=compCtx.getImageData(0,0,HW,HH).data;
    const differs=first.some((v,k)=>v!==hidden[k]);mapLayers.borders=true;buildComp();return {stable,differs};
   });assert.deepEqual(borders,{stable:true,differs:true});
+  await page.getByRole('button',{name:'Map options',exact:true}).click();
   await page.getByRole('button',{name:'Traditions',exact:true}).click();
   assert.ok(await page.evaluate(()=>{buildComp();return ui.traditions.size>0&&ui.traditionGrid[S.pols[atlasIds[0]].capital]>0&&ui.traditionGrid[S.pols[atlasIds[0]].capital]===ui.traditionGrid[S.pols[atlasIds[1]].capital]}));
   await page.evaluate(()=>{
@@ -242,7 +267,7 @@ test('atlas: traditions, rankings, knowledge fade, borders and independent detai
   assert.match(await page.locator('#rankings tbody tr').first().innerText(),/Atlas Large/);
   await page.locator('#rank-metric').selectOption('peakArea');assert.match(await page.locator('#rankings tbody tr').first().innerText(),/900k km²/);
   await page.locator('#rank-metric').selectOption('population');assert.match(await page.locator('#rankings tbody tr').first().innerText(),/1\.0M/);
-  await page.locator('#rank-kind').selectOption('religion');assert.equal(await page.locator('#rank-metric').isDisabled(),true);assert.match(await page.locator('#ranking-note').innerText(),/followers/);assert.ok(await page.locator('#rankings tbody tr').count()>=2);
+  await page.locator('#rank-kind').selectOption('religion');assert.equal(await page.locator('#rank-metric').isDisabled(),false);assert.match(await page.locator('#ranking-note').innerText(),/followers/);assert.ok(await page.locator('#rankings tbody tr').count()>=2);
   await page.locator('#rank-kind').selectOption('war');assert.match(await page.locator('#rankings').innerText(),/Atlas Scale War/);
   await page.locator('#rankings .lnk').first().focus();await page.keyboard.press('Enter');assert.match(await page.locator('#pane-insp').innerText(),/Provinces taken/);
   await page.getByRole('button',{name:'Map display options',exact:true}).click();
@@ -252,5 +277,29 @@ test('atlas: traditions, rankings, knowledge fade, borders and independent detai
   await page.evaluate(()=>savePrefs());assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('asabiya.v1')).layers.optimizeRoutes),false);
   await page.keyboard.press('Escape');
   assert.deepEqual(errors,[]);await page.screenshot({path:`/tmp/world-engine-atlas-${name}.png`});await page.close();
+ });
+});
+
+test('historical ranking maps work on desktop and phone without rewinding the world',async t=>{
+ const server=http.createServer(serve);await new Promise(r=>server.listen(0,'127.0.0.1',r));t.after(()=>new Promise(r=>server.close(r)));
+ const executablePath=process.env.CHROMIUM_PATH||(fs.existsSync('/usr/bin/chromium')?'/usr/bin/chromium':undefined);
+ const browser=await chromium.launch({executablePath,args:['--no-sandbox']});t.after(()=>browser.close());
+ for(const viewport of [{width:1280,height:900},{width:390,height:844}])await t.test(`${viewport.width}px`,async()=>{
+  const page=await browser.newPage({viewport});const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.route('https://fonts.googleapis.com/**',r=>r.abort());await page.route('https://fonts.gstatic.com/**',r=>r.abort());
+  await page.goto(`http://127.0.0.1:${server.address().port}/#seed-history-ui`);await page.waitForFunction(()=>typeof ui!=='undefined'&&ui.ready);
+  await page.evaluate(()=>{
+   setRunning(false);const c=cellAt(32,45),j=WD.nb[c*4+1],p=S.pols[newPolity(c,null)];S.pol[j]=p.id;S.pop[c]=S.pop[j]=100;S.year=0;recordAtlasHistory();
+   S.year=10;S.pol[j]=0;S.pop[c]=1000;foundReligion(p);S.rel[c]=0;recordAtlasHistory();globalThis.peakId=p.id;ui.completedYear=S.year;
+  });
+  await page.getByRole('tab',{name:'Stats',exact:true}).click();await page.locator('#rank-metric').selectOption('peakArea');await page.locator('#rankings .lnk').first().click();
+  await page.locator('#historical-banner').waitFor({state:'visible'});assert.match(await page.locator('#historical-banner').innerText(),/Peak area/);
+  assert.deepEqual(await page.evaluate(()=>({year:S.year,shown:ui.historical.snapshot.year,running:ui.running,pop:S.pop[S.pols[peakId].capital]})),{year:10,shown:0,running:false,pop:1000});
+  assert.equal(await page.locator('#history-map').isVisible(),true);
+  await page.locator('#history-metric').selectOption('population');await page.locator('#history-show').click();assert.equal(await page.evaluate(()=>ui.historical.snapshot.year),10);
+  await page.locator('#history-close').click();assert.equal(await page.evaluate(()=>ui.historical),null);
+  await page.getByRole('tab',{name:'Stats',exact:true}).click();await page.locator('#rank-kind').selectOption('tradition');await page.locator('#rankings .lnk').first().click();assert.equal(await page.evaluate(()=>ui.historical.kind),'tradition');assert.match(await page.locator('#pane-insp').innerText(),/Civilizational tradition/i);
+  await page.locator('#history-close').click();await page.getByRole('tab',{name:'Stats',exact:true}).click();await page.locator('#rank-kind').selectOption('religion');await page.locator('#rankings .lnk').first().click();assert.equal(await page.evaluate(()=>ui.historical.kind),'religion');
+  await page.evaluate(()=>setRunning(true));assert.equal(await page.evaluate(()=>ui.historical),null);await page.evaluate(()=>setRunning(false));assert.deepEqual(errors,[]);await page.close();
  });
 });

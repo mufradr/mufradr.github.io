@@ -3,7 +3,7 @@
 An interactive browser simulation of populations, states, cultures, and climate,
 hosted on GitHub Pages at https://mufradr.github.io/.
 
-The app identifies itself as version 0.11.0. It is a static site: no package
+The app identifies itself as version 0.12.0. It is a static site: no package
 installation or build step is required to run or publish it. `.nojekyll` enables
 direct static serving on GitHub Pages.
 
@@ -36,6 +36,8 @@ Google Fonts are optional external resources; fallback fonts work offline.
 | `assets/earth.js` | Compressed elevation and Köppen climate data |
 | `js/core.js` | World generation, climate, and simulation rules; no DOM dependency |
 | `js/colonies.js` | Independent overseas settlements, immigration, and cultural development |
+| `js/history.js` | Compressed dated peak footprints and war map records |
+| `js/history-ui.js` | Historical inspector previews and paused map views |
 | `js/atlas.js` | Tradition identities, historical rankings and map detail selection |
 | `js/experiments.js` | Versioned starting setups, sharing, and JSON import/export |
 | `js/diagnostics.js` | On-demand simulation state consistency checks |
@@ -88,14 +90,25 @@ the affected behavior; the regression suite does not cover all long-term outcome
 See [atlas and maritime development notes](docs/ATLAS.md) for score formulas,
 rendering limits, URL behaviour and settlement rules.
 
-## Atlas and statistics in 0.11.0
+## Atlas and statistics in 0.12.0
+
+Stats rankings for states/empires, religions, traditions and peoples include
+current and peak area/population. Selecting a peak opens its recorded territory
+on the paused main map; inspector pages also provide a dated mini map and a
+selector for area versus population peaks. **Return to live map** restores the
+present view, and Play resumes the current simulation. War maps show initial
+participants and recorded captures. Records belong to the current run and are
+not saved by setup/share links. Earlier unsampled footprints cannot be rebuilt.
 
 **Traditions** colours successor states by inherited political tradition and stateless
-peoples by ancestral family. **Stats** ranks states, religions and wars by an
-explained renown/scale index; state rankings also offer current and peak area and
-population. Area means claimed territory, measured in km², and separate peaks
+peoples by ancestral family. **Stats** ranks states, religions, traditions, peoples and wars by an
+explained renown/scale index. Area means claimed territory, measured in km², and separate peaks
 need not occur in the same year. War scale uses populations of participating realms,
 not casualties or mobilized soldiers.
+
+Map views are tucked behind the **⚙** button at the top left. Choose a view to
+close the panel, or toggle it with the button. Bottom-left map explanations fade
+after eight seconds; **Legend** brings them back.
 
 City detail prioritizes the largest visible cities and avoids crowded markers and
 names in screen pixels. Route detail limits visible routes and simplifies only the

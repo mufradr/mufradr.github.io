@@ -23,10 +23,18 @@ function warRenown(w){
   +Math.sqrt(duration)+2*new Set([...w.a,...w.d]).size;
 }
 function atlasRanking(kind,metric='renown',scope='all'){
- const list=kind==='religion'?S.rels:kind==='war'?S.wars:S.pols.filter(Boolean);
- const score=o=>kind==='religion'?religionRenown(o):kind==='war'?warRenown(o):metric==='area'?(o.alive?o.area||0:0):metric==='population'?(o.alive?o.pop||0:0):metric==='peakArea'?o.peakArea||o.area||0:metric==='peakPopulation'?Math.max(o.maxPop||0,o.pop||0):stateRenown(o);
- return list.filter(o=>scope!=='living'||(kind==='war'?!o.finished:o.alive)).map(o=>({entity:o,score:score(o)}))
-  .sort((a,b)=>b.score-a.score||a.entity.id-b.entity.id);
+ const list=kind==='tradition'?[...S.historicalAtlas.tradition.values()]:kind==='people'?S.eths:kind==='religion'?S.rels:kind==='war'?S.wars:S.pols.filter(Boolean);
+ const score=o=>{
+  const r=historicalRecord(kind,o.id);
+  if(kind!=='war'&&metric!=='renown'){
+   if(metric==='peakArea')return r?.areaPeak?.area||(kind==='state'?o.peakArea||o.area||0:0);
+   if(metric==='peakPopulation')return r?.populationPeak?.population||(kind==='state'?Math.max(o.maxPop||0,o.pop||0):kind==='religion'?o.peakPop||o.pop||0:o.peak||0);
+   if(metric==='area')return r?.alive?r.area:kind==='state'&&o.alive?o.area||0:0;
+   if(metric==='population')return r?.alive?r.population:o.alive?o.pop||o.population||0:0;
+  }
+  return kind==='religion'?religionRenown(o):kind==='war'?warRenown(o):kind==='tradition'?traditionRenown(o):kind==='people'?6*Math.log1p((r?.populationPeak?.population||o.peak||0)/1000)+Math.sqrt(r?.areaPeak?.area||0)/100:stateRenown(o);
+ };
+ return list.filter(o=>scope!=='living'||(kind==='war'?!o.finished:o.alive)).map(o=>({entity:o,score:score(o)})).sort((a,b)=>b.score-a.score||String(a.entity.id).localeCompare(String(b.entity.id),undefined,{numeric:true}));
 }
 // Resolve wrapped coordinates in CSS pixels before choosing display density.
 function atlasScreenPoint(cell,view){

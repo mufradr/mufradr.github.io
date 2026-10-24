@@ -111,6 +111,7 @@ function buildOverlay(){
 function buildComp(){
   const s=S,w=WD,ctx=compCtx;
   ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';ctx.clearRect(0,0,HW,HH);ctx.setLineDash([]);ctx.beginPath();ctx.drawImage(baseCv,0,0);
+  if(ui.historical){ctx.drawImage(historicalRaster(ui.historical.snapshot),0,0);return}
   buildOverlay();ctx.imageSmoothingEnabled=true;ctx.drawImage(ovCv,0,0,HW,HH);
   const m=ui.mode;
   if(mapLayers.borders&&['political','alliances','peoples','religion','traditions'].includes(m)){
@@ -151,6 +152,7 @@ function drawMap(){
   ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
   ctx.imageSmoothingEnabled=ui.z<2.5;
   for(let c=0;c<3;c++){const x=ui.ox+c*mw;if(x>w)break;ctx.drawImage(compCv,x,ui.oy,mw,mh)}
+  if(ui.historical)return;
   const k_=k,s=S,W2=WD,each=(mx,my,f)=>{for(let c=-1;c<3;c++){const sx=ui.ox+c*mw+mx*k,sy=ui.oy+my*k;if(sx>-80&&sx<w+80&&sy>-40&&sy<h+40)f(sx,sy)}};
   const view={scale:k,zoom:ui.z,ox:ui.ox,oy:ui.oy,width:w,height:h};
   const displayRoutes=mapLayers.routes?selectAtlasRoutes([...s.routes.map(r=>({...r,from:r.a,to:r.b,kind:'land'})),...[...s.seaRoutes.values()].map(r=>({...r,kind:'sea'}))],view,mapLayers.optimizeRoutes):[];
@@ -272,12 +274,12 @@ function drawLegend(){
 function worldPop(){if(!S)return 0;let t=0;for(const i of WD.landIdx)t+=S.pop[i];return t}
 function techShare(k){let t=0;const f=S.tk[k];for(const i of WD.landIdx)if(f[i]>0.5)t+=S.pop[i];return t}
 let knowledgeTimer=null;
+// All map legends fade; focused filters stay available for keyboard use.
 function wakeKnowledgeSelector(){
  const el=$('legend');el.classList.remove('selector-idle');el.inert=false;clearTimeout(knowledgeTimer);
- if(ui.mode==='knowledge'){
-  el.classList.add('open');$('legtog').setAttribute('aria-expanded','true');
-  knowledgeTimer=setTimeout(()=>{if(ui.mode==='knowledge'&&!el.querySelector(':focus-visible')){el.classList.add('selector-idle');el.inert=true;$('legtog').setAttribute('aria-expanded','false')}},10000);
- }
+ if(ui.historical)return;
+ el.classList.add('open');$('legtog').setAttribute('aria-expanded','true');
+ knowledgeTimer=setTimeout(()=>{if(!el.querySelector(':focus-visible')){el.classList.add('selector-idle');el.inert=true;$('legtog').setAttribute('aria-expanded','false')}},ui.mode==='knowledge'?10000:8000);
 }
 for(const event of ['pointerenter','pointerdown','focusin','input','click','wheel','touchmove','keydown'])$('legend').addEventListener(event,wakeKnowledgeSelector);
 $('legend').addEventListener('focusout',()=>{if(!$('legend').inert)wakeKnowledgeSelector()});
@@ -337,14 +339,14 @@ function linkify(txt,refs){
   for(const h of hits){out+=esc(txt.slice(k,h.s))+`<a class="lnk" tabindex="0" data-t="${h.t}" data-id="${h.id}">${esc(txt.slice(h.s,h.e))}</a>`;k=h.e}
   return out+esc(txt.slice(k));
 }
-const L_=(t,id,name)=>`<a class="lnk" tabindex="0" data-t="${t}" data-id="${id}">${esc(name)}</a>`;
+const L_=(t,id,name)=>`<a class="lnk" tabindex="0" data-t="${t}" data-id="${esc(String(id))}">${esc(name)}</a>`;
 const lm_=M=>L_('mig',M.id,'the '+M.name),lp=o=>L_('pol',o.id,o.alive?o.full:o.peak),le=e=>L_('eth',e.id,e.name),lr=R=>L_('rel',R.id,R.name),lf=f=>L_('fig',f.id,f.name),lw=w=>L_('war',w.id,w.name);
 function entityCell(t,id){const s=S;
-  switch(t){case'cell':return id;case'pol':return s.pols[id].capital;case'eth':{const e=s.eths[id];return e.alive?cellAt(e.la*180/Math.PI,e.lon*180/Math.PI):-1}
+  switch(t){case'tradition':return -1;case'cell':return id;case'pol':return s.pols[id].capital;case'eth':{const e=s.eths[id];return e.alive?cellAt(e.la*180/Math.PI,e.lon*180/Math.PI):-1}
     case'rel':return s.rels[id].origin;case'fig':{const f=s.figs[id];const p=f.pol&&s.pols[f.pol];return p?p.capital:-1}
     case'plague':return s.outbreaks[id].origin;case'war':return s.pols[s.wars[id].d[0]].capital;case'mig':{const M=s.migs[id];return M.done?M.path[M.path.length-1]:M.cell}}return-1}
-function openPage(t,id,noPush){if(ui.page&&!noPush&&!(ui.page.t===t&&ui.page.id===id))ui.stack.push(ui.page);if(ui.stack.length>40)ui.stack.shift();ui.page={t,id:+id};showPane('insp');ui.dirty=true}
-document.querySelector('.side').addEventListener('click',e=>{const a=e.target.closest('.lnk');if(!a)return;e.preventDefault();openPage(a.dataset.t,+a.dataset.id);centerOn(entityCell(a.dataset.t,+a.dataset.id))});
+function openPage(t,id,noPush){if(ui.page&&!noPush&&!(ui.page.t===t&&ui.page.id===id))ui.stack.push(ui.page);if(ui.stack.length>40)ui.stack.shift();ui.page={t,id:t==='tradition'?String(id):+id};showPane('insp');ui.dirty=true}
+document.querySelector('.side').addEventListener('click',e=>{const a=e.target.closest('.lnk');if(!a)return;e.preventDefault();openPage(a.dataset.t,a.dataset.id);if(a.dataset.peak)showHistorical(a.dataset.t,a.dataset.id,a.dataset.peak);else{if(ui.historical)closeHistorical();centerOn(entityCell(a.dataset.t,+a.dataset.id))}});
 document.querySelector('.side').addEventListener('keydown',e=>{if(e.key!=='Enter')return;const a=e.target.closest('.lnk,.card');if(a&&a.tagName!=='BUTTON')a.click()});
 function bar(label,v,max,cls){const t=clamp(v/max,0,1);return`<div class="barrow"><span>${label}</span><div class="track"><div class="fill ${cls||''}" style="width:${(t*100).toFixed(0)}%"></div></div><span class="v">${v.toFixed(2)}</span></div>`}
 function chronFor(pred,max){const out=[];const c=S.chron;for(let k=c.length-1;k>=0&&out.length<(max||25);k--){if(pred(c[k]))out.push(c[k])}return out}
@@ -428,6 +430,9 @@ function renderPage(){
     if(st.length)h+=`<h3 class="sec">States that adopted it</h3><p style="margin:0">${st.slice(-20).map(lp).join(', ')}${st.length>20?` and ${st.length-20} more`:''}</p>`;
     if(R.kids.length)h+=`<h3 class="sec">Schisms</h3><p style="margin:0">${R.kids.map(k=>lr(s.rels[k])).join(', ')}</p>`;
     h+=`<h3 class="sec">Chronicle</h3>`+chronList(chronFor(x=>refHas(x,'rel',id)));
+  }else if(t==='tradition'){
+    const r=historicalRecord('tradition',id);
+    h+=`<div class="kind">Civilizational tradition</div><h2 class="name">${esc(r.name)}</h2><p class="note">Shared tradition across successor states and related independent peoples. Footprints show the dominant tradition of each inhabited province.</p>`;
   }else if(t==='fig'){
     const f=s.figs[id],e=f.eth>=0?s.eths[f.eth]:null,p=f.pol?s.pols[f.pol]:null;
     const label={ruler:'Ruler',founder:'Founder',usurper:'Usurper',prophet:'Prophet',reformer:'Reformer',sage:'Sage'}[f.kind]||'Figure';
@@ -458,7 +463,9 @@ function renderPage(){
     h+=`<h3 class="sec">Chronicle</h3>`+chronList(chronFor(x=>refHas(x,'war',id)));
   }
   }catch(err){h+=`<div class="note">This page could not be drawn: ${esc(err.message)}</div>`}
+  h+=historicalSection(t,id);
   el.innerHTML=h;
+  bindHistoricalSection(t,id);
   const b=$('pgback');if(b)b.onclick=()=>{ui.page=ui.stack.pop()||null;renderPage();ui.dirty=true};
   drawSparks(el);
   if(t==='plague')drawPlagueMap(id);
@@ -719,13 +726,21 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('map-layers').hid
   if(e.key===']')setRate((ui.target>=1e9?1000:ui.target)*1.5);else if(e.key==='[')setRate((ui.target>=1e9?1000:ui.target)/1.5)});
 setRate(window.matchMedia('(max-width:900px)').matches?10:25);
 function setRunning(on){
+  if(on&&ui.historical)closeHistorical();
   const running=!!(on&&ui.ready);
   if(running!==ui.running){ui.running=running;simClock.reset(performance.now());resetRateMeter();ui.slowUntil=0}
   $('play').textContent=ui.running?'Pause':'Play';updateSpeedLabel();if(S)updateTop();
 }
 $('play').addEventListener('click',()=>setRunning(!ui.running));
 $('modes').innerHTML=MODES.map(([k,l])=>`<button type="button" data-m="${k}" aria-pressed="${k===ui.mode}">${l}</button>`).join('');
-$('modes').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;ui.mode=b.dataset.m;for(const x of $('modes').children)x.setAttribute('aria-pressed',x===b);drawLegend();wakeKnowledgeSelector();ui.dirty=true});
+function toggleMapOptions(open,restoreFocus=false){
+ $('modes').hidden=!open;$('map-options-toggle').setAttribute('aria-expanded',String(open));
+ if(restoreFocus)$('map-options-toggle').focus();
+}
+$('map-options-toggle').addEventListener('click',()=>toggleMapOptions($('modes').hidden));
+document.addEventListener('click',e=>{if(!e.target.closest('#modes,#map-options-toggle'))toggleMapOptions(false)});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('modes').hidden)toggleMapOptions(false,true)});
+$('modes').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(ui.historical)closeHistorical();ui.mode=b.dataset.m;$('map-mode-name').textContent=b.textContent;toggleMapOptions(false,true);for(const x of $('modes').children)x.setAttribute('aria-pressed',x===b);drawLegend();wakeKnowledgeSelector();ui.dirty=true});
 $('map-layers').addEventListener('change',e=>{const k=e.target.dataset.layer;if(k in mapLayers){mapLayers[k]=e.target.checked;ui.dirty=true;buildComp();drawMap()}});
 document.addEventListener('click',e=>{if(!e.target.closest('#map-layers,[data-z="lab"]')){$('map-layers').hidden=true;$('zoomc').querySelector('[data-z="lab"]').setAttribute('aria-expanded','false')}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('map-layers').hidden=true;$('zoomc').querySelector('[data-z="lab"]').setAttribute('aria-expanded','false')}if(e.target.matches('input,textarea,select,button,a,[contenteditable="true"]'))return;if(e.code==='Space'){e.preventDefault();setRunning(!ui.running)}});
@@ -748,14 +763,14 @@ mapCv.addEventListener('pointermove',e=>{
     ui.ox=cx-(pinch.cx-pinch.ox)*f;ui.oy=cy-(pinch.cy-pinch.oy)*f;ui.z=z2;clampView();drawMap();return}
   if(drag){const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.abs(dx)+Math.abs(dy)>4)drag.moved=true;if(drag.moved){ui.ox=drag.ox+dx;ui.oy=drag.oy+dy;clampView();drawMap()}return}
   const i=screenToCell(sx,sy),tip=$('tip');
-  if(i<0||!S||!WD.land[i]){tip.hidden=true;return}
+  if(ui.historical||i<0||!S||!WD.land[i]){tip.hidden=true;return}
   const p=S.pol[i]?S.pols[S.pol[i]]:null,e2=S.eth[i]>=0?S.eths[S.eth[i]]:null,R=S.rel[i]>=0?S.rels[S.rel[i]]:null;
   const e3=S.eth2[i]>=0?S.eths[S.eth2[i]]:null;
   tip.textContent=[p&&p.full,e2?e2.name+(e3?' and '+e3.name:''):'Unpeopled',R&&R.name,fmtN(S.pop[i])].filter(Boolean).join(' · ');tip.style.left=sx+'px';tip.style.top=sy+'px';tip.hidden=false;
 });
 mapCv.addEventListener('pointerleave',()=>{if(Date.now()>tipHold)$('tip').hidden=true});
 mapCv.addEventListener('pointerup',e=>{clearTimeout(lpT);pts.delete(e.pointerId);if(pinch){if(pts.size<2)pinch=null;drag=null;return}
-  if(drag&&!drag.moved&&!drag.noOpen&&S&&!dblTap(e)){const r=mapCv.getBoundingClientRect();const i=screenToCell(e.clientX-r.left,e.clientY-r.top);
+  if(drag&&!drag.moved&&!drag.noOpen&&S&&!ui.historical&&!dblTap(e)){const r=mapCv.getBoundingClientRect();const i=screenToCell(e.clientX-r.left,e.clientY-r.top);
   if(i>=0){const m=ui.mode;
     if(WD.land[i]&&(m==='political'||m==='alliances')&&S.pol[i])openPage('pol',S.pol[i]);
     else if(WD.land[i]&&m==='peoples'&&S.eth[i]>=0)openPage('eth',S.eth[i]);
@@ -770,7 +785,7 @@ $('map-layers').addEventListener('change',e=>{const k=e.target.dataset.layer;if(
 document.addEventListener('click',e=>{if(!e.target.closest('#map-layers,[data-z="lab"]')){$('map-layers').hidden=true;$('zoomc').querySelector('[data-z="lab"]').setAttribute('aria-expanded','false')}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('map-layers').hidden=true;$('zoomc').querySelector('[data-z="lab"]').setAttribute('aria-expanded','false')}if(e.target.matches('input,textarea,select,button,a,[contenteditable="true"]')||e.ctrlKey||e.metaKey)return;
   if(e.key==='+'||e.key==='=')zoomAt(mapDim.w/2,mapDim.h/2,1.4);else if(e.key==='-')zoomAt(mapDim.w/2,mapDim.h/2,1/1.4)});
-$('legtog').addEventListener('click',()=>{if(ui.mode==='knowledge'){wakeKnowledgeSelector();return}const o=$('legend').classList.toggle('open');$('legtog').setAttribute('aria-expanded',o)});
+$('legtog').addEventListener('click',()=>{const el=$('legend');if(el.inert||!el.classList.contains('open'))wakeKnowledgeSelector();else{clearTimeout(knowledgeTimer);el.classList.add('selector-idle');el.inert=true;el.classList.remove('open');$('legtog').setAttribute('aria-expanded','false')}});
 const jumpB=$('jump');let jumpMode=null,mapVis=true;
 function updJump(){if(!isMob()){jumpB.hidden=true;return}
   if(!mapVis){jumpB.textContent='↑ Map';jumpB.dataset.m='map';jumpB.hidden=false}
@@ -792,7 +807,8 @@ function closedSheet(){return false}
 document.querySelector('.tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!isMob())return;setSheet(!(SIDE.classList.contains('open')&&b.getAttribute('aria-selected')==='true'))},true);
 {let y0=null;SIDE.addEventListener('touchstart',e=>{const t=e.touches[0],r=SIDE.getBoundingClientRect();y0=t.clientY-r.top<56?t.clientY:null},{passive:true});
  SIDE.addEventListener('touchend',e=>{if(y0===null||!isMob())return;const dy=e.changedTouches[0].clientY-y0;if(dy>50)setSheet(false);else if(dy<-50)setSheet(true);y0=null},{passive:true})}
-function tipAt(sx,sy,hold){const i=screenToCell(sx,sy),tip=$('tip');if(i<0||!S||!WD.land[i]){tip.hidden=true;return}
+function tipAt(sx,sy,hold){
+  if(ui.historical)return;const i=screenToCell(sx,sy),tip=$('tip');if(ui.historical||i<0||!S||!WD.land[i]){tip.hidden=true;return}
   const p=S.pol[i]?S.pols[S.pol[i]]:null,e2=S.eth[i]>=0?S.eths[S.eth[i]]:null,R=S.rel[i]>=0?S.rels[S.rel[i]]:null,e3=S.eth2[i]>=0?S.eths[S.eth2[i]]:null;
   tip.textContent=[p&&p.full,e2?e2.name+(e3?' and '+e3.name:''):'Unpeopled',R&&R.name,fmtN(S.pop[i])].filter(Boolean).join(' \u00b7 ');
   tip.style.left=sx+'px';tip.style.top=sy+'px';tip.hidden=false;
@@ -802,7 +818,7 @@ function savePrefs(){try{const o={mode:ui.mode,rate:ui.target,auto:$('autoslow')
 function loadPrefs(){let o=null;try{o=JSON.parse(localStorage.getItem('asabiya.v1')||'null')}catch(e){}
   try{if(o){for(const k in mapLayers)if(typeof o.layers?.[k]==='boolean'){mapLayers[k]=o.layers[k];$('map-layers').querySelector('[data-layer="'+k+'"]').checked=mapLayers[k]}for(const k in o.P||{}){const el=$('p-'+k);if(el){el.value=o.P[k];el.dispatchEvent(new Event('input',{bubbles:true}))}}
     for(const[id,v]of[['fitc',o.fit],['shufn',o.shuf],['followc',o.fol]]){const el=$(id);if(el&&typeof v==='boolean'&&el.checked!==v){el.checked=v;el.dispatchEvent(new Event('change',{bubbles:true}))}}
-    if(o.mode&&$('modes').querySelector('[data-m="'+o.mode+'"]')){ui.mode=o.mode;for(const x of $('modes').children)x.setAttribute('aria-pressed',x.dataset.m===o.mode);drawLegend()}}
+    if(o.mode&&$('modes').querySelector('[data-m="'+o.mode+'"]')){ui.mode=o.mode;$('map-mode-name').textContent=MODES.find(([k])=>k===o.mode)[1];for(const x of $('modes').children)x.setAttribute('aria-pressed',x.dataset.m===o.mode);drawLegend()}}
     let sp=o&&typeof o.rate==='number'?o.rate:(isMob()?10:25);if(isMob()&&sp>250)sp=250;setRate(sp);if(o&&typeof o.auto==='boolean')$('autoslow').checked=o.auto}catch(e){console.error(e)}}
 for(const ev of ['click','input','change'])document.addEventListener(ev,()=>{clearTimeout(svT);svT=setTimeout(savePrefs,500)},true);
 try{const c=document.createElement('canvas');c.width=c.height=512;const g=c.getContext('2d');g.fillStyle='#1c262c';g.beginPath();g.roundRect(0,0,512,512,96);g.fill();g.fillStyle='#3f6f8f';g.beginPath();g.arc(256,256,150,0,7);g.fill();g.fillStyle='#d9cfa8';g.beginPath();g.moveTo(150,330);g.lineTo(256,140);g.lineTo(362,330);g.closePath();g.fill();
@@ -812,6 +828,7 @@ try{const c=document.createElement('canvas');c.width=c.height=512;const g=c.getC
 /* ---------- world building ---------- */
 function busy(on,txt){const b=$('busy');b.hidden=!on;if(txt)b.textContent=txt}
 function finishHistory(){
+  ui.historical=null;historicalCache=null;$('historical-banner').hidden=true;$('legend').hidden=false;$('legtog').hidden=false;
   // Compact ordinary addresses; custom and explicitly shared setups remain reproducible.
   try{history.replaceState(null,'',experimentAddressHash(exportExperiment(),location.hash.startsWith('#experiment=')))}catch(error){console.error(error)}
   ui.gen=null;ui.genS=S;ui.completedYear=S.year;ui.slowUntil=0;simClock.reset(performance.now());resetRateMeter();updateSpeedLabel();
@@ -938,15 +955,15 @@ boot();
 
 
 function renderAtlasStats(){
- if(!S)return;const kind=$('rank-kind').value,metric=kind==='state'?$('rank-metric').value:'renown';
- $('rank-metric').disabled=kind!=='state';if(kind!=='state')$('rank-metric').value='renown';
+ if(!S)return;const kind=$('rank-kind').value,metric=kind==='war'?'renown':$('rank-metric').value;
+ $('rank-metric').disabled=kind==='war';if(kind==='war')$('rank-metric').value='renown';
  const scope=$('rank-living').checked?'living':'all',rows=atlasRanking(kind,metric,scope).slice(0,100);
- const notes=kind==='state'?'Renown combines peak population and area, longevity, recorded works and conquests. Area is km² of claimed territory; peaks are independent maxima.':kind==='religion'?'Renown combines peak followers and reach, longevity, sponsoring states and descendant faiths.':'War scale combines population of participating realms at entry, participants, duration and provinces taken. It is not a casualty or moral greatness estimate.';
+ const notes=kind==='state'?'Renown combines peak population and area, longevity, recorded works and conquests. Area is km² of claimed territory; peaks are independent maxima.':kind==='tradition'||kind==='people'?'Rank by recorded extent or population. Footprints show dominant provincial identity, not minority distributions.':kind==='religion'?'Renown combines peak followers and reach, longevity, sponsoring states and descendant faiths.':'War scale combines population of participating realms at entry, participants, duration and provinces taken. It is not a casualty or moral greatness estimate.';
  $('ranking-note').textContent=notes;
- $('rankings').innerHTML=rows.length?'<div class="tablewrap"><table class="table"><thead><tr><th>#</th><th>Name</th><th>'+esc(kind==='state'?$('rank-metric').selectedOptions[0].textContent:'Renown / scale')+'</th></tr></thead><tbody>'+rows.map((r,n)=>{
-  const o=r.entity,t=kind==='state'?'pol':kind==='religion'?'rel':'war',name=kind==='state'?(o.alive?o.full:o.peak):o.name;
+ $('rankings').innerHTML=rows.length?'<div class="tablewrap"><table class="table"><thead><tr><th>#</th><th>Name</th><th>'+esc(kind!=='war'?$('rank-metric').selectedOptions[0].textContent:'Renown / scale')+'</th></tr></thead><tbody>'+rows.map((r,n)=>{
+  const o=r.entity,t=kind==='state'?'pol':kind==='religion'?'rel':kind==='people'?'eth':kind==='tradition'?'tradition':'war',name=kind==='state'?(o.alive?o.full:o.peak):o.name;
   const value=metric==='area'||metric==='peakArea'?fmtN(r.score)+' km²':metric==='population'||metric==='peakPopulation'?fmtN(r.score):r.score.toFixed(1);
-  return `<tr><td>${n+1}</td><td><button class="lnk" data-t="${t}" data-id="${o.id}">${esc(name)}</button>${kind==='state'&&!o.alive?' · fallen':''}</td><td class="n">${value}</td></tr>`;
+  return `<tr><td>${n+1}</td><td><button class="lnk" data-t="${t}" data-id="${esc(String(o.id))}"${metric==='peakArea'||metric==='peakPopulation'||metric==='renown'?' data-peak="'+(kind==='war'?'initial':metric==='peakPopulation'?'population':'area')+'"':''}>${esc(name)}</button>${kind==='state'&&!o.alive?' · fallen':''}</td><td class="n">${value}</td></tr>`;
  }).join('')+'</tbody></table></div>':'<div class="empty">No entries yet.</div>';
 }
 for(const id of ['rank-kind','rank-metric','rank-living'])$(id).addEventListener('change',renderAtlasStats);

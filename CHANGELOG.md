@@ -1,5 +1,21 @@
 # Release history
 
+## 0.12.0 — Historical peak maps and compact map controls
+
+- Map legends fade after eight inactive seconds (ten for Knowledge) and return
+  through the Legend button. Map views now open from a compact cog button,
+  leaving the map unobstructed when closed, including on phones.
+- Stats entries open dated historical footprints for states and empires, religions,
+  traditions and peoples. Area and population peaks have separate snapshots.
+- Added Traditions and Peoples rankings, plus current/peak area and population
+  metrics for all four groups. Inspector previews can open on the main map.
+- Historical map views pause playback, omit present-day annotations and provide
+  a Return to live map button. Playing again restores the live map.
+- War pages show participants at outbreak and provinces taken in recorded battles.
+- Retain compressed cell runs for at most two peak snapshots per entity, rather
+  than full yearly maps. Records reset with each new history; setup links do not
+  save progress or reconstruct earlier footprints. Simulation rules are unchanged.
+
 ## 0.11.0 — Traditions, renown and maritime exchange
 
 - Added a Traditions map for inherited state traditions and ancestral families.

@@ -1,15 +1,15 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="stylesheet" href="styles/base.css"></head><body>
-<!-- World Engine v0.11.0 — traditions, rankings, adaptive map detail and maritime communities. -->
+<!-- World Engine v0.12.0 — dated peak maps for states, religions, traditions and peoples. -->
 <title>World Engine</title><meta name="theme-color" content="#1c262c"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="World Engine"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="A browser-based world history simulator on real Earth terrain and climate."><meta property="og:title" content="World Engine"><meta property="og:description" content="Watch states, peoples, faiths and plagues rise and fall on a real-Earth map.">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="styles/app.css?v=0.11.0">
+<link rel="stylesheet" href="styles/app.css?v=0.12.0">
 
 <div class="app">
   <header class="bar">
-    <div class="brand"><span class="mark">World Engine</span><span class="sub">history engine · v0.11.0</span></div>
+    <div class="brand"><span class="mark">World Engine</span><span class="sub">history engine · v0.12.0</span></div>
     <div class="clock">
       <button id="play" class="btn primary" type="button" disabled>Play</button>
       <div class="seg" id="speed" role="group" aria-label="Years per second"></div>
@@ -21,9 +21,10 @@
   <main class="main">
     <section class="mapwrap" id="mapwrap">
       <canvas id="map" aria-label="World map"></canvas>
-      <div class="modes" id="modes"></div>
+      <button type="button" class="map-options-toggle" id="map-options-toggle" aria-label="Map options" aria-expanded="false" aria-controls="modes">⚙ <span id="map-mode-name">States</span></button>
+      <div class="modes" id="modes" role="group" aria-label="Map views" hidden></div>
       <div class="legend" id="legend"></div>
-      <button type="button" class="legtog" id="legtog" aria-expanded="false">Legend</button>
+      <button type="button" class="legtog" id="legtog" aria-controls="legend" aria-expanded="false">Legend</button>
       <div class="zoomc" id="zoomc"><button type="button" data-z="in" aria-label="Zoom in">+</button><button type="button" data-z="out" aria-label="Zoom out">−</button><button type="button" data-z="play" aria-label="Play or pause" id="ppb" style="font-size:15px">▶︎</button><button type="button" data-z="lab" aria-label="Map display options" aria-expanded="false" aria-controls="map-layers" title="Choose map names, cities and routes" style="font-size:15px">Aa</button><button type="button" data-z="reset" aria-label="Reset view" style="font-size:18px">⤢</button></div>
       <div class="map-layers" id="map-layers" role="group" aria-label="Map display options" hidden>
         <strong>Map display</strong>
@@ -39,6 +40,7 @@
         <label><input type="checkbox" data-layer="colonies" checked> Colony markers and names</label>
         <label><input type="checkbox" data-layer="routes" checked> Trade routes</label>
       </div>
+      <div class="historical-banner" id="historical-banner" hidden></div>
       <div class="tip" id="tip" hidden></div>
       <div class="toast" id="toast" hidden></div>
       <div class="busy" id="busy">Loading Earth…</div>
@@ -72,7 +74,7 @@
       <div class="pane" id="pane-insp" hidden></div>
       <div class="pane" id="pane-stats" hidden>
         <h3 class="sec">Historical rankings</h3>
-        <label>Rank <select id="rank-kind"><option value="state">States and empires</option><option value="religion">Religions</option><option value="war">Wars</option></select></label>
+        <label>Rank <select id="rank-kind"><option value="state">States and empires</option><option value="religion">Religions</option><option value="tradition">Traditions</option><option value="people">Peoples</option><option value="war">Wars</option></select></label>
         <label>By <select id="rank-metric"><option value="renown">Renown / scale</option><option value="area">Current area</option><option value="population">Current population</option><option value="peakArea">Peak area</option><option value="peakPopulation">Peak population</option></select></label>
         <label><input type="checkbox" id="rank-living"> Living states / religions or ongoing wars only</label>
         <div id="ranking-note" class="note"></div><div id="rankings"></div>
@@ -131,11 +133,13 @@
 </div>
 
 <script id="assets" src="assets/earth.js"></script>
-<script id="core" src="js/core.js?v=0.11.0"></script>
-<script src="js/colonies.js?v=0.11.0"></script>
-<script src="js/atlas.js?v=0.11.0"></script>
-<script src="js/experiments.js?v=0.11.0"></script>
-<script src="js/diagnostics.js?v=0.11.0"></script>
-<script src="js/ui.js?v=0.11.0"></script>
+<script id="core" src="js/core.js?v=0.12.0"></script>
+<script src="js/colonies.js?v=0.12.0"></script>
+<script src="js/atlas.js?v=0.12.0"></script>
+<script src="js/history.js?v=0.12.0"></script>
+<script src="js/experiments.js?v=0.12.0"></script>
+<script src="js/diagnostics.js?v=0.12.0"></script>
+<script src="js/history-ui.js?v=0.12.0"></script>
+<script src="js/ui.js?v=0.12.0"></script>
 
 </body></html>
