@@ -1,4 +1,4 @@
-# Overseas colonies — v0.15.0
+# Overseas colonies — v0.16.0
 
 Colonies are territorial dependencies of their sending state, rather than new
 independent countries. Ownership is stored in the ordinary province owner grid,
@@ -143,3 +143,13 @@ Validation for this release: all 122 automated tests passed. In the prepared
 communities, 27 still owned dependencies, and one recorded independent region.
 Region and settlement counts differ because connected settlements act together.
 These controlled outcomes are not a multi-seed historical calibration.
+
+
+## v0.16 economic connections
+
+Maintained peaceful sea routes also move bounded food surplus, generate commerce
+and carry faith and active epidemics. Interrupted trade cannot supply settlers or
+finance the state through commerce. Recent charts remain usable for military
+campaigning for up to fifty years since last contact; this is separate from the
+ten-year maintenance requirement for civilian supply and economic activity.
+See [connected systems](NETWORKS.md) for the shared rules and limitations.

@@ -1,7 +1,7 @@
 
 "use strict";
 /* ================= SIMULATION CORE (no DOM) ================= */
-const ENGINE_VERSION='0.15.0';
+const ENGINE_VERSION='0.16.0';
 const calendarPhase=(year,period)=>((year%period)+period)%period;
 const W=400,H=200,N=W*H,SC=4,HW=W*SC,HH=H*SC,AGW=40,AGH=20;
 const PDEF=[
@@ -582,6 +582,7 @@ const EARTH_HEARTHS=[
 const EARTH_SEEDS=[[5,25,'afr'],[33,40,'afro'],[48,10,'ie'],[22,78,'indo'],[35,110,'sino'],[5,105,'aus'],[-25,134,'pama'],[60,100,'alt'],[40,-100,'nam'],[-10,-60,'sam']];
 
 function newHistory(hseed){
+  networkEconomy.state=null;networkEconomy.states.clear();
   const w=WD,r=mulberry32(hashStr('hist:'+hseed+':'+w.seed));
   const tk=TECH.map(()=>new Float32Array(N));
   S={r,initialRules:{...P},seed:hseed,year:P.startYear,start:P.startYear,famN:0,tk,
@@ -699,6 +700,89 @@ function computeK(){
     s.K[i]=Math.max(1,Kf,Kh+0.4*Kf,Kfa+0.3*Kh+0.2*Kf)*(1-0.5*w.mal[i]*(1-s.adapt[i])*(1-0.5*s.tk[29][i]));
   }
 }
+// Annual transport budgets are derived, reusable and deliberately outside saves.
+// K is effective food capacity after trade; production is recomputed each year.
+const networkEconomy={state:null,year:0,local:new Float64Array(N),available:new Float64Array(N),income:new Float64Array(N),states:new Map()};
+function peacefulContact(a,b){
+  const x=S.pol[a],y=S.pol[b];
+  return !x||!y||x===y||peacefulStates(x,y);
+}
+function seaRouteViable(route){
+  return P.seafaring>0&&S.pop[route.from]>=1&&S.pop[route.to]>=1
+    &&Math.max(voyageRange(route.from),voyageRange(route.to))>=route.km;
+}
+function seaRouteTrading(route){return seaRouteViable(route)&&S.year-route.last<=10&&peacefulContact(route.from,route.to)}
+function landRouteTrading(route){
+  if(S.year-route.last>40||S.pop[route.a]<100||S.pop[route.b]<100)return false;
+  const origin=S.pol[route.a],target=S.pol[route.b];let owner=origin;
+  // Inspect intermediate jurisdictions too: a hostile crossing interrupts trade.
+  for(const cell of route.path){const next=S.pol[cell];if(next&&((origin&&!peacefulStates(origin,next))||(target&&!peacefulStates(target,next))||(owner&&!peacefulStates(owner,next))))return false;if(next)owner=next}
+  return peacefulContact(route.a,route.b);
+}
+function peacefulStates(a,b){return !S.pols[a].enemies.has(b)&&!S.pols[b].enemies.has(a)}
+function networkStats(id){
+  let out=networkEconomy.states.get(id);
+  if(!out){out={population:0,shortfall:0,imports:0,exports:0,trade:0};networkEconomy.states.set(id,out)}
+  return out;
+}
+function moveFood(a,b,capacity,loss){
+  const s=S,n=networkEconomy;
+  if(s.K[a]-s.pop[a]<s.K[b]-s.pop[b]){const c=a;a=b;b=c}
+  const sent=Math.min(n.available[a],Math.max(0,s.K[a]-s.pop[a]),Math.max(0,s.pop[b]-s.K[b])/(1-loss),capacity);
+  if(sent<=0)return;
+  const delivered=sent*(1-loss);n.available[a]-=sent;s.K[a]-=sent;s.K[b]+=delivered;
+  if(s.pol[a]!==s.pol[b]){
+    if(s.pol[a])networkStats(s.pol[a]).exports+=sent;
+    if(s.pol[b])networkStats(s.pol[b]).imports+=delivered;
+  }
+}
+function transportEconomy(){
+  const s=S,w=WD,n=networkEconomy;n.state=s;n.year=s.year;n.states.clear();n.income.fill(0);
+  for(const i of w.landIdx){n.local[i]=s.K[i];n.available[i]=Math.max(0,s.K[i]-s.pop[i])*0.15*(Math.max(s.farm[i],s.herd[i])>=0.5?1:0)}
+  // Nearby roads and river transport can move limited surplus, including across
+  // peaceful borders. No global pool or shipping a province's imported food again.
+  for(const i of w.landIdx){if(n.available[i]<=0||s.pop[i]<100)continue;
+    for(let d=0;d<4;d++){const j=w.nb[i*4+d];if(j<0||!w.land[j]||s.pop[j]<100||s.pop[j]<=s.K[j]||!peacefulContact(i,j))continue;
+      const access=Math.max(Math.min(s.roads[i],s.roads[j]),Math.min(w.rv[i],w.rv[j])*(0.3+0.7*Math.min(s.sail[i],s.sail[j])));
+      if(access>0.1)moveFood(i,j,Math.min(s.pop[i],s.pop[j])*0.04*access/(1+Math.max(w.rough[i],w.rough[j])),0.1);
+    }
+  }
+  const income=(a,b,amount)=>{n.income[a]+=amount;n.income[b]+=amount};
+  for(const route of s.routes)if(landRouteTrading(route)){
+    const a=route.a,b=route.b;
+    income(a,b,Math.min(s.pop[a],s.pop[b])*0.02);
+    // A caravan is valuable at populated stops, rather than minting a fixed tax
+    // in every empty desert cell. Trade income is bounded per province below.
+    for(const i of route.path)n.income[i]+=s.pop[i]*0.01*s.car[i];
+  }
+  for(const route of s.seaRoutes.values())if(seaRouteTrading(route)){
+    const a=route.from,b=route.to,scale=Math.min(1,P.seafaring)/(1+route.km/6000);
+    moveFood(a,b,Math.min(s.pop[a],s.pop[b])*0.04*scale,0.2);
+    income(a,b,Math.min(s.pop[a],s.pop[b])*0.025*scale);
+  }
+  for(const i of w.landIdx){const id=s.pol[i];if(!id)continue;const o=networkStats(id);
+    o.population+=s.pop[i];o.shortfall+=Math.max(0,s.pop[i]-s.K[i]);o.trade+=Math.min(s.pop[i]*0.08,n.income[i]);
+  }
+}
+function tradeContact(a,b,rate){
+  const s=S;
+  for(const f of s.tk){const d=(f[a]-f[b])*rate*P.techDiff;if(d>0)f[b]=Math.min(1,f[b]+d);else f[a]=Math.min(1,f[a]-d)}
+  const fa=s.rel[a],fb=s.rel[b];
+  const faith=(from,to,id)=>{const R=s.rels[id];if(!R||s.rel[to]===id||P.faith<=0)return;
+    const e=s.eths[s.eth[to]];if(R.kind==='ethnic'&&(!e||e.fam!==R.fam))return;
+    const host=s.pol[to]?s.pols[s.pol[to]]:null,accept=host?.rel===id?2:host&&host.rel>=0?0.25:1;
+    if(s.r()<rate*0.2*R.miss*P.faith*accept)s.rel[to]=id;
+  };
+  faith(a,b,fa);faith(b,a,fb);
+  // Existing outbreaks travel too, even between equally disease-experienced
+  // populations; virgin-soil contact remains a separate susceptibility effect.
+  const carry=(from,to)=>{if(!s.infect[from]||s.infect[to]||s.immune[to]>0.95)return;
+    const id=s.ob[from],o=s.outbreaks[id];if(!o||o.done||s.ob[to]===id)return;
+    if(s.r()<rate*(1-s.immune[to])){s.infect[to]=3;s.ob[to]=id;s.inf.push(to);o.cells++;if(o.spread.length<4000)o.spread.push([s.year-o.year,to])}
+  };
+  carry(a,b);carry(b,a);
+}
+function caravanContact(){if(S.year%5===0)for(const route of S.routes)if(landRouteTrading(route))tradeContact(route.a,route.b,0.04)}
 function growth(){
   const s=S,w=WD,L=w.landIdx,g=P.growth,dg=P.degrade;
   for(let k=0;k<L.length;k++){const i=L[k];let p=s.pop[i];if(p<=0){s.settled[i]=0;continue}const K=s.K[i];
@@ -746,8 +830,9 @@ function migrate(){
 }
 function virginSoil(tgt,src){
   const s=S,r=s.r;
+  if(P.disease<=0)return;
   const gap=s.dp[src]-s.dp[tgt];
-  if(gap>0.2&&!s.infect[tgt]&&s.pop[tgt]>1000&&r()<0.35*gap){
+  if(gap>0.2&&!s.infect[tgt]&&s.pop[tgt]>1000&&r()<0.35*gap*P.disease){
     const e=s.eths[s.eth[src]];
     const o={id:s.outbreaks.length,name:`${e?cap(e.lang.lex.sea)+' ':''}${pick(r,PLAGUE)}`,origin:tgt,year:s.year,deaths:0,vir:0.12+0.25*gap+r()*0.08,cells:1,active:1,done:false,spread:[[0,tgt]],hit:new Set(),virgin:true,from:s.eth[src],dp:s.dp[src]};
     s.outbreaks.push(o);s.infect[tgt]=3;s.ob[tgt]=o.id;s.inf.push(tgt);
@@ -775,6 +860,7 @@ function traceVoyage(i,bearing,rangeKm){
 function seaContact(voyage){
   const s=S,w=WD,i=voyage.from,tgt=voyage.to;
   if(s.pop[i]<30||s.eth[i]<0)return;
+  if(!peacefulContact(i,tgt))return;
   tryColony(voyage);
   if(s.pop[tgt]<1)tryColonyOutpost(voyage);
   if(s.pop[tgt]<1){
@@ -784,7 +870,7 @@ function seaContact(voyage){
     const lm=w.lm[tgt];
     if(!s.lmFound[lm]){s.lmFound[lm]=1;if(w.lmSize[lm]>=4){const e=s.eths[s.eth[i]];chron('migration',`Seafarers of the ${e.name} reach an unpeopled ${w.lmSize[lm]>60?'land':'island'}.`,tgt,[RE(e)])}}
   }else if(s.eth[tgt]!==s.eth[i]){
-    for(const f of s.tk)f[tgt]=Math.max(f[tgt],f[i]*0.5);
+    if(P.techDiff>0)for(const f of s.tk)f[tgt]=Math.max(f[tgt],f[i]*Math.min(0.5,0.5*P.techDiff));
     if(s.ocean[i]>0.5&&w.lm[tgt]!==w.lm[i]){
       virginSoil(tgt,i);cropExchange(i,tgt);
       const e1=s.eths[s.eth[i]],e2=s.eths[s.eth[tgt]],key=[e1.fam,e2.fam].sort().join(':');
@@ -817,7 +903,7 @@ function seaTrade(){
   for(const [key,R] of [...s.seaRoutes]){
     if(!s.seaRoutes.has(key))continue;
     const a=R.from,b=R.to;
-    if(s.pop[a]<1||s.pop[b]<1||Math.max(voyageRange(a),voyageRange(b))<R.km){
+    if(!seaRouteViable(R)||!peacefulContact(a,b)){
       if(s.year-R.last>50)s.seaRoutes.delete(key);continue;
     }
     R.last=s.year;
@@ -825,7 +911,7 @@ function seaTrade(){
     tryColony({...R,from:b,to:a});maritimePassengerExchange(R);
     if(s.year%20===0&&scouts<8&&s.pop[a]>=8000&&s.ocean[a]>=0.6&&!s.colonies.has(b)){scouts++;scoutColonyCoast(R)}
     // Return voyages carry knowledge both ways; mature techniques take decades.
-    for(const f of s.tk){const d=(f[a]-f[b])*0.08*P.techDiff;if(d>0)f[b]=Math.min(1,f[b]+d);else f[a]=Math.min(1,f[a]-d)}
+    tradeContact(a,b,0.08);
     cropExchange(a,b);virginSoil(b,a);virginSoil(a,b);
   }
 }
@@ -1799,7 +1885,7 @@ function* stepG(){
   climateStep();weather();hearthCheck();
   if(s.dTt>0){s.dTt--;if(!s.dTt)s.dT=0}
   else if(s.r()<0.0012*P.volcano)volcano();
-  computeK();growth();yield;migrate();seaHop();
+  computeK();transportEconomy();growth();yield;migrate();seaHop();caravanContact();
   if(s.year%3===0){techStep(0,0.34);yield;techStep(0.34,0.67);yield;techStep(0.67,1);yield}
   disease();if(calendarPhase(s.year,10)===5)poolPass();if(calendarPhase(s.year,20)===7)caravanPass();yield;
   yield* politicsG();
@@ -1848,6 +1934,17 @@ function isWaste(i,horde){const s=S,w=WD;if(s.pop[i]<1)return true;if(s.pop[i]/w
 // Tainter: complexity has rising upkeep; Goldstone: fiscal crisis; Turchin/Scheidel: the wealth pump and its levellers
 function statecraft(o,c,y){
   const s=S,r=s.r;
+  if(networkEconomy.state===s&&networkEconomy.year===y){
+    const economy=networkEconomy.states.get(o.id),shortage=economy?economy.shortfall/Math.max(1,economy.population):0;
+    // Replace the old fixed caravan stipend with actual bounded commerce.
+    const trade=economy?.trade||0;o.tax=Math.max(0,((o.tax||0)-(o.trade||0))*(1-0.5*shortage)+trade);o.trade=trade;
+    o.foodImports=economy?.imports||0;o.foodExports=economy?.exports||0;
+    o.foodStress=clamp((o.foodStress||0)*0.9+shortage*0.1,0,1);
+    o.shock+=0.02*o.foodStress;o.mandate=Math.max(0,(o.mandate??1)-0.04*o.foodStress);
+    if(o.kind==='state'&&o.cells>=4&&y%5===0&&o.foodStress>0.12&&shortage>0.15&&y-(o.foodCrisisYear??-Infinity)>=60){
+      o.foodCrisisYear=y;chron('famine',`Food shortages persist in the ${o.full}; local harvests and working trade routes cannot feed its provinces.`,c,[R_(o)],'Sustained shortages weaken tax receipts and confidence in the government.');
+    }
+  }
   if(o.cplx==null){o.cplx=0.2;o.treas=0.3;o.ineq=0.25;o.warC=0}
   if(o.kind!=='state'){o.pT=o.pF=o.pQ=0;o.burden=0;return}
   const real=Math.max(1,o.cells-(o.wasteN||0));
@@ -1945,7 +2042,7 @@ function caravanPass(){
     const pa=s.pols[s.pol[a]],pb=s.pols[s.pol[hit]]||null,ea=s.eths[s.eth[a]],eb=s.eths[s.eth[hit]];
     const key=[ea?ea.fam:-1,eb?eb.fam:-1].sort().join(':');
     let R=s.routes.find(x=>x.key===key);
-    const pts=path.filter((c,k)=>k%2===0||k===path.length-1);
+    const pts=path;
     if(!R){R={id:s.routes.length,key,born:s.year,a,b:hit,path:pts};s.routes.push(R);
       if(ea&&eb&&ea.fam!==eb.fam&&!s.carPairs.has(key)){s.carPairs.add(key);chron('migration',`Caravans begin to cross the desert between the ${pa?pa.full:ea.name} and the ${pb?pb.full:eb.name}, carrying salt, gold, slaves and ideas.`,path[path.length>>1],[pa?R_(pa):RE(ea),pb?R_(pb):RE(eb)])}}
     else{R.path=pts;R.a=a;R.b=hit}
@@ -1955,7 +2052,7 @@ function caravanPass(){
 }
 // the exchange of crops between long-separated farming worlds (Crosby)
 function cropExchange(a,b){
-  const s=S,w=WD;if(s.farm[a]<0.5||s.farm[b]<0.5||Math.max(s.ocean[a],s.ocean[b])<=0.5||w.lm[a]===w.lm[b]||Math.max(w.lmSize[w.lm[a]],w.lmSize[w.lm[b]])<200)return;
+  const s=S,w=WD;if(P.techDiff<=0||s.farm[a]<0.5||s.farm[b]<0.5||Math.max(s.ocean[a],s.ocean[b])<=0.5||w.lm[a]===w.lm[b]||Math.max(w.lmSize[w.lm[a]],w.lmSize[w.lm[b]])<200)return;
   const key=[w.lm[a],w.lm[b]].sort().join(':');if(s.cropX.has(key))return;s.cropX.add(key);
   seedTech(s.xcrops,a,1,1);seedTech(s.xcrops,b,1,1);s.firstTech[23]=s.firstTech[23]||{y:s.year,cell:b};
   const ca=cropFor(w.T[a],w.Pr[a],w.rv[a])[0],cb=cropFor(w.T[b],w.Pr[b],w.rv[b])[0],ea=s.eths[s.eth[a]],eb=s.eths[s.eth[b]];

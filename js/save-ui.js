@@ -6,7 +6,7 @@ function setSaveBusy(on){saveUI.busy=on;for(const b of $('pane-saves').querySele
 function processWorldFile(action,payload){
  if(typeof Worker==='undefined'||location.protocol==='file:')return action==='encode'?encodeWorldFile(structuredClone(payload)):decodeWorldFile(payload);
  return new Promise((resolve,reject)=>{
-  const worker=new Worker('js/save-worker.js?v=0.15.0'),timer=setTimeout(()=>{worker.terminate();reject(new Error('Save processing timed out. Previous saves are unchanged.'))},120000);
+  const worker=new Worker('js/save-worker.js?v=0.16.0'),timer=setTimeout(()=>{worker.terminate();reject(new Error('Save processing timed out. Previous saves are unchanged.'))},120000);
   const done=()=>{clearTimeout(timer);worker.terminate()};
   worker.onmessage=({data})=>{done();data.error?reject(new Error(data.error)):resolve(data.result)};
   worker.onerror=()=>{done();reject(new Error('The save worker could not start. Reload the page and try again.'))};

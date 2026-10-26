@@ -3,7 +3,7 @@
 An interactive browser simulation of populations, states, cultures, and climate,
 hosted on GitHub Pages at https://mufradr.github.io/.
 
-The app identifies itself as version 0.15.0. It is a static site: no package
+The app identifies itself as version 0.16.0. It is a static site: no package
 installation or build step is required to run or publish it. `.nojekyll` enables
 direct static serving on GitHub Pages.
 
@@ -96,7 +96,7 @@ the affected behavior; the regression suite does not cover all long-term outcome
 See [atlas and maritime development notes](docs/ATLAS.md) for score formulas,
 rendering limits, URL behaviour and settlement rules.
 
-## Save and continue a world in 0.15.0
+## Save and continue a world in 0.16.0
 
 Open **Saves** for three named manual slots, previous-save backups, and three
 rotating autosaves. Saving finishes the current year and pauses playback; loading
@@ -109,7 +109,7 @@ Local slots stay in this browser and may be cleared by browser/iOS storage
 cleanup, so export important worlds. No account or server is needed. World saves
 include custom terrain, simulation progress, histories, peak maps and RNG state;
 setup links/files still only reproduce starting conditions. The loader accepts
-v0.13.0, v0.14.0, v0.14.1 and current-version saves and validates imports before replacing the live
+v0.13.0, v0.14.0, v0.14.1, v0.15.0 and current-version saves and validates imports before replacing the live
 world.
 See [save format and device-storage notes](docs/SAVES.md) and
 [save/performance measurements and founding changes](docs/OPTIMIZATION.md).
@@ -255,3 +255,16 @@ states and foreign hosts keep their ownership. See [colonial rules](docs/COLONIE
 `npm run pack:earth` reproduces the lossless packed Earth asset; it changes
 storage encoding without changing elevation or climate resolution. No build step
 is needed to use or publish the checked-in packed asset.
+
+
+## Connected systems in 0.16.0
+
+Roads, river transport and maintained sea routes can move limited food surplus to
+shortages. Trade revenue depends on populated, working routes. Persistent local
+shortages reduce tax receipts and legitimacy; war can interrupt trade and colonial
+supply. Maritime and caravan traffic carries faith and epidemics as well as ideas.
+Province and state inspectors show these effects.
+
+See [connected systems](docs/NETWORKS.md) for budgets, feedback loops, verification
+and the remaining limitations. This is an integration pass, not a claim that every
+system is fully connected or that historical outcomes are calibrated.

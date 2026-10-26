@@ -1,5 +1,25 @@
 # Release history
 
+## 0.16.0 — Connected transport, subsistence and state finances
+
+- Roads, river transport and maintained sea routes move limited real food surplus
+  toward nearby shortages. Export budgets, cargo capacity and spoilage prevent
+  food creation or an unlimited worldwide food pool.
+- Maritime and caravan commerce now contributes population-based, bounded state
+  revenue. Empty caravan provinces no longer receive a fixed tax stipend.
+- Persistent regional shortages reduce tax receipts and legitimacy and accumulate
+  shocks. Sustained shortages can produce famine reports even outside droughts.
+- Trade corridors exchange faith and carry existing epidemics alongside knowledge;
+  ethnic-faith restrictions, immunity and rule settings still apply.
+- Enemy wars interrupt civilian sea traffic and hostile jurisdictions interrupt
+  caravans. Interrupted routes stop supplying colonies; recent maritime charts
+  remain available for campaigning for up to fifty years without renewed contact.
+- First-contact knowledge/crop exchange respects the diffusion setting, and new
+  virgin-soil outbreaks respect the epidemic-frequency setting.
+- Province/state inspectors explain local/effective food capacity, food movement,
+  trade revenue and persistent shortages. Continue accepting v0.13–0.15 saves;
+  derived transport budgets are rebuilt after loading without storing additional province grids.
+
 ## 0.15.0 — Governed colonies and gradual independence
 
 - New colonies on unclaimed shores belong to their sending state, sharing map

@@ -24,6 +24,8 @@ function simulationIssues(limit=50,state=S,world=WD){
   for(const id of s.alive){
     const o=s.pols[id];if(!o){report('Invalid active polity '+id);continue}
     for(const key of ['pop','K','S','press','h','cult','psi'])if(!Number.isFinite(o[key]))report('Nonfinite polity '+key+' for '+id);
+    for(const key of ['foodStress','foodImports','foodExports'])if(o[key]!==undefined&&(!Number.isFinite(o[key])||o[key]<0||(key==='foodStress'&&o[key]>1)))report('Invalid polity '+key+' for '+id);
+    if(o.foodCrisisYear!==undefined&&!Number.isSafeInteger(o.foodCrisisYear))report('Invalid food crisis year for '+id);
     if(!Number.isInteger(o.capital)||o.capital<0||o.capital>=N||!w.land[o.capital])report('Invalid capital for '+id);
     if(!index(o.core,s.eths,-2))report('Invalid core people for '+id);
     if(o.over&&!index(o.over,s.pols,0))report('Invalid overlord for '+id);

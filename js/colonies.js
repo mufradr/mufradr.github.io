@@ -46,14 +46,15 @@ function colonySupply(colony){
  if(P.seafaring<=0||!home?.alive||owner&&owner.id!==home.id&&(home.enemies.has(owner.id)||owner.enemies.has(home.id)))return -1;
  for(const route of s.seaRoutes.values()){
   const source=route.from===colony.cell?route.to:route.to===colony.cell?route.from:-1;
-  if(source>=0&&s.pol[source]===home.id&&s.pop[source]>=1000&&s.ocean[source]>=0.5&&s.year-route.last<=10&&voyageRange(source)>=route.km)return source;
+  if(source>=0&&s.pol[source]===home.id&&s.pop[source]>=1000&&s.ocean[source]>=0.5&&seaRouteTrading(route)&&voyageRange(source)>=route.km)return source;
  }
  return -1;
 }
 function overseasTransport(){
  const edges=new Map(),s=S;if(P.seafaring<=0)return edges;
  const add=(a,b,cost,km)=>{let list=edges.get(a);if(!list){list=[];edges.set(a,list)}list.push({cell:b,cost,km})};
- for(const route of s.seaRoutes.values())if(s.pol[route.from]&&s.pol[route.to]&&s.pop[route.from]>=1&&s.pop[route.to]>=1&&s.year-route.last<=10&&Math.max(voyageRange(route.from),voyageRange(route.to))>=route.km){
+ // Wartime charts remain useful for campaigning after commerce is interrupted.
+ for(const route of s.seaRoutes.values())if(s.pol[route.from]&&s.pol[route.to]&&seaRouteViable(route)&&s.year-route.last<=50){
   const cost=colonySeaCost(route.km);add(route.from,route.to,cost,route.km);add(route.to,route.from,cost,route.km);
  }
  return edges;

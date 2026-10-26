@@ -1,6 +1,6 @@
 {
   "name": "world-engine",
-  "version": "0.15.0",
+  "version": "0.16.0",
   "private": true,
   "scripts": {
     "test": "node --test tests/*.test.cjs",
@@ -13,7 +13,8 @@
     "pack:earth": "node tools/pack-earth.cjs",
     "validate:history": "node tests/agriculture-scenario.cjs",
     "validate:states": "node tests/state-balance-scenario.cjs",
-    "validate:maritime": "node tests/maritime-scenario.cjs"
+    "validate:maritime": "node tests/maritime-scenario.cjs",
+    "validate:networks": "node tests/network-scenario.cjs"
   },
   "devDependencies": {
     "playwright": "1.62.1"

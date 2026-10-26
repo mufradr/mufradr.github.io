@@ -1,4 +1,4 @@
-# Saved worlds — v0.15.0
+# Saved worlds — v0.16.0
 
 Open **Saves** on a phone, tablet or desktop. Three manual slots hold independent
 histories. Give a slot a name and choose **Save here**. A save finishes any pending
@@ -44,7 +44,7 @@ links only recreate starting conditions; they are not progress saves.
 
 Damaged, unsupported or structurally invalid imports are rejected before the
 running world is replaced. Loading a valid file requires confirmation. This first
-save schema accepts v0.13.0, v0.14.0, v0.14.1 and this engine version; future releases need explicit
+save schema accepts v0.13.0, v0.14.0, v0.14.1, v0.15.0 and this engine version; future releases need explicit
 compatibility handling or migrations. Older local records are never deleted just
 because their engine version differs; they remain exportable.
 
@@ -93,7 +93,7 @@ byte pattern, packs long numeric histories into
 exact-width integer or Float64 blocks and groups byte positions before gzip.
 It restores histories as ordinary JavaScript arrays. Floating-point bytes,
 signed zero and aliases remain exact. Full chronicles and peak maps are retained; no histories are pruned to fit a save.
-Legacy graph schemas 1 and 2 remain readable. Engine v0.13.0, v0.14.0 and v0.14.1 saves are accepted after
+Legacy graph schemas 1 and 2 remain readable. Engine v0.13.0, v0.14.0, v0.14.1 and v0.15.0 saves are accepted after
 structural validation; subsequent simulated years use the updated founding rules.
 
 The limits also include four million graph nodes. They protect browser memory,
@@ -105,3 +105,12 @@ Colony administration, autonomy, isolation, cultural development and independenc
 records are included in world saves. Legacy records acquire the additional fields
 on continuation. Only eligible unclaimed communities can resume surviving parent
 charters; already sovereign states and foreign treaty hosts retain ownership.
+
+
+## v0.16 connected economy
+
+Saves retain persistent food stress, dated food-crisis reports and the latest
+state food/trade totals. The temporary production, export-budget and route-income
+grids stay outside checkpoints. Starting or installing a world releases the old
+cache; the next simulated year rebuilds the budgets from that world's population,
+production, roads, routes and wars. Continuing older saves uses the new economics.

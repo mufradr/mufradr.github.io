@@ -1,4 +1,8 @@
-# Atlas and maritime development — 0.15.0
+# Atlas and maritime development — 0.16.0
+
+The v0.16 transport economy connects these routes to food, state finances, faith
+and epidemics. See [connected systems](NETWORKS.md) for the shared activity rules,
+war interruption, budgets and validation.
 
 ## Traditions and historical rankings
 
