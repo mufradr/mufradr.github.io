@@ -1,0 +1,74 @@
+[
+  {
+    "viewport": {
+      "width": 1280,
+      "height": 900
+    },
+    "politicalBuild": {
+      "medianMs": 9.800000011920929,
+      "p90Ms": 11.399999976158142
+    },
+    "politicalDraw": {
+      "medianMs": 5.199999988079071,
+      "p90Ms": 6.5
+    },
+    "terrainDraw": {
+      "medianMs": 0,
+      "p90Ms": 0
+    },
+    "archivedStateRanking": {
+      "medianMs": 3.5,
+      "p90Ms": 4.899999976158142
+    },
+    "layerToggleImmediate": {
+      "builds": 0,
+      "draws": 0
+    },
+    "compositeHash": "5a23e5ec9c8b3897a2b1cebb7fb819f22d52d636ecef8dcaa0f15f7610163cdd",
+    "mapHash": "b35c35ed76a706ed416dd369ee0680e0c4a09c024a76fa2d2827225296d9413f",
+    "rankCheck": [
+      12100,
+      101,
+      12100
+    ],
+    "cities": 3290,
+    "routes": 1200,
+    "land": 27442
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "politicalBuild": {
+      "medianMs": 9.5,
+      "p90Ms": 11.199999988079071
+    },
+    "politicalDraw": {
+      "medianMs": 4.300000011920929,
+      "p90Ms": 4.899999976158142
+    },
+    "terrainDraw": {
+      "medianMs": 0,
+      "p90Ms": 0
+    },
+    "archivedStateRanking": {
+      "medianMs": 3.399999976158142,
+      "p90Ms": 4.5
+    },
+    "layerToggleImmediate": {
+      "builds": 0,
+      "draws": 0
+    },
+    "compositeHash": "5a23e5ec9c8b3897a2b1cebb7fb819f22d52d636ecef8dcaa0f15f7610163cdd",
+    "mapHash": "36652efad26a5b74c0860ba51f952e7da773edbb2f7bcb40dd2f9431a3004e01",
+    "rankCheck": [
+      12100,
+      101,
+      12100
+    ],
+    "cities": 3290,
+    "routes": 1200,
+    "land": 27442
+  }
+]

@@ -14,7 +14,10 @@
     "validate:history": "node tests/agriculture-scenario.cjs",
     "validate:states": "node tests/state-balance-scenario.cjs",
     "validate:maritime": "node tests/maritime-scenario.cjs",
-    "validate:networks": "node tests/network-scenario.cjs"
+    "validate:networks": "node tests/network-scenario.cjs",
+    "baseline:run": "node tools/baseline/run.cjs",
+    "baseline:browser": "node tools/baseline/browser.cjs",
+    "baseline:compare": "node tools/baseline/compare.cjs"
   },
   "devDependencies": {
     "playwright": "1.62.1"

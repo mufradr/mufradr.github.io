@@ -1,0 +1,40 @@
+The first developed-stress attempt failed the exact repeated-checkpoint assertion.
+All three trials reached the same state count and passed sampled integrity checks,
+but the initial runner did not log the differing hashes. The cause is unresolved.
+An instrumented diagnostic repetition produced identical hashes in all three trials;
+its timings are excluded from the accepted baseline. The unchanged original runner
+was then rerun. See stress-developed.json.gz for the accepted repetition and hashes.
+No simulation rules were modified. Retain this observation when interpreting strict
+reproducibility or extending calibration.
+
+Original attempt output:
+
+Starting stress-developed
+{"run":"stress-developed","repeat":0,"year":1500,"elapsedSeconds":6,"states":315,"issues":0}
+{"run":"stress-developed","repeat":0,"year":1540,"elapsedSeconds":9,"states":305,"issues":0}
+{"run":"stress-developed","repeat":1,"year":1500,"elapsedSeconds":6,"states":315,"issues":0}
+{"run":"stress-developed","repeat":1,"year":1540,"elapsedSeconds":9,"states":305,"issues":0}
+{"run":"stress-developed","repeat":2,"year":1500,"elapsedSeconds":6,"states":315,"issues":0}
+{"run":"stress-developed","repeat":2,"year":1540,"elapsedSeconds":8,"states":305,"issues":0}
+AssertionError [ERR_ASSERTION]: Repeated stress trials must have identical final checkpoints
+    at runOne (/workspace/mufradr.github.io/tools/baseline/run.cjs:42:75)
+    at main (/workspace/mufradr.github.io/tools/baseline/run.cjs:67:26)
+    at Object.<anonymous> (/workspace/mufradr.github.io/tools/baseline/run.cjs:79:26)
+    at Module._compile (node:internal/modules/cjs/loader:1872:14)
+    at Object..js (node:internal/modules/cjs/loader:2003:10)
+    at Module.load (node:internal/modules/cjs/loader:1594:32)
+    at Module._load (node:internal/modules/cjs/loader:1396:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+    at node:internal/main/run_main_module:33:47 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+Error: stress-developed exited 1
+    at ChildProcess.<anonymous> (/workspace/mufradr.github.io/tools/baseline/run.cjs:75:172)
+    at ChildProcess.emit (node:events:509:28)
+    at ChildProcess._handle.onexit (node:internal/child_process:295:12)

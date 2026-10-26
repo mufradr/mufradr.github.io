@@ -1,5 +1,16 @@
 # Release history
 
+## Unreleased — Civilization-development baseline (tooling only)
+
+- Preserve v0.16.0 as a local rollback tag before simulation development.
+- Add a fixed seed/protocol manifest, ordinary-history and prepared-stress runners,
+  annual state/decline and regional observations, CPU slice timing, memory/save
+  measurements, and desktop/tablet/phone-layout browser delay measurements.
+- Preserve initial results, readable reports, source/checkpoint hashes and archive
+  checksums. Add comparison, provenance-audit and observer-purity checks.
+- Document metric limitations and the six-chunk v0.17.0 implementation plan.
+  App code, simulation rules, save formats and release/cache versions are unchanged.
+
 ## 0.16.0 — Connected transport, subsistence and state finances
 
 - Roads, river transport and maintained sea routes move limited real food surplus

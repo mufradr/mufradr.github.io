@@ -1,0 +1,94 @@
+{
+  "resources": [
+    {
+      "file": "index.html",
+      "bytes": 14318,
+      "gzipBytes": 3984
+    },
+    {
+      "file": "styles/base.css",
+      "bytes": 372,
+      "gzipBytes": 253
+    },
+    {
+      "file": "styles/app.css",
+      "bytes": 20317,
+      "gzipBytes": 5052
+    },
+    {
+      "file": "assets/earth.js",
+      "bytes": 1123686,
+      "gzipBytes": 845927
+    },
+    {
+      "file": "js/core.js",
+      "bytes": 166203,
+      "gzipBytes": 62621
+    },
+    {
+      "file": "js/colonies.js",
+      "bytes": 19624,
+      "gzipBytes": 6586
+    },
+    {
+      "file": "js/atlas.js",
+      "bytes": 5562,
+      "gzipBytes": 2256
+    },
+    {
+      "file": "js/history.js",
+      "bytes": 5473,
+      "gzipBytes": 2106
+    },
+    {
+      "file": "js/experiments.js",
+      "bytes": 6403,
+      "gzipBytes": 2224
+    },
+    {
+      "file": "js/diagnostics.js",
+      "bytes": 5345,
+      "gzipBytes": 1838
+    },
+    {
+      "file": "js/history-ui.js",
+      "bytes": 4817,
+      "gzipBytes": 2105
+    },
+    {
+      "file": "js/save-codec.js",
+      "bytes": 10391,
+      "gzipBytes": 3702
+    },
+    {
+      "file": "js/saves.js",
+      "bytes": 11292,
+      "gzipBytes": 3795
+    },
+    {
+      "file": "js/save-store.js",
+      "bytes": 2533,
+      "gzipBytes": 1001
+    },
+    {
+      "file": "js/ui.js",
+      "bytes": 108491,
+      "gzipBytes": 37456
+    },
+    {
+      "file": "js/save-ui.js",
+      "bytes": 12049,
+      "gzipBytes": 4617
+    }
+  ],
+  "totalBytes": 1516876,
+  "totalGzipBytes": 985523,
+  "initialSave": {
+    "current": {
+      "rawBytes": 40505438,
+      "gzipBytes": 7103007,
+      "encodeMs": 213.73571200000015,
+      "gzipMs": 496.100559
+    }
+  }
+}

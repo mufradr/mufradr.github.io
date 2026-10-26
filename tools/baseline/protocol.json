@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "protocol": "civilization-development-v1",
+  "baselineCommit": "7649533c839bfdc3b01be56be262eba970f026ad",
+  "rollbackTag": "baseline/v0.16.0-before-civilization-development",
+  "endYear": 1800,
+  "snapshotEvery": 250,
+  "integrityEvery": 250,
+  "majorDecline": {"minimumPeakCells": 40, "minimumPeakPopulation": 1000000, "retainedAreaFraction": 0.5, "healthyAreaFraction": 0.8, "suddenWithinYears": 5},
+  "historicalSeeds": ["development-01", "development-02", "development-03", "development-04", "development-05", "development-06", "development-07", "development-08", "development-09", "development-10"],
+  "initialRuns": ["earth-development-01", "earth-development-02", "earth-development-03", "generated-development-01", "stress-early", "stress-developed", "stress-maritime"],
+  "stress": {"warmupYears": 20, "measuredYears": 120, "repeats": 3, "maritimeYears": 300},
+  "browser": {"durationMs": 8000, "viewports": [{"width":1280,"height":900},{"width":820,"height":1180},{"width":390,"height":844}]},
+  "regions": [
+    {"name":"Fertile Crescent","box":[29,38,34,49]},
+    {"name":"Europe","box":[36,60,-10,30]},
+    {"name":"India","box":[8,34,68,90]},
+    {"name":"China","box":[20,42,100,123]},
+    {"name":"Mesoamerica","box":[14,23,-105,-86]},
+    {"name":"Andes","box":[-20,-4,-82,-68]},
+    {"name":"West Africa","box":[4,16,-18,16]},
+    {"name":"Congo basin","box":[-8,5,12,31]},
+    {"name":"East Africa","box":[-12,15,31,48]},
+    {"name":"Australia","box":[-44,-10,112,154]}
+  ]
+}

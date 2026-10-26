@@ -45,6 +45,8 @@ Google Fonts are optional external resources; fallback fonts work offline.
 | `js/diagnostics.js` | On-demand simulation state consistency checks |
 | `js/ui.js` | Map rendering, controls, simulation pacing, and startup |
 | `tests/` | Simulation regression fixtures and browser checks |
+| `tools/baseline/` | Fixed-protocol history, performance, browser and comparison tools |
+| `benchmarks/baselines/v0.16.0/` | Preserved measurements and readable baseline reports |
 
 Scripts load in order: Earth data, simulation core, colonies, atlas analysis, experiments, diagnostics, then interface. They use
 classic scripts with shared bindings; preserve that order. Edit the relevant
@@ -84,6 +86,13 @@ set `CHROMIUM_PATH` to its executable. The tests automatically use
 `npm run benchmark:simulation` and `npm run benchmark:render` report repeatable CPU
 and rendering measurements. See [performance notes](docs/OPTIMIZATION.md) for
 scenarios, baseline comparison options and limitations.
+
+The [civilization-development baseline](docs/BASELINE.md) documents the fixed seed
+set, historical outcomes, CPU/browser delays, memory/save measurements and the
+planned v0.17.0 implementation. Preserved results are readable in the repository.
+`npm run baseline:run -- --out /tmp/baseline-current` followed by
+`npm run baseline:browser -- --out /tmp/baseline-current` reproduces the initial batch;
+these are longer measurements, separate from the automated test suite.
 
 Tests also run on GitHub Actions for pushes and pull requests. Test dependencies
 are development tools; the published site does not use Node.js or Playwright.
