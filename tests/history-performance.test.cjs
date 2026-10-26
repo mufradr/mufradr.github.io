@@ -12,7 +12,7 @@ test('peak footprint scratch links remain exact through shrinking, regrouping an
   const add=(kind,id,i)=>{let g=groups[kind].get(id);if(!g){g={area:0,population:0,cells:[]};groups[kind].set(id,g)}g.area+=w.area[i];g.population+=s.pop[i];g.cells.push(i)};
   for(const i of w.landIdx){const id=s.pol[i],e=s.eth[i];if(id)add('state',id,i);if(s.pop[i]<1)continue;
    if(s.rel[i]>=0)add('religion',s.rel[i],i);if(e>=0)add('people',e,i);
-   if(id)add('tradition','state:'+s.pols[id].civ,i);else if(e>=0)add('tradition','people:'+s.eths[e].fam,i);
+   if(id)add('tradition','state:'+s.pols[id].civ,i);
   }
   const rng=s.r.state();app.inspect('recordAtlasHistory()');assert.equal(s.r.state(),rng);
   for(const kind of Object.keys(groups)){

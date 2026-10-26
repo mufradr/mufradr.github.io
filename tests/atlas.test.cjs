@@ -2,10 +2,10 @@ const test=require('node:test'),assert=require('node:assert/strict');
 const {loadCore}=require('./core-harness.cjs');
 test('atlas traditions, rankings and screen-space selection',async t=>{
  const a=loadCore();a.earth();
- await t.test('successors share a tradition while independent cultural families remain distinct',()=>{
+ await t.test('successors share state traditions without assigning ancestral defaults',()=>{
   a.start();const r=a.inspect(`(()=>{const c=cellAt(32,45),j=WD.nb[c*4+1],p=S.pols[newPolity(c,null)],q=S.pols[newPolity(j,p)];
-   const same=traditionAt(c).key===traditionAt(j).key;S.pol[j]=0;return {same,independent:traditionAt(j).key,color:traditionColor(traditionAt(c).key)}})()`);
-  assert.ok(r.same);assert.match(r.independent,/^people:/);assert.ok(r.color.every(Number.isFinite));
+   const same=traditionAt(c).key===traditionAt(j).key;S.pol[j]=0;return {same,independent:traditionAt(j),color:traditionColor(traditionAt(c).key)}})()`);
+  assert.ok(r.same);assert.equal(r.independent,null);assert.ok(r.color.every(Number.isFinite));
  });
  await t.test('area and population peaks remain after territorial loss; rankings use km²',()=>{
   a.start();const r=a.inspect(`(()=>{P.warRate=P.crisis=P.formRate=P.nomad=0;const c=cellAt(32,45),j=WD.nb[c*4+1],id=newPolity(c,null);S.pol[j]=id;

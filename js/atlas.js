@@ -1,10 +1,16 @@
 "use strict";
 // Read-only atlas analysis and deterministic screen-space detail selection.
 function traditionAt(i){
- const o=S.pol[i]?S.pols[S.pol[i]]:null,e=S.eth[i]>=0?S.eths[S.eth[i]]:null;
+ if(!WD.land[i]||S.pop[i]<1)return null;
+ const o=S.pol[i]?S.pols[S.pol[i]]:null;
  if(o)return {key:'state:'+String(o.civ||o.base),name:String(o.civ||o.base)};
- if(e){const root=S.eths[e.fam]||e;return {key:'people:'+root.id,name:root.name}}
  return null;
+}
+function traditionSummary(key){
+ const record=historicalRecord('tradition',key),members=S.pols.filter(o=>o&&'state:'+String(o.civ||o.base)===key),ids=new Set(members.map(o=>o.id)),owners=new Set();
+ let area=0,population=0,cells=0,cell=-1;
+ for(const i of WD.landIdx)if(S.pop[i]>=1&&ids.has(S.pol[i])){area+=WD.area[i];population+=S.pop[i];cells++;owners.add(S.pol[i]);if(cell<0)cell=i}
+ return {id:key,name:record?.name||key.slice(6),record,area,population,cells,cell,states:members.filter(o=>owners.has(o.id)),former:members.filter(o=>!o.alive),born:members.length?members.reduce((born,o)=>Math.min(born,o.born),Infinity):record?.born};
 }
 function traditionColor(key){return hsl(hashStr(key)%360,0.48,0.52)}
 function stateRenown(o){
@@ -24,7 +30,7 @@ function warRenown(w){
 }
 const ATLAS_ID_COLLATOR=new Intl.Collator(undefined,{numeric:true});
 function atlasRanking(kind,metric='renown',scope='all'){
- const list=kind==='tradition'?[...S.historicalAtlas.tradition.values()]:kind==='people'?S.eths:kind==='religion'?S.rels:kind==='war'?S.wars:S.pols.filter(Boolean);
+ const list=kind==='tradition'?[...S.historicalAtlas.tradition.values()].filter(r=>String(r.id).startsWith('state:')):kind==='people'?S.eths:kind==='religion'?S.rels:kind==='war'?S.wars:S.pols.filter(Boolean);
  const score=o=>{
   const r=historicalRecord(kind,o.id);
   if(kind!=='war'&&metric!=='renown'){

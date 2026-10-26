@@ -116,7 +116,7 @@ function buildComp(){
   const m=ui.mode;
   if(mapLayers.borders&&['political','alliances','peoples','religion','traditions'].includes(m)){
     const key=m==='traditions'?ui.traditionGrid:m==='peoples'?s.eth:m==='religion'?s.rel:s.pol,polMode=m==='political'||m==='alliances';
-    let selP=0;if(ui.page){if(polMode&&ui.page.t==='pol')selP=ui.page.id;else if(m==='peoples'&&ui.page.t==='eth')selP=ui.page.id;else if(m==='religion'&&ui.page.t==='rel')selP=ui.page.id;else if(ui.page.t==='cell')selP=key[ui.page.id]}
+    let selP=0;if(ui.page){if(polMode&&ui.page.t==='pol')selP=ui.page.id;else if(m==='peoples'&&ui.page.t==='eth')selP=ui.page.id;else if(m==='religion'&&ui.page.t==='rel')selP=ui.page.id;else if(m==='traditions'&&ui.page.t==='tradition')selP=ui.traditions.get(ui.page.id)?.index||0;else if(ui.page.t==='cell')selP=key[ui.page.id]}
     const thin=new Path2D(),hi=new Path2D(),war=new Path2D();
     const seg=(p,x1,y1,x2,y2)=>{p.moveTo(x1,y1);p.lineTo(x2,y2)};
     for(const i of w.landIdx){
@@ -240,7 +240,7 @@ function drawLegend(){
   const rampBox=(t,a,b)=>`<div>${t}</div><div class="ramp" style="background:${rampCss()}"></div><div class="row"><span>${a}</span><span>${b}</span></div>`;
   const keys=list=>'<div class="keys">'+list.map(([c,l])=>`<span><i style="background:rgb(${c})"></i>${l}</span>`).join('')+'</div>';
   switch(m){
-    case'traditions':h='Shared colours show inherited state traditions, including successor realms. Stateless peoples show their ancestral cultural family. Traditions are distinct from present borders and faiths.';break;
+    case'traditions':h='Shared colours show traditions founded by states and inherited by successor realms. Tap a coloured province to inspect its tradition. Unaffiliated land stays neutral; use Peoples for cultural identities.';break;
     case'political':h='Each colour is an independent polity; early societies may be small chiefdoms. Hatched, faint areas are nomad confederations; pale areas are wasteland a state only claims. Teal diamonds mark independent overseas communities. Dotted tan lines are caravan routes; dashed blue lines are overseas trade routes. Red borders are war fronts; dark dashed lines are fortified frontiers; amber trails are peoples on the move. Click a state to open its page.';break;
     case'soil':h=rampBox('Soil fertility (farmland only; worn-out soils are cool, fresh ones warm)','depleted','fresh')+keys([[[235,235,225],'Salt-poisoned fields']])+'<p style="margin:6px 0 0;opacity:.85">Crowded fields wear out unless rested, manured or rotated; floodplains renew each year; irrigation in dry lands slowly salts the soil.</p>';break;
     case'forest':h=keys([[[34,110,52],'Standing forest'],[[196,120,60],'Cleared or lost forest']])+'<p style="margin:6px 0 0;opacity:.85">Farmers clear forest to plant; smelting eats charcoal; abandoned land grows back. Stripped hillsides erode.</p>';break;
@@ -347,11 +347,11 @@ function linkify(txt,refs){
 const L_=(t,id,name)=>`<a class="lnk" tabindex="0" data-t="${t}" data-id="${esc(String(id))}">${esc(name)}</a>`;
 const lm_=M=>L_('mig',M.id,'the '+M.name),lp=o=>L_('pol',o.id,o.alive?o.full:o.peak),le=e=>L_('eth',e.id,e.name),lr=R=>L_('rel',R.id,R.name),lf=f=>L_('fig',f.id,f.name),lw=w=>L_('war',w.id,w.name);
 function entityCell(t,id){const s=S;
-  switch(t){case'tradition':return -1;case'cell':return id;case'pol':return s.pols[id].capital;case'eth':{const e=s.eths[id];return e.alive?cellAt(e.la*180/Math.PI,e.lon*180/Math.PI):-1}
+  switch(t){case'tradition':return traditionSummary(String(id)).cell;case'cell':return id;case'pol':return s.pols[id].capital;case'eth':{const e=s.eths[id];return e.alive?cellAt(e.la*180/Math.PI,e.lon*180/Math.PI):-1}
     case'rel':return s.rels[id].origin;case'fig':{const f=s.figs[id];const p=f.pol&&s.pols[f.pol];return p?p.capital:-1}
     case'plague':return s.outbreaks[id].origin;case'war':return s.pols[s.wars[id].d[0]].capital;case'mig':{const M=s.migs[id];return M.done?M.path[M.path.length-1]:M.cell}}return-1}
 function openPage(t,id,noPush){if(ui.page&&!noPush&&!(ui.page.t===t&&ui.page.id===id))ui.stack.push(ui.page);if(ui.stack.length>40)ui.stack.shift();ui.page={t,id:t==='tradition'?String(id):+id};showPane('insp');ui.dirty=true}
-document.querySelector('.side').addEventListener('click',e=>{const a=e.target.closest('.lnk');if(!a)return;e.preventDefault();openPage(a.dataset.t,a.dataset.id);if(a.dataset.peak)showHistorical(a.dataset.t,a.dataset.id,a.dataset.peak);else{if(ui.historical)closeHistorical();centerOn(entityCell(a.dataset.t,+a.dataset.id))}});
+document.querySelector('.side').addEventListener('click',e=>{const a=e.target.closest('.lnk');if(!a)return;e.preventDefault();openPage(a.dataset.t,a.dataset.id);if(a.dataset.peak)showHistorical(a.dataset.t,a.dataset.id,a.dataset.peak);else{if(ui.historical)closeHistorical();centerOn(entityCell(a.dataset.t,a.dataset.t==='tradition'?a.dataset.id:+a.dataset.id))}});
 document.querySelector('.side').addEventListener('keydown',e=>{if(e.key!=='Enter')return;const a=e.target.closest('.lnk,.card');if(a&&a.tagName!=='BUTTON')a.click()});
 function bar(label,v,max,cls){const t=clamp(v/max,0,1);return`<div class="barrow"><span>${label}</span><div class="track"><div class="fill ${cls||''}" style="width:${(t*100).toFixed(0)}%"></div></div><span class="v">${v.toFixed(2)}</span></div>`}
 function chronFor(pred,max){const out=[];const c=S.chron;for(let k=c.length-1;k>=0&&out.length<(max||25);k--){if(pred(c[k]))out.push(c[k])}return out}
@@ -381,7 +381,8 @@ function renderPage(){
     else{
       const p=s.pol[i]?s.pols[s.pol[i]]:null,e=s.eth[i]>=0?s.eths[s.eth[i]]:null,R=s.rel[i]>=0?s.rels[s.rel[i]]:null,city=s.city[i]>=0?s.cities[s.city[i]]:null;
       h+=`<div class="kind">Province</div><h2 class="name">${city?esc(city.name):e?'Lands of the '+esc(e.name):'Empty land'}</h2><p class="sub2">${latd}°, ${lond}° · ${ERAS[eraOf(i)]}</p>`;
-      h+=`<dl class="kv" style="margin-top:10px"><dt>State</dt><dd>${p?lp(p):'none'}</dd><dt>People</dt><dd>${e?le(e):'none'}</dd><dt>Faith</dt><dd>${R?lr(R):e?'folk religion':'–'}</dd><dt>Tradition</dt><dd>${esc(traditionAt(i)?.name||'none')}</dd><dt>Population</dt><dd>${fmtN(s.pop[i])} / ${fmtN(s.K[i])}</dd>${city?`<dt>City</dt><dd>${esc(city.name)}${p&&p.capital===i?' (capital)':''}, since ${fy(city.born)}</dd>`:''}</dl>`;
+      const tradition=traditionAt(i);
+      h+=`<dl class="kv" style="margin-top:10px"><dt>State</dt><dd>${p?lp(p):'none'}</dd><dt>People</dt><dd>${e?le(e):'none'}</dd><dt>Faith</dt><dd>${R?lr(R):e?'folk religion':'–'}</dd><dt>Tradition</dt><dd>${tradition?`<button class="lnk" data-t="tradition" data-id="${esc(tradition.key)}">${esc(tradition.name)}</button>`:'none'}</dd><dt>Population</dt><dd>${fmtN(s.pop[i])} / ${fmtN(s.K[i])}</dd>${city?`<dt>City</dt><dd>${esc(city.name)}${p&&p.capital===i?' (capital)':''}, since ${fy(city.born)}</dd>`:''}</dl>`;
       const settlement=s.colonies.get(i);
       if(settlement)h+=`<h3 class="sec">${settlement.status==='active'?'Overseas community':'Former overseas community'}: ${esc(settlement.name)}</h3><dl class="kv"><dt>Founded</dt><dd>${fy(settlement.founded)}</dd><dt>Origin people</dt><dd>${le(s.eths[settlement.founderPeople])}</dd><dt>Local people</dt><dd>${le(s.eths[settlement.people])}</dd><dt>Settler descendants</dt><dd>${fmtN(settlement.settlers)}</dd><dt>Local government</dt><dd>${p?lp(p):'Independent settlement; no centralized state'}</dd></dl>`;
       h+=`<h3 class="sec">Land</h3><dl class="kv"><dt>Terrain</dt><dd>${BIOMES[w.biome[i]]}, ${Math.round(w.elev[i])} m</dd><dt>Simulation climate</dt><dd>${w.T[i].toFixed(1)} °C, ${Math.round(w.Pr[i])} mm/year</dd><dt>Seasonal swing</dt><dd>${w.amp[i].toFixed(0)} °C</dd>${w.kgGrid&&w.kgGrid[i]?`<dt>Observed zone</dt><dd>${KG_CODES[w.kgGrid[i]]}</dd><dt>Raw model zone</dt><dd>${KG_GROUPS[simGroup(w.rawT[i],w.rawP[i],w.rawA[i])]}</dd><dt>Raw model rain</dt><dd>${Math.round(w.rawP[i])} mm/year</dd><dt>Climate source</dt><dd>${w.fitted?'Observed-zone anchored':'Climate model'}</dd>`:''}<dt>This year's rain</dt><dd>${Math.round((s.wm[i]-1)*100)>=0?'+':''}${Math.round((s.wm[i]-1)*100)}%</dd><dt>River</dt><dd>${w.rv[i]>0?(w.rv[i]>0.6?'major':'yes'):'no'}</dd><dt>Soil fertility</dt><dd>${(s.fert[i]*100).toFixed(0)}%</dd><dt>Immunity</dt><dd>${(s.immune[i]*100).toFixed(0)}%</dd><dt>Cohesion</dt><dd>${s.s[i].toFixed(2)}</dd></dl>`;
@@ -436,8 +437,11 @@ function renderPage(){
     if(R.kids.length)h+=`<h3 class="sec">Schisms</h3><p style="margin:0">${R.kids.map(k=>lr(s.rels[k])).join(', ')}</p>`;
     h+=`<h3 class="sec">Chronicle</h3>`+chronList(chronFor(x=>refHas(x,'rel',id)));
   }else if(t==='tradition'){
-    const r=historicalRecord('tradition',id);
-    h+=`<div class="kind">Civilizational tradition</div><h2 class="name">${esc(r.name)}</h2><p class="note">Shared tradition across successor states and related independent peoples. Footprints show the dominant tradition of each inhabited province.</p>`;
+    const info=traditionSummary(id),r=info.record;
+    h+=`<div class="kind">Civilizational tradition</div><h2 class="name">${esc(info.name)}</h2><p class="note">A state tradition inherited by successor realms. Its current footprint includes inhabited provinces sharing this tradition.</p>`;
+    h+=`<dl class="kv"><dt>First state</dt><dd>${info.born==null?'Not recorded':fy(info.born)}</dd><dt>Current states</dt><dd>${info.states.length}</dd><dt>Current area</dt><dd>${fmtN(info.area)} km²</dd><dt>Current population</dt><dd>${fmtN(info.population)}</dd><dt>Inhabited provinces</dt><dd>${info.cells}</dd><dt>Peak area</dt><dd>${r?.areaPeak?fmtN(r.areaPeak.area)+' km² · '+fy(r.areaPeak.year):'Not recorded yet'}</dd><dt>Peak population</dt><dd>${r?.populationPeak?fmtN(r.populationPeak.population)+' · '+fy(r.populationPeak.year):'Not recorded yet'}</dd></dl>`;
+    h+=`<h3 class="sec">Member states</h3><p>${info.states.length?info.states.slice(0,30).map(lp).join(', ')+(info.states.length>30?' and '+(info.states.length-30)+' more':''):'No states currently hold inhabited land in this tradition.'}</p>`;
+    if(info.former.length)h+=`<h3 class="sec">Fallen states</h3><p>${info.former.slice(-20).map(lp).join(', ')}</p>`;
   }else if(t==='fig'){
     const f=s.figs[id],e=f.eth>=0?s.eths[f.eth]:null,p=f.pol?s.pols[f.pol]:null;
     const label={ruler:'Ruler',founder:'Founder',usurper:'Usurper',prophet:'Prophet',reformer:'Reformer',sage:'Sage'}[f.kind]||'Figure';
@@ -778,6 +782,7 @@ mapCv.addEventListener('pointerup',e=>{clearTimeout(lpT);pts.delete(e.pointerId)
     if(WD.land[i]&&(m==='political'||m==='alliances')&&S.pol[i])openPage('pol',S.pol[i]);
     else if(WD.land[i]&&m==='peoples'&&S.eth[i]>=0)openPage('eth',S.eth[i]);
     else if(WD.land[i]&&m==='religion'&&S.rel[i]>=0)openPage('rel',S.rel[i]);
+    else if(m==='traditions'&&traditionAt(i))openPage('tradition',traditionAt(i).key);
     else openPage('cell',i);
     if(isMob())setTimeout(()=>{if(lastTap.t)showJump('d')},330)}}drag=null});
 mapCv.addEventListener('wheel',e=>{e.preventDefault();const r=mapCv.getBoundingClientRect(),sx=e.clientX-r.left,sy=e.clientY-r.top;
@@ -970,6 +975,6 @@ function renderAtlasStats(){
   const o=r.entity,t=kind==='state'?'pol':kind==='religion'?'rel':kind==='people'?'eth':kind==='tradition'?'tradition':'war',name=kind==='state'?(o.alive?o.full:o.peak):o.name;
   const value=metric==='area'||metric==='peakArea'?fmtN(r.score)+' km²':metric==='population'||metric==='peakPopulation'?fmtN(r.score):r.score.toFixed(1);
   return `<tr><td>${n+1}</td><td><button class="lnk" data-t="${t}" data-id="${esc(String(o.id))}"${metric==='peakArea'||metric==='peakPopulation'||metric==='renown'?' data-peak="'+(kind==='war'?'initial':metric==='peakPopulation'?'population':'area')+'"':''}>${esc(name)}</button>${kind==='state'&&!o.alive?' · fallen':''}</td><td class="n">${value}</td></tr>`;
- }).join('')+'</tbody></table></div>':'<div class="empty">No entries yet.</div>';
+ }).join('')+'</tbody></table></div>':'<div class="empty">'+(kind==='tradition'?'Traditions emerge when states form.':'No entries yet.')+'</div>';
 }
 for(const id of ['rank-kind','rank-metric','rank-living'])$(id).addEventListener('change',renderAtlasStats);

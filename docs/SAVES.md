@@ -1,4 +1,4 @@
-# Saved worlds — v0.14.0
+# Saved worlds — v0.14.1
 
 Open **Saves** on a phone, tablet or desktop. Three manual slots hold independent
 histories. Give a slot a name and choose **Save here**. A save finishes any pending
@@ -44,7 +44,7 @@ links only recreate starting conditions; they are not progress saves.
 
 Damaged, unsupported or structurally invalid imports are rejected before the
 running world is replaced. Loading a valid file requires confirmation. This first
-save schema accepts v0.13.0 and this engine version; future releases need explicit
+save schema accepts v0.13.0, v0.14.0 and this engine version; future releases need explicit
 compatibility handling or migrations. Older local records are never deleted just
 because their engine version differs; they remain exportable.
 
@@ -93,7 +93,7 @@ byte pattern, packs long numeric histories into
 exact-width integer or Float64 blocks and groups byte positions before gzip.
 It restores histories as ordinary JavaScript arrays. Floating-point bytes,
 signed zero and aliases remain exact. Full chronicles and peak maps are retained; no histories are pruned to fit a save.
-Legacy graph schemas 1 and 2 remain readable. Engine v0.13.0 saves are accepted after
+Legacy graph schemas 1 and 2 remain readable. Engine v0.13.0 and v0.14.0 saves are accepted after
 structural validation; subsequent simulated years use the updated founding rules.
 
 The limits also include four million graph nodes. They protect browser memory,

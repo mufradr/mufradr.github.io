@@ -11,7 +11,7 @@ test('atlas ranking preserves numeric and tradition-name ordering for tied archi
   const states=atlasRanking('state','area').map(r=>r.entity.id);
   const names=['state:River 20','state:River 2','people:11','people:2','state:River 1'];
   S.historicalAtlas.tradition=new Map(names.map(id=>[id,{id,alive:false}]));
-  return {states,traditions:atlasRanking('tradition','area').map(r=>r.entity.id),expected:names.sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}))};
+  return {states,traditions:atlasRanking('tradition','area').map(r=>r.entity.id),expected:names.filter(id=>id.startsWith('state:')).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}))};
  })()`);
  assert.deepEqual(result.states,[1,2,10,11,100,200]);assert.deepEqual(result.traditions,result.expected);
 });

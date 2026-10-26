@@ -11,7 +11,7 @@ function captureWorldSave(name='',view=null){
 function validateWorldSave(data){
  const fail=m=>{throw new Error('Invalid world save: '+m)};
  if(!data||data.format!==WORLD_SAVE_FORMAT||data.schemaVersion!==WORLD_SAVE_SCHEMA)throw new Error('Unsupported world save format. Setup files are not world saves.');
- if(!['0.13.0',ENGINE_VERSION].includes(data.engineVersion))throw new Error('This save needs World Engine '+String(data.engineVersion).slice(0,30)+'; this engine is '+ENGINE_VERSION+'. Your current world has not been replaced.');
+ if(!['0.13.0','0.14.0',ENGINE_VERSION].includes(data.engineVersion))throw new Error('This save needs World Engine '+String(data.engineVersion).slice(0,30)+'; this engine is '+ENGINE_VERSION+'. Your current world has not been replaced.');
  if(data.width!==W||data.height!==H)fail('map dimensions');
  if(typeof data.name!=='string'||data.name.length>40||typeof data.savedAt!=='string'||!Number.isFinite(Date.parse(data.savedAt)))fail('save details');
  if(!Number.isInteger(data.rngState)||data.rngState<0||data.rngState>0xffffffff)fail('random state');

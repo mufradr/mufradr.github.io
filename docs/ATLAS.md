@@ -1,10 +1,10 @@
-# Atlas and maritime development — 0.12.0
+# Atlas and maritime development — 0.14.1
 
 ## Traditions and historical rankings
 
 Traditions group states by their inherited `civ` identity. A successor can share
 its predecessor's tradition while having a new state name. Stateless populations
-use their ancestral people's family. This is a political/cultural heritage view,
+remain neutral; ancestral families no longer create default traditions. This is a political/cultural heritage view,
 separate from the Peoples and Religion maps; it is not a new simulated institution.
 Colours are stable hashes of identities. Labels use the geographic centre of
 currently represented cells and the existing annotation controls.
@@ -98,8 +98,11 @@ population peak with year, area, population, cell count and color. Footprints us
 sorted `(start, length)` runs in Uint32 arrays, including cell IDs above 65535.
 A snapshot shared by both peaks is stored once; replacing one peak cannot mutate
 the other. A snapshot survives an entity's extinction but resets on a new run.
-Traditions aggregate all successor states sharing `civ`; stateless cells use
-the ancestral people family. Religion and people maps represent the cell's
+Traditions aggregate inhabited cells of successor states sharing `civ`; stateless
+cells are excluded. Tapping a coloured province opens its tradition inspector,
+including live member states, population/area and separate historical peaks.
+Newly founded traditions can be inspected before their first peak is sampled.
+Legacy ancestral-family records remain in older saves but are hidden from rankings. Religion and people maps represent the cell's
 dominant identity and count its whole population, rather than minority shares.
 Uninhabited claims count toward state area, but not cultural footprints.
 

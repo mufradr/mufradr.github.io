@@ -9,7 +9,7 @@ let historicalLinks=null;
 function recordAtlasHistory(){
  const s=S,w=WD,h=s.historicalAtlas;if(!h)return;
  if(!historicalLinks)historicalLinks={state:new Int32Array(N),religion:new Int32Array(N),people:new Int32Array(N),tradition:new Int32Array(N)};
- const groups={state:new Map(),religion:new Map(),people:new Map(),tradition:new Map()},states=[],religions=[],peoples=[],stateTraditions=[],peopleTraditions=[];
+ const groups={state:new Map(),religion:new Map(),people:new Map(),tradition:new Map()},states=[],religions=[],peoples=[],stateTraditions=[];
  const create=(kind,id)=>{let g=groups[kind].get(id);if(!g){g={area:0,population:0,cells:0,first:-1,last:-1};groups[kind].set(id,g)}return g};
  const add=(g,links,cell,pop)=>{g.area+=w.area[cell];g.population+=pop;g.cells++;if(g.last>=0)links[g.last]=cell;else g.first=cell;g.last=cell};
  const stateLinks=historicalLinks.state,religionLinks=historicalLinks.religion,peopleLinks=historicalLinks.people,traditionLinks=historicalLinks.tradition;
@@ -20,7 +20,6 @@ function recordAtlasHistory(){
   if(people>=0)add(peoples[people]||(peoples[people]=create('people',people)),peopleLinks,i,p);
   let tradition;
   if(id){tradition=stateTraditions[id];if(!tradition){const o=s.pols[id];tradition=stateTraditions[id]=create('tradition','state:'+String(o.civ||o.base))}}
-  else if(people>=0)tradition=peopleTraditions[people]||(peopleTraditions[people]=create('tradition','people:'+s.eths[people].fam));
   if(tradition)add(tradition,traditionLinks,i,p);
  }
  for(const kind of Object.keys(groups)){

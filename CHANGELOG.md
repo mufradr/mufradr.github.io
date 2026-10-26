@@ -1,5 +1,16 @@
 # Release history
 
+## 0.14.1 — Inspectable, emergent traditions
+
+- Map clicks and phone taps open the selected tradition inspector, with current
+  member states, area/population, fallen states and dated historical peaks.
+- Newly founded traditions can be inspected before their first history sample.
+  Province tradition links and selected-tradition borders work consistently.
+- Remove preset ancestral-family traditions from the map and rankings. Traditions
+  now begin with states and pass to successors; stateless land remains neutral.
+- Continue accepting v0.13.0 and v0.14.0 saves. Legacy family archives are retained
+  for compatibility but hidden from rankings. Simulation rules are unchanged.
+
 ## 0.14.0 — Smoother playback, smaller saves and founding constraints
 
 - Compact graph schema 3 interns object layouts and stores long numeric histories

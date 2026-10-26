@@ -3,7 +3,7 @@
 An interactive browser simulation of populations, states, cultures, and climate,
 hosted on GitHub Pages at https://mufradr.github.io/.
 
-The app identifies itself as version 0.14.0. It is a static site: no package
+The app identifies itself as version 0.14.1. It is a static site: no package
 installation or build step is required to run or publish it. `.nojekyll` enables
 direct static serving on GitHub Pages.
 
@@ -96,7 +96,7 @@ the affected behavior; the regression suite does not cover all long-term outcome
 See [atlas and maritime development notes](docs/ATLAS.md) for score formulas,
 rendering limits, URL behaviour and settlement rules.
 
-## Save and continue a world in 0.14.0
+## Save and continue a world in 0.14.1
 
 Open **Saves** for three named manual slots, previous-save backups, and three
 rotating autosaves. Saving finishes the current year and pauses playback; loading
@@ -109,7 +109,7 @@ Local slots stay in this browser and may be cleared by browser/iOS storage
 cleanup, so export important worlds. No account or server is needed. World saves
 include custom terrain, simulation progress, histories, peak maps and RNG state;
 setup links/files still only reproduce starting conditions. The loader accepts
-v0.13.0 and current-version saves and validates imports before replacing the live
+v0.13.0, v0.14.0 and current-version saves and validates imports before replacing the live
 world.
 See [save format and device-storage notes](docs/SAVES.md) and
 [save/performance measurements and founding changes](docs/OPTIMIZATION.md).
@@ -124,8 +124,9 @@ present view, and Play resumes the current simulation. War maps show initial
 participants and recorded captures. Records belong to the current run and are
 not saved by setup/share links. Earlier unsampled footprints cannot be rebuilt.
 
-**Traditions** colours successor states by inherited political tradition and stateless
-peoples by ancestral family. **Stats** ranks states, religions, traditions, peoples and wars by an
+**Traditions** colours states and their successors by inherited political tradition.
+There are no preset ancestral-family traditions; stateless land stays neutral.
+Tap a coloured province to inspect its tradition, member states and recorded peaks. **Stats** ranks states, religions, traditions, peoples and wars by an
 explained renown/scale index. Area means claimed territory, measured in km², and separate peaks
 need not occur in the same year. War scale uses populations of participating realms,
 not casualties or mobilized soldiers.
