@@ -5,8 +5,12 @@ function simulationIssues(limit=50,state=S,world=WD){
   const report=message=>{if(errors.length<limit)errors.push(message)};
   if(!s||!w)return ['No simulation is loaded.'];
   const index=(v,list,empty=-1)=>Number.isInteger(v)&&(v===empty||(v>=0&&v<list.length&&list[v]!=null));
-  for(let i=0;i<N;i++)if(!w.land[i]&&(s.pol[i]!==0||s.pop[i]!==0))report('Invalid water-cell settlement at '+i);
+  if(s.economyVersion!==1||!(s.foodStock instanceof Float64Array)||s.foodStock.length!==N||!(s.works instanceof Float32Array)||s.works.length!==N)return ['Invalid economy schema'];
+  for(let i=0;i<N;i++)if(!w.land[i]){if(s.pol[i]!==0||s.pop[i]!==0)report('Invalid water-cell settlement at '+i);if(s.foodStock[i]!==0)report('Invalid water-cell food stock at '+i)}
+  if(s.worksYear!==null&&!Number.isSafeInteger(s.worksYear))report('Invalid infrastructure clock');
   for(const i of w.landIdx){
+    if(!Number.isFinite(s.foodStock[i])||s.foodStock[i]<0)report('Invalid food stock at '+i);
+    if(!Number.isFinite(s.works[i])||s.works[i]<0.049999||s.works[i]>1)report('Invalid infrastructure condition at '+i);
     if(!Number.isFinite(s.pop[i])||s.pop[i]<0)report('Invalid population at '+i);
     if(!Number.isInteger(s.settled[i])||s.settled[i]<0||s.settled[i]>2000)report('Invalid settlement history at '+i);
     if(!Number.isFinite(s.K[i])||s.K[i]<0)report('Invalid carrying capacity at '+i);
@@ -21,11 +25,22 @@ function simulationIssues(limit=50,state=S,world=WD){
     if(errors.length>=limit)break;
   }
   if(new Set(s.alive).size!==s.alive.length)report('Duplicate active polity');
+  if(s.foodLedger){const f=s.foodLedger,keys=['openingStock','production','demand','consumption','spoilage','shippingLoss','waste','closingStock','unmet'];
+    if(!Number.isInteger(f.year)||keys.some(k=>!Number.isFinite(f[k])||f[k]<0))report('Invalid food ledger');
+    else if(Math.abs(f.openingStock+f.production-f.consumption-f.spoilage-f.shippingLoss-f.waste-f.closingStock)>1e-8*Math.max(1,f.openingStock+f.production))report('Food ledger does not balance');
+    else if(Math.abs(f.consumption+f.unmet-f.demand)>1e-8*Math.max(1,f.demand))report('Food demand does not balance');
+  }
   for(const id of s.alive){
     const o=s.pols[id];if(!o){report('Invalid active polity '+id);continue}
     for(const key of ['pop','K','S','press','h','cult','psi'])if(!Number.isFinite(o[key]))report('Nonfinite polity '+key+' for '+id);
     for(const key of ['foodStress','foodImports','foodExports'])if(o[key]!==undefined&&(!Number.isFinite(o[key])||o[key]<0||(key==='foodStress'&&o[key]>1)))report('Invalid polity '+key+' for '+id);
     if(o.foodCrisisYear!==undefined&&!Number.isSafeInteger(o.foodCrisisYear))report('Invalid food crisis year for '+id);
+    for(const key of ['infrastructureFunding','infrastructureCondition'])if(o[key]!==undefined&&(!Number.isFinite(o[key])||o[key]<0||o[key]>1))report('Invalid '+key+' for '+id);
+    if(o.treas!==undefined&&(!Number.isFinite(o.treas)||o.treas < -2||o.treas>1))report('Invalid treasury for '+id);
+    if(o.budget){const b=o.budget,positive=['revenue','administrationRequired','militaryRequired','administration','military','infrastructure','maintenanceRequired','spending','unpaid','surplusDiscarded','debtRelief'];
+      if(!(b.revenue>0)||positive.some(k=>!Number.isFinite(b[k])||b[k]<0)||!Number.isFinite(b.balance)||!Number.isFinite(b.openingTreasury)||!Number.isFinite(b.closingTreasury))report('Invalid government budget for '+id);
+      else if(Math.abs(b.administrationRequired+b.militaryRequired-b.administration-b.military-b.unpaid)>1e-8*Math.max(1,b.revenue)||Math.abs(b.revenue-b.spending-b.balance)>1e-8*Math.max(1,b.revenue)||Math.abs(b.administration+b.military+b.infrastructure-b.spending)>1e-8*Math.max(1,b.spending)||Math.abs(b.closingTreasury-b.openingTreasury-0.04*(b.balance-b.surplusDiscarded+b.debtRelief)/b.revenue)>1e-8)report('Government budget does not balance for '+id);
+    }
     if(!Number.isInteger(o.capital)||o.capital<0||o.capital>=N||!w.land[o.capital])report('Invalid capital for '+id);
     if(!index(o.core,s.eths,-2))report('Invalid core people for '+id);
     if(o.over&&!index(o.over,s.pols,0))report('Invalid overlord for '+id);

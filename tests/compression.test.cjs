@@ -1,7 +1,7 @@
 const {createHash}=require('node:crypto');
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),z=require('node:zlib');
 const {loadCore,snapshot}=require('./core-harness.cjs');
-const {loadBenchmarkCore,setup,digest}=require('./performance-benchmark.cjs');
+const {loadBenchmarkCore,setup,digest,explainDifference}=require('./performance-benchmark.cjs');
 const reference=require('./fixtures/political-loops-before.cjs');
 test('lossless Earth packing retains original elevation and climate bytes and legacy input',()=>{
  const a=loadCore();const result=a.inspect(`(()=>{const e=inflateSync(Uint8Array.from(atob(EARTH_ELEV_B64),c=>c.charCodeAt(0))),k=inflateSync(Uint8Array.from(atob(KOPPEN_B64),c=>c.charCodeAt(0)));const out=decodeEarth(e,k),d=new Int16Array(HW*HH);for(let y=0;y<HH;y++)for(let x=0;x<HW;x++){const i=y*HW+x;d[i]=out.height[i]-(x?out.height[i-1]:0)}return {out,d,k,legacy:decodeEarth(new Uint8Array(d.buffer),k)}})()`);
@@ -23,9 +23,11 @@ test('graph schema 2 remains readable after byte-plane encoding',()=>{
 for(const scenario of ['early','developed'])test(`political loop extraction preserves complete ${scenario} continuation`,()=>{
  const a=loadBenchmarkCore(),b=loadBenchmarkCore();b.inspect(`politicsG=(${reference.politicsG});`);
  // Compare loop extraction with the later overseas-governance additions disabled
- // in both engines; dedicated colony scenarios exercise those new model rules.
- for(const app of [a,b])app.inspect('overseasTransport=()=>new Map();isDependentColony=()=>false');
- setup(a,scenario);setup(b,scenario);for(let k=0;k<40;k++){a.step();b.step()}assert.equal(digest(a),digest(b));
+ // in both engines. Also neutralize maintained-road/canal condition because the
+ // retained loop fixture predates all maintenance effects, including storage.
+ // Freeze condition too; dedicated economy tests cover the evolving physics.
+ for(const app of [a,b])app.inspect('overseasTransport=()=>new Map();isDependentColony=()=>false;roadWorks=i=>S.roads[i];canalWorks=i=>S.irrig[i];maintainWorks=()=>{}');
+ setup(a,scenario);setup(b,scenario);for(let k=0;k<40;k++){a.step();b.step()}const da=digest(a),db=digest(b);assert.equal(da,db,da===db?undefined:explainDifference(a.save('Compare'),b.save('Compare')));
 });
 test('packed numeric histories retain a decoded memory budget and reject invalid layouts',()=>{
  const a=loadCore();const make=(node,payloadLength)=>a.inspect(`(()=>{const h=new TextEncoder().encode(JSON.stringify({schemaVersion:3,root:{r:0},shapes:[],nodes:[${JSON.stringify(node)}]}));const raw=new Uint8Array(16+h.length+${payloadLength});raw.set(SAVE_MAGIC);new DataView(raw.buffer).setUint32(8,h.length,true);raw.set(h,12);new DataView(raw.buffer).setUint32(raw.length-4,saveCRC(raw.subarray(0,raw.length-4)),true);return raw})()`);

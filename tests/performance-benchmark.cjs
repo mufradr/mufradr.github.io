@@ -3,7 +3,7 @@
 const fs=require('node:fs'),path=require('node:path'),{inflateSync}=require('node:zlib'),{createHash}=require('node:crypto');
 const root=path.resolve(__dirname,'..');
 function loadBenchmarkCore(corePath=path.join(root,'js/core.js'),historyPath,coloniesPath,assetsPath){
- const files=['assets/earth.js','js/core.js','js/colonies.js','js/atlas.js','js/history.js','js/experiments.js','js/diagnostics.js','js/save-codec.js','js/saves.js'];
+ const files=['assets/earth.js','js/core.js', 'js/economy.js','js/colonies.js','js/atlas.js','js/history.js','js/experiments.js','js/diagnostics.js','js/save-codec.js','js/saves.js'];
  const source=files.map(f=>fs.readFileSync(f==='assets/earth.js'&&assetsPath?assetsPath:f==='js/core.js'?corePath:f==='js/history.js'&&historyPath?historyPath:f==='js/colonies.js'&&coloniesPath?coloniesPath:path.join(root,f),'utf8')).join('\n');
  return Function('inflateSync',source+`\nreturn {inspect(code){return eval(code)},step,slices:stepG,save:captureWorldSave,get state(){return S}}`)(inflateSync);
 }
@@ -18,6 +18,19 @@ function setup(app,scenario){app.inspect(EARTH_SETUP);if(scenario==='developed')
 function digest(app){
  const save=app.save('Performance regression');save.savedAt='2026-01-01T00:00:00.000Z';
  return createHash('sha256').update(JSON.stringify(save,(_,v)=>ArrayBuffer.isView(v)?{type:v.constructor.name,hash:createHash('sha256').update(Buffer.from(v.buffer,v.byteOffset,v.byteLength)).digest('hex')}:v instanceof Map?{map:[...v]}:v instanceof Set?{set:[...v]}:v)).digest('hex');
+}
+// On a failed equivalence check, show the first cause instead of only two hashes.
+function explainDifference(a,b){
+ const seen=new WeakMap();
+ function walk(a,b,p){if(Object.is(a,b))return null;
+  if(!a||!b||typeof a!=='object'||typeof b!=='object')return p+': '+String(a)+' vs '+String(b);
+  let pair=seen.get(a);if(pair?.has(b))return null;if(!pair){pair=new WeakSet();seen.set(a,pair)}pair.add(b);
+  if(ArrayBuffer.isView(a)&&ArrayBuffer.isView(b)){const x=Buffer.from(a.buffer,a.byteOffset,a.byteLength),y=Buffer.from(b.buffer,b.byteOffset,b.byteLength);if(x.equals(y))return null;let i=0;while(i<Math.min(x.length,y.length)&&x[i]===y[i])i++;return p+' byte '+i+' differs ('+a.constructor.name+')'}
+  if(a instanceof Map||a instanceof Set)return walk([...a],[...b],p+'.entries');
+  const ka=Object.keys(a),kb=Object.keys(b);if(ka.join('\0')!==kb.join('\0'))return p+': property order/keys differ ('+ka.slice(0,20).join(',')+' vs '+kb.slice(0,20).join(',')+')';
+  for(const k of ka){if(k==='savedAt')continue;const d=walk(a[k],b[k],p+'.'+k);if(d)return d}return null;
+ }
+ return walk(a,b,'save')||'No differing value or key order found';
 }
 function median(values){const sorted=[...values].sort((a,b)=>a-b);return sorted[Math.floor(sorted.length/2)];}
 function run(corePath,scenario,years,repeats,historyPath,coloniesPath,assetsPath){
@@ -44,4 +57,4 @@ if(require.main===module){
   const result={before,after,speedup:before?before.medianMs/after.medianMs:null};results.push(result);console.log(JSON.stringify(result));
  }
 }
-module.exports={loadBenchmarkCore,setup,digest};
+module.exports={loadBenchmarkCore,setup,digest,explainDifference};

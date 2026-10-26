@@ -1,4 +1,4 @@
-# Saved worlds — v0.16.0
+# Saved worlds — 0.17.0-dev.1
 
 Open **Saves** on a phone, tablet or desktop. Three manual slots hold independent
 histories. Give a slot a name and choose **Save here**. A save finishes any pending
@@ -114,3 +114,17 @@ state food/trade totals. The temporary production, export-budget and route-incom
 grids stay outside checkpoints. Starting or installing a world releases the old
 cache; the next simulated year rebuilds the budgets from that world's population,
 production, roads, routes and wars. Continuing older saves uses the new economics.
+
+
+## Economic foundation development saves
+
+The local 0.17.0-dev.1 build writes economyVersion 1 with food reserves and physical
+infrastructure condition, the maintenance clock, and small food/government ledgers.
+New arrays and ledger identities are validated before installation. Published
+v0.16 and earlier saves receive empty stocks and intact condition on a detached
+state root. Existing population, techniques, IDs and aliases are preserved; later
+years follow the new model. Keep original exports for rollback.
+
+The development engine version prevents the released v0.16 client from accepting
+new saves while ignoring their economic fields. Final v0.17 release compatibility
+must explicitly retain these development saves. See ECONOMY.md for rules and units.

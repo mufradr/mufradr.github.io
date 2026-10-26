@@ -6,7 +6,7 @@ const root = path.resolve(__dirname, '..');
 
 // Evaluate the DOM-free engine without adding a production testing API.
 function loadCore() {
-  const source = ['assets/earth.js', 'js/core.js', 'js/colonies.js', 'js/atlas.js', 'js/history.js', 'js/experiments.js', 'js/diagnostics.js', 'js/save-codec.js', 'js/saves.js']
+  const source = ['assets/earth.js', 'js/core.js', 'js/economy.js', 'js/colonies.js', 'js/atlas.js', 'js/history.js', 'js/experiments.js', 'js/diagnostics.js', 'js/save-codec.js', 'js/saves.js']
     .map(f => fs.readFileSync(path.join(root, f), 'utf8')).join('\n');
   return Function('inflateSync', source + `
     return {

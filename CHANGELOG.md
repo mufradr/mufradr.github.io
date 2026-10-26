@@ -1,5 +1,22 @@
 # Release history
 
+## 0.17.0-dev.1 — Economic foundation (local development)
+
+- Separate annual harvest, consumption, food transfers and stored reserves from
+  theoretical carrying capacity. Sparse populations cannot harvest unused land's
+  full potential. Only conserved surplus fills bounded stores; spoilage, shipping
+  losses and waste are explicit. Reserves buffer short shortages and can run out.
+- Track physical infrastructure condition separately from technical knowledge.
+  Neglected roads, irrigation and storage deteriorate gradually; paid upkeep repairs
+  them. Communities can maintain local works without a centralized state.
+- Account for revenue, administrative and wartime payments, infrastructure upkeep,
+  bounded treasury/debt, unpaid costs and debt relief in one auditable budget.
+- Add reserve, harvest, infrastructure and budget explanations to inspectors.
+- Migrate v0.13–0.16 saves to empty reserves and intact infrastructure without
+  fabricating stored food. Save economic state and validate its conservation ledgers.
+- Preserve the v0.16.0 measurement archive. This is implementation chunk 2 of 6;
+  government/autonomy, campaign sustainability and cities/knowledge follow later.
+
 ## Unreleased — Civilization-development baseline (tooling only)
 
 - Preserve v0.16.0 as a local rollback tag before simulation development.

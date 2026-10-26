@@ -1,7 +1,8 @@
 # Civilization-development baseline: v0.16.0
 
-This is measurement and planning work. The app, simulation rules, rendering,
-version and save formats remain unchanged. The rollback point is the local
+This document records the completed measurement-only chunk. That chunk left the
+app, simulation rules, rendering, version and save formats unchanged. Subsequent
+implementation is documented separately in [ECONOMY.md](ECONOMY.md). The rollback point is the local
 annotated tag `baseline/v0.16.0-before-civilization-development`, pointing to
 `7649533c839bfdc3b01be56be262eba970f026ad` (also released as `v0.16.0`).
 

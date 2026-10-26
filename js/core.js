@@ -1,7 +1,7 @@
 
 "use strict";
 /* ================= SIMULATION CORE (no DOM) ================= */
-const ENGINE_VERSION='0.16.0';
+const ENGINE_VERSION='0.17.0-dev.1';
 const calendarPhase=(year,period)=>((year%period)+period)%period;
 const W=400,H=200,N=W*H,SC=4,HW=W*SC,HH=H*SC,AGW=40,AGH=20;
 const PDEF=[
@@ -586,6 +586,7 @@ function newHistory(hseed){
   const w=WD,r=mulberry32(hashStr('hist:'+hseed+':'+w.seed));
   const tk=TECH.map(()=>new Float32Array(N));
   S={r,initialRules:{...P},seed:hseed,year:P.startYear,start:P.startYear,famN:0,tk,
+    economyVersion:1,foodStock:new Float64Array(N),works:new Float32Array(N).fill(1),worksYear:null,foodLedger:null,
     settled:new Uint16Array(N),pop:new Float32Array(N),K:new Float32Array(N),eth:new Int32Array(N).fill(-1),eth2:new Int32Array(N).fill(-1),mix:new Float32Array(N),mixT:new Uint8Array(N),
     pol:new Int32Array(N),s:new Float32Array(N).fill(0.3),rel:new Int32Array(N).fill(-1),fort:new Float32Array(N),
     fert:new Float32Array(N).fill(1),immune:new Float32Array(N),infect:new Uint8Array(N),ob:new Int32Array(N).fill(-1),
@@ -677,9 +678,12 @@ function weather(){
     s.anom[i]=a;s.wm[i]=Math.exp(cv*a)}
 }
 function computeK(){
-  const s=S,w=WD,L=w.landIdx,dT=s.dT+s.gT+epochTemp(),orb=s.orbM;
+  const s=S,w=WD,L=w.landIdx,dT=s.dT+s.gT+epochTemp(),orb=s.orbM,maintain=s.worksYear!==s.year;
+  if(maintain)s.worksYear=s.year;
   for(let k=0;k<L.length;k++){
     const i=L[k],T=w.T[i]+dT;
+    if(maintain&&(s.roads[i]||s.irrig[i]||s.admin[i]*s.farm[i]))maintainWorks(i,1);
+    const irrigation=canalWorks(i);
     if(T<-9){s.K[i]=1;continue}
     const wm=s.wm[i],mz=w.monZone[i],Pn=w.Pr[i]*wm+orb*mz*420,ar=w.area[i],rv=w.rv[i];
     const npp=Math.min(3000/(1+Math.exp(1.315-0.119*(T+w.amp[i]*0.15))),3000*(1-Math.exp(-0.000664*Pn)));
@@ -687,12 +691,12 @@ function computeK(){
     const dry=clamp(wm,0.3,1.6);
     let sh=w.sH[i];if(mz>0)sh=Math.max(sh,orb*mz*0.7);if(w.desert[i])sh=Math.max(sh,0.25*s.camel[i]);
     const Kh=ar*1.6*sh*s.herd[i]*Math.min(1.3,dry)*(1+0.2*s.horse[i])*(1-s.rp[i]);
-    const irr=s.irrig[i]*rv;
+    const irr=irrigation*rv;
     const wf=1+(Math.min(dry,1.25)-1)*(1-0.75*irr);
     const T_=s.tk,hv=w.heavy[i],lc=w.leach[i];
-    let Kfa=ar*3.5*Math.max(w.sF[i],0.7*w.rv[i]*s.irrig[i])*s.farm[i]*s.fert[i]*wf*(1+0.8*s.metal[i]+0.9*s.iron[i]*(1-0.4*lc)+3.0*s.crops[i]+0.7*s.admin[i]+0.55*s.ard[i]*(1-0.6*hv)+0.7*s.plough[i]*hv+0.6*s.manure[i]+s.xcrops[i]*(0.25+0.8*lc+0.5*w.trop[i]+0.3*(1-w.sF[i]))+0.4*T_[26][i]*Math.max(lc,s.forest[i])+0.15*T_[28][i]*w.coast[i])*(1+rv*(0.25+2.2*s.irrig[i]));
+    let Kfa=ar*3.5*Math.max(w.sF[i],0.7*w.rv[i]*irrigation)*s.farm[i]*s.fert[i]*wf*(1+0.8*s.metal[i]+0.9*s.iron[i]*(1-0.4*lc)+3.0*s.crops[i]+0.7*s.admin[i]+0.55*s.ard[i]*(1-0.6*hv)+0.7*s.plough[i]*hv+0.6*s.manure[i]+s.xcrops[i]*(0.25+0.8*lc+0.5*w.trop[i]+0.3*(1-w.sF[i]))+0.4*T_[26][i]*Math.max(lc,s.forest[i])+0.15*T_[28][i]*w.coast[i])*(1+rv*(0.25+2.2*irrigation));
     // Terraces, canals and managed fertility recover some highland valley yield.
-    Kfa*=1+0.65*w.rough[i]*Math.max(s.irrig[i],s.manure[i],s.admin[i]);
+    Kfa*=1+0.65*w.rough[i]*Math.max(irrigation,s.manure[i],s.admin[i]);
     Kfa*=(0.45+0.55*(1-s.forest[i]))*(1-0.6*s.salt[i])*(1-0.5*w.oncho[i]);
     if(w.T[i]<12)Kfa*=clamp(1+0.18*dT,0.4,1.35);
     // heavy, wet temperate forest soils: hard to clear and work until iron axes and ploughs
@@ -702,7 +706,7 @@ function computeK(){
 }
 // Annual transport budgets are derived, reusable and deliberately outside saves.
 // K is effective food capacity after trade; production is recomputed each year.
-const networkEconomy={state:null,year:0,local:new Float64Array(N),available:new Float64Array(N),income:new Float64Array(N),states:new Map()};
+const networkEconomy={state:null,year:0,local:new Float64Array(N),available:new Float64Array(N),income:new Float64Array(N),production:new Float64Array(N),food:new Float64Array(N),storageCapacity:new Float64Array(N),states:new Map()};
 function peacefulContact(a,b){
   const x=S.pol[a],y=S.pol[b];
   return !x||!y||x===y||peacefulStates(x,y);
@@ -722,15 +726,15 @@ function landRouteTrading(route){
 function peacefulStates(a,b){return !S.pols[a].enemies.has(b)&&!S.pols[b].enemies.has(a)}
 function networkStats(id){
   let out=networkEconomy.states.get(id);
-  if(!out){out={population:0,shortfall:0,imports:0,exports:0,trade:0};networkEconomy.states.set(id,out)}
+  if(!out){out={population:0,shortfall:0,imports:0,exports:0,trade:0,production:0,consumption:0,stored:0,maintenance:0,quality:0};networkEconomy.states.set(id,out)}
   return out;
 }
 function moveFood(a,b,capacity,loss){
   const s=S,n=networkEconomy;
-  if(s.K[a]-s.pop[a]<s.K[b]-s.pop[b]){const c=a;a=b;b=c}
-  const sent=Math.min(n.available[a],Math.max(0,s.K[a]-s.pop[a]),Math.max(0,s.pop[b]-s.K[b])/(1-loss),capacity);
+  if(n.food[a]-s.pop[a]<n.food[b]-s.pop[b]){const c=a;a=b;b=c}
+  const sent=Math.min(n.available[a],Math.max(0,n.food[a]-s.pop[a]),Math.max(0,s.pop[b]-n.food[b])/(1-loss),capacity);
   if(sent<=0)return;
-  const delivered=sent*(1-loss);n.available[a]-=sent;s.K[a]-=sent;s.K[b]+=delivered;
+  const delivered=sent*(1-loss);n.available[a]-=sent;n.food[a]-=sent;n.food[b]+=delivered;s.K[a]-=sent;s.K[b]+=delivered;S.foodLedger.shippingLoss+=sent-delivered;S.foodLedger.unmet=Math.max(0,S.foodLedger.unmet-delivered);
   if(s.pol[a]!==s.pol[b]){
     if(s.pol[a])networkStats(s.pol[a]).exports+=sent;
     if(s.pol[b])networkStats(s.pol[b]).imports+=delivered;
@@ -738,12 +742,17 @@ function moveFood(a,b,capacity,loss){
 }
 function transportEconomy(){
   const s=S,w=WD,n=networkEconomy;n.state=s;n.year=s.year;n.states.clear();n.income.fill(0);
-  for(const i of w.landIdx){n.local[i]=s.K[i];n.available[i]=Math.max(0,s.K[i]-s.pop[i])*0.15*(Math.max(s.farm[i],s.herd[i])>=0.5?1:0)}
+  const ledger=s.foodLedger={year:s.year,openingStock:0,production:0,demand:0,consumption:0,spoilage:0,shippingLoss:0,waste:0,closingStock:0,unmet:0};
+  let fullEconomy=!!(s.alive.length||s.routes.length||s.seaRoutes.size);
+  for(const i of w.landIdx){n.local[i]=s.K[i];if(beginFoodYear(i,ledger)||s.pol[i])fullEconomy=true}
+  // With no farming, herding, stores, states or routes there are no possible
+  // exports or deposits. Account for subsistence directly, skipping two scans.
+  if(!fullEconomy){ledger.consumption=ledger.demand-ledger.unmet;ledger.waste=Math.max(0,ledger.production-ledger.consumption);return}
   // Nearby roads and river transport can move limited surplus, including across
   // peaceful borders. No global pool or shipping a province's imported food again.
   for(const i of w.landIdx){if(n.available[i]<=0||s.pop[i]<100)continue;
     for(let d=0;d<4;d++){const j=w.nb[i*4+d];if(j<0||!w.land[j]||s.pop[j]<100||s.pop[j]<=s.K[j]||!peacefulContact(i,j))continue;
-      const access=Math.max(Math.min(s.roads[i],s.roads[j]),Math.min(w.rv[i],w.rv[j])*(0.3+0.7*Math.min(s.sail[i],s.sail[j])));
+      const access=Math.max(Math.min(roadWorks(i),roadWorks(j)),Math.min(w.rv[i],w.rv[j])*(0.3+0.7*Math.min(s.sail[i],s.sail[j])));
       if(access>0.1)moveFood(i,j,Math.min(s.pop[i],s.pop[j])*0.04*access/(1+Math.max(w.rough[i],w.rough[j])),0.1);
     }
   }
@@ -760,9 +769,11 @@ function transportEconomy(){
     moveFood(a,b,Math.min(s.pop[a],s.pop[b])*0.04*scale,0.2);
     income(a,b,Math.min(s.pop[a],s.pop[b])*0.025*scale);
   }
-  for(const i of w.landIdx){const id=s.pol[i];if(!id)continue;const o=networkStats(id);
-    o.population+=s.pop[i];o.shortfall+=Math.max(0,s.pop[i]-s.K[i]);o.trade+=Math.min(s.pop[i]*0.08,n.income[i]);
+  for(const i of w.landIdx){finishFoodYear(i,ledger);const id=s.pol[i];if(!id)continue;const o=networkStats(id),p=s.pop[i],q=worksQuality(i);
+    o.population+=p;o.shortfall+=Math.max(0,p-n.food[i]);o.trade+=Math.min(p*0.08,n.income[i]);o.production+=n.production[i];o.consumption+=Math.min(p,n.food[i]);o.stored+=s.foodStock[i];o.quality+=p*q;
+    o.maintenance+=p*0.025*(s.roads[i]+0.8*s.irrig[i]+0.4*s.admin[i]*s.farm[i])*(1+2*(1-q));
   }
+  ledger.consumption=ledger.demand-ledger.unmet;
 }
 function tradeContact(a,b,rate){
   const s=S;
@@ -796,7 +807,7 @@ function growth(){
       if(pr>0.7)s.fert[i]=Math.max(0.3,s.fert[i]-dg*0.0012*(pr-0.7)*fm*(1+1.5*lc)*(1-0.45*s.crops[i])*(1-0.5*s.manure[i])*(1-silt));
       s.fert[i]+=0.0025*(1-s.fert[i])*(1+0.6*s.herd[i]*w.sH[i]+(pr<0.5?1+lc:0));
       if(s.forest[i]<0.15&&w.rough[i]>0.3)s.fert[i]=Math.max(0.3,s.fert[i]-0.0003*w.rough[i]*fm);
-      const ir=s.irrig[i]*Math.min(1,w.rv[i]*2);
+      const ir=canalWorks(i)*Math.min(1,w.rv[i]*2);
       if(ir>0.1&&w.Pr[i]<550&&pr>0.5)s.salt[i]=Math.min(0.85,s.salt[i]+0.0004*ir*Math.min(1.2,pr)*(1-0.9*s.tk[30][i]));
       if(s.salt[i]>0&&(pr<0.3||s.tk[30][i]>0.5))s.salt[i]=Math.max(0,s.salt[i]-0.0004-0.002*s.tk[30][i])}
     const f0=w.forest0[i];
@@ -950,7 +961,7 @@ function techStep(a0,b0){if(a0==null){a0=0;b0=1}
     const i=L[kk];if(s.pop[i]<1)continue;
     let conn=s.pop[i];const pi=s.pol[i],po=pi?pols[pi]:null;
     for(let d=0;d<4;d++){const j=w.nb[i*4+d];if(j>=0)conn+=s.pop[j]}
-    const rvb=(1+0.5*w.rv[i])*(1+0.3*s.paper[i]+0.2*s.roads[i]);
+    const rvb=(1+0.5*w.rv[i])*(1+0.3*s.paper[i]+0.2*roadWorks(i));
     const ls0=w.ls[i],ls1=s.sail[i]>0.3?w.ls[i+1]:ls0;
     const dark=po?po.cult<0.1:true;
     const ct=[1,1,1,1],pg=1+0.4*T[31][i];for(let d=0;d<4;d++){const j=w.nb[i*4+d];if(j<0)continue;ct[d]=Math.min(1,0.25+Math.sqrt(s.pop[i]*s.pop[j])/6000+s.car[i]+s.car[j])*pg}
@@ -1208,23 +1219,23 @@ function stateFormationChance(i){
     *Math.max(clamp((dens-2)/6,0,1),s.admin[i],riverAdministration(i));
 }
 // Governing capacity grows with institutions and transport, not the calendar or a region bonus.
-function riverAdministration(i){return S.irrig[i]*WD.rv[i]*(1-0.5*WD.rough[i])}
+function riverAdministration(i){return canalWorks(i)*WD.rv[i]*(1-0.5*WD.rough[i])}
 function governingCapacity(o){
   const s=S,c=o.capital;
   if(o.kind==='horde')return 4+12*s.horse[c]+20*s.caval[c]+12*s.camel[c]+6*s.admin[c];
-  return 4+8*s.admin[c]+12*s.law[c]+30*s.roads[c]+12*s.paper[c]+10*s.iron[c]+20*s.gun[c]
+  return 4+8*s.admin[c]+12*s.law[c]+30*roadWorks(c)+12*s.paper[c]+10*s.iron[c]+20*s.gun[c]
     +12*riverAdministration(c)+8*s.nav[c]*Math.min(1,(o.coastN||0)/Math.max(1,o.cells));
 }
 function expansionReadiness(o){
   const cap=governingCapacity(o),c=o.capital;
   // Accounting alone cannot support unlimited accumulation of conquered provinces.
-  if(o.kind==='state'&&S.law[c]<0.5&&S.roads[c]<0.5&&o.cells>=1.5*cap)return 0;
+  if(o.kind==='state'&&S.law[c]<0.5&&roadWorks(c)<0.5&&o.cells>=1.5*cap)return 0;
   return Math.exp(-2*Math.max(0,o.cells-cap)/cap);
 }
 function interiorDecay(o){
   const c=o.capital;
   return P.asabD*(o.island?0.5:1)*(o.conqDyn?1.6:1)
-    /(1+1.5*S.admin[c]+S.law[c]+S.roads[c]+2*riverAdministration(c));
+    /(1+1.5*S.admin[c]+S.law[c]+roadWorks(c)+2*riverAdministration(c));
 }
 function cerealEff(i){return S.grain[i]*(1-0.75*WD.leach[i])*(1-0.65*WD.trop[i])}
 function strength(o){return o.kind==='horde'?o.pop+o.loot*3:(o.tax||0)*1.6+0.25*o.pop}
@@ -1296,7 +1307,7 @@ function distBFS(){
     const bk=B[d&31];B[d&31]=[];
     for(const i of bk){pending--;if(s.dist[i]!==d)continue;const p=s.pol[i],horde=pols[p].kind==='horde';
       for(let k=0;k<4;k++){const j=w.nb[i*4+k];if(j<0||s.pol[j]!==p)continue;
-        let c=2+(w.tcost[j]-2)*tf;c+=(horde?2:4)*s.forest[j]*(1-s.roads[j])*tf;if(k<2)c*=w.cosLat[i];if(s.roads[j]>0.5)c*=0.6;if(w.desert[j]&&(s.camel[j]>0.5||horde))c*=0.5;if(horde&&w.nomad[j])c=Math.min(c,1.5);
+        const road=roadWorks(j);let c=2+(w.tcost[j]-2)*tf;c+=(horde?2:4)*s.forest[j]*(1-road)*tf;if(k<2)c*=w.cosLat[i];c*=1-0.4*road;if(w.desert[j]&&(s.camel[j]>0.5||horde))c*=0.5;if(horde&&w.nomad[j])c=Math.min(c,1.5);
         const nd=d+Math.max(1,Math.min(30,Math.round(c)));if(s.dist[j]>nd){s.dist[j]=nd;B[nd&31].push(j);pending++}}
       if(w.coast[i]&&s.sail[i]>0.5)for(let q=w.ls[i];q<w.ls[i+1];q++){const j=w.lt[q],dl=w.ld[q];if(dl>3&&s.nav[i]<0.5)continue;if(s.pol[j]!==p)continue;const nd=d+Math.min(30,2+2*dl);if(s.dist[j]>nd){s.dist[j]=nd;B[nd&31].push(j);pending++}}
       const links=overseas.get(i);if(links)for(const link of links){const j=link.cell,nd=d+link.cost;if(s.pol[j]===p&&s.dist[j]>nd){s.dist[j]=nd;B[nd&31].push(j);pending++}}
@@ -1683,14 +1694,14 @@ function* politicsG(){
     const a=s.anom[c];o.wet=o.wet*0.92+a*0.08;
     o.loot*=0.9;
     o.gate=clamp(0.5+1.1*(1-o.press)+(o.nomF>0.5||o.kind==='horde'?0.5:0.22)*a+Math.min(0.5,o.tribs*0.15)-(o.over?0.15:0)+Math.min(0.5,o.loot/(o.pop+1)*4)-Math.min(0.3,o.fortN*0.004),0.15,1.9);
-    o.h=P.reach*(0.3+0.7*Math.min(1,1.5*s.admin[c]+s.roads[c]+0.6*riverAdministration(c)))*(1+0.8*s.admin[c]+0.5*s.law[c]+0.7*s.roads[c]+0.4*s.coin[c]+0.6*s.gun[c])*(0.7+0.6*comp)*(o.kind==='horde'?1.4:1)*(o.kind==='state'?0.75+0.5*Math.min(1.4,o.cplx||0.2):1)*(1+0.15*s.tk[24][c]+0.1*s.tk[31][c]);
+    o.h=P.reach*(0.3+0.7*Math.min(1,1.5*s.admin[c]+roadWorks(c)+0.6*riverAdministration(c)))*(1+0.8*s.admin[c]+0.5*s.law[c]+0.7*roadWorks(c)+0.4*s.coin[c]+0.6*s.gun[c])*(0.7+0.6*comp)*(o.kind==='horde'?1.4:1)*(o.kind==='state'?0.75+0.5*Math.min(1.4,o.cplx||0.2):1)*(1+0.15*s.tk[24][c]+0.1*s.tk[31][c]);
     const Et=etOf(o);
     o.E=clamp(o.E+0.012*o.E*(1-o.press)*(0.8+0.4*comp)*(0.5+(o.ineq==null?0.5:o.ineq)),0.004,0.12);
     o.shock*=0.92;
     o.mandate=Math.min(1,o.mandate+0.006);
     statecraft(o,c,y);
     if(o.kind==='state'&&o.pop<FLOOR.chief*P.floor){o.lowY=o.lowY||y;if(y-o.lowY>25){if(o.maxCells>=8)chron('fall',`The ${o.full} dwindles below the numbers needed to sustain a ruler and his household; it dissolves back into villages and kin-groups.`,c,[R_(o)],'Too few people remained to feed a court, an army and their collectors.');for(const i of polCells(id))pol[i]=0;continue}}else o.lowY=0;
-    const pP=Math.max(0,o.press-0.85)*3,pE=Math.max(0,o.E/Et-1.15)*1.1,pS=Math.max(0,0.42-o.S)*2.2,pX=Math.max(0,o.md/o.h-0.85)*(s.admin[c]<0.5?2.2:1.0),pR=Math.max(0,0.5-comp)*0.8,pI=Math.max(0,0.45-o.integ)*0.8,pM=Math.max(0,0.5-o.mandate)*1.2,pZ=o.kind==='state'?Math.max(0,o.cells/(170*(1+0.6*s.roads[c]+0.4*s.admin[c]+0.3*s.paper[c]))-1)*0.9:0;
+    const pP=Math.max(0,o.press-0.85)*3,pE=Math.max(0,o.E/Et-1.15)*1.1,pS=Math.max(0,0.42-o.S)*2.2,pX=Math.max(0,o.md/o.h-0.85)*(s.admin[c]<0.5?2.2:1.0),pR=Math.max(0,0.5-comp)*0.8,pI=Math.max(0,0.45-o.integ)*0.8,pM=Math.max(0,0.5-o.mandate)*1.2,pZ=o.kind==='state'?Math.max(0,o.cells/(170*(1+0.6*roadWorks(c)+0.4*s.admin[c]+0.3*s.paper[c]))-1)*0.9:0;
     const pT=o.pT||0,pF=o.pF||0,pQ=o.pQ||0,pC=Math.max(0,(o.scl||0)-0.35)*1.7;const pN=o.kind==='state'?P.eco*0.8*Math.max(0,(o.forS||0)-0.35):0;o.why={pP,pE,pS,pX,pR,pI,pM,pZ,pN,pT,pF,pQ,pC,sh:o.shock};o.psi=pP+pE+pS+pX+pR+pI+pM+pZ+pT+pF+pQ+pN+pC+o.shock;
     const isl=o.island?0.4:1;
     if(o.kind==='state'&&o.cells>=40&&o.psi>2.2&&r()<P.crisis*0.008*(o.psi-2)*isl){o.shock+=0.4;if(o.cells>=80)chron('fall',`The ${o.full} shatters into rival kingdoms.`,o.capital,[R_(o)],'Driven by '+topCauses(o.why).join(' and ')+'.');civilWar(o,true)}
@@ -1885,7 +1896,7 @@ function* stepG(){
   climateStep();weather();hearthCheck();
   if(s.dTt>0){s.dTt--;if(!s.dTt)s.dT=0}
   else if(s.r()<0.0012*P.volcano)volcano();
-  computeK();transportEconomy();growth();yield;migrate();seaHop();caravanContact();
+  computeK();yield;transportEconomy();yield;growth();yield;migrate();seaHop();caravanContact();
   if(s.year%3===0){techStep(0,0.34);yield;techStep(0.34,0.67);yield;techStep(0.67,1);yield}
   disease();if(calendarPhase(s.year,10)===5)poolPass();if(calendarPhase(s.year,20)===7)caravanPass();yield;
   yield* politicsG();
@@ -1934,18 +1945,19 @@ function isWaste(i,horde){const s=S,w=WD;if(s.pop[i]<1)return true;if(s.pop[i]/w
 // Tainter: complexity has rising upkeep; Goldstone: fiscal crisis; Turchin/Scheidel: the wealth pump and its levellers
 function statecraft(o,c,y){
   const s=S,r=s.r;
+  if(o.cplx==null){o.cplx=0.2;o.treas=0.3;o.ineq=0.25;o.warC=0}
   if(networkEconomy.state===s&&networkEconomy.year===y){
     const economy=networkEconomy.states.get(o.id),shortage=economy?economy.shortfall/Math.max(1,economy.population):0;
     // Replace the old fixed caravan stipend with actual bounded commerce.
     const trade=economy?.trade||0;o.tax=Math.max(0,((o.tax||0)-(o.trade||0))*(1-0.5*shortage)+trade);o.trade=trade;
-    o.foodImports=economy?.imports||0;o.foodExports=economy?.exports||0;
+    o.foodImports=economy?.imports||0;o.foodExports=economy?.exports||0;o.foodStored=economy?.stored||0;
+    o.infrastructureCondition=economy?.population?economy.quality/economy.population:worksQuality(c);
     o.foodStress=clamp((o.foodStress||0)*0.9+shortage*0.1,0,1);
     o.shock+=0.02*o.foodStress;o.mandate=Math.max(0,(o.mandate??1)-0.04*o.foodStress);
     if(o.kind==='state'&&o.cells>=4&&y%5===0&&o.foodStress>0.12&&shortage>0.15&&y-(o.foodCrisisYear??-Infinity)>=60){
       o.foodCrisisYear=y;chron('famine',`Food shortages persist in the ${o.full}; local harvests and working trade routes cannot feed its provinces.`,c,[R_(o)],'Sustained shortages weaken tax receipts and confidence in the government.');
     }
   }
-  if(o.cplx==null){o.cplx=0.2;o.treas=0.3;o.ineq=0.25;o.warC=0}
   if(o.kind!=='state'){o.pT=o.pF=o.pQ=0;o.burden=0;return}
   const real=Math.max(1,o.cells-(o.wasteN||0));
   const atWar=o.enemies.size>0;
@@ -1955,13 +1967,14 @@ function statecraft(o,c,y){
   o.cplx+=tgt>o.cplx?0.01*(tgt-o.cplx):0.0015*(tgt-o.cplx);
   const ledger=s.tk[27][c]>0.5;
   const upkeep=0.28*Math.pow(o.cplx,ledger?1.6:1.8)*o.pop,rev=(o.tax||0)*(ledger?1.1:1)+1;
-  o.burden=upkeep/rev;
+  const maintenance=networkEconomy.state===s&&networkEconomy.year===y?networkEconomy.states.get(o.id)?.maintenance||0:0;
+  governmentBudget(o,c,upkeep,rev,maintenance);
   o.pT=Math.max(0,o.burden-1)*1.2;
-  o.treas=clamp(o.treas+0.04*(1-o.burden)-(atWar?0.02:0),-2,1);
   o.pF=Math.max(0,-o.treas)*0.6;
   if(o.treas<-1.2&&s.law[c]>0.5&&r()<0.02){
     if(o.ineq>0.5&&r()<0.5){o.treas=0;o.ineq=Math.max(0.2,o.ineq-0.12);o.mandate=Math.min(1,o.mandate+0.15);if(real>=25)chron('culture',`${cap(rulerName(o))} of the ${o.full} proclaims a jubilee: debts are cancelled and debt-slaves freed.`,c,[R_(o)],'Debts had piled up faster than anyone could repay them; cancelling them bought peace and loyalty.')}
     else{o.treas=-0.2;o.mandate=Math.max(0,o.mandate-0.2);o.shock+=0.3;if(real>=25)chron('fall',`The treasury of the ${o.full} is empty: the crown defaults on its debts and its soldiers go unpaid.`,c,[R_(o)],'Spending on armies and officials had long outrun what the land could pay.')}}
+  if(o.treas!==o.budget.closingTreasury){o.budget.debtRelief=(o.treas-o.budget.closingTreasury)*rev/0.04;o.budget.closingTreasury=o.treas}
   // the wealth pump: crowded land and peace concentrate wealth, faster where the plough makes land the prize
   const plF=(o.plN||0)/real;
   o.ineq=clamp(o.ineq+0.0012*(o.press-0.75)*(1+0.8*plF)+(atWar?0:0.0004)-0.0004*(1-plF)*(o.ineq-0.25),0.15,0.92);
