@@ -42,6 +42,13 @@ function simulationIssues(limit=50,state=S,world=WD){
     if(cell!==c.cell||!w.land[cell]||!w.coast[cell]||!w.coast[c.source])report('Invalid colony location');
     if(!index(c.people,s.eths,-2)||!index(c.founderPeople,s.eths,-2)||!index(c.homeState,s.pols,0))report('Invalid colony origin');
     if(!['active','failed'].includes(c.status)||!Number.isFinite(c.founded)||!Number.isFinite(c.settlers)||c.settlers<0||c.settlers>s.pop[cell]+0.01||!Number.isFinite(c.lastPopulation))report('Invalid colony demographics');
+    if(c.administration!==undefined&&!['dependent','integrated','independent','enclave','occupied','unaffiliated'].includes(c.administration))report('Invalid colony administration');
+    if(['dependent','integrated'].includes(c.administration)&&!c.homeState)report('Invalid colony parent');
+    if(c.outpost!==undefined&&typeof c.outpost!=='boolean')report('Invalid colony outpost');
+    if(c.autonomy!==undefined&&(!Number.isFinite(c.autonomy)||c.autonomy<0||c.autonomy>1))report('Invalid colony autonomy');
+    for(const key of ['isolationYears','identityYears','populationRatio','regionalPopulation','regionalCommunityPopulation','homelandPopulation'])if(c[key]!==undefined&&(!Number.isFinite(c[key])||c[key]<0))report('Invalid colony '+key);
+    for(const key of ['governmentYear','independentYear','lastReintegration'])if(c[key]!==undefined&&!Number.isInteger(c[key]))report('Invalid colony '+key);
+    if(c.independentState!==undefined&&!index(c.independentState,s.pols,0))report('Invalid independent colony state');
   }
   return errors;
 }

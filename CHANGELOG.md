@@ -1,5 +1,28 @@
 # Release history
 
+## 0.15.0 — Governed colonies and gradual independence
+
+- New colonies on unclaimed shores belong to their sending state, sharing map
+  ownership and tradition. Foreign treaty settlements retain host sovereignty.
+- Parent-owned outposts can begin at first landfall on empty coasts; permanent
+  charters follow five years of viable ocean trade. Remove the separate 1300 CE
+  gate and allow capable ports to fund smaller expeditions.
+- Fix initial pioneer arrivals creating population without subtracting it from
+  their source. All colonial/pioneer migration now moves real people.
+- Maintained sea routes provide administrative distance and overseas war access.
+  Dependencies can draw supplies from other homeland ports if their origin is lost.
+- Connected overseas provinces accumulate autonomy based on their population
+  relative to the homeland, distance, isolation, cultural ties and parent strength.
+  Mature, substantial regions can become independent, sometimes through war.
+- Migrants carry their actual source people/language; population is conserved.
+  Gradual assimilation respects existing groups and the Assimilation setting.
+  Contact slows cultural divergence; distant communities can develop daughter
+  identities and languages. Young dependencies no longer lose ownership through
+  the generic sparse-land abandonment rule.
+- Colony/parent inspectors show ownership, supply, autonomy, regional population
+  ratios and independence. Existing v0.13–0.14.1 saves remain readable; eligible
+  unclaimed legacy charters can resume without annexing sovereign states.
+
 ## 0.14.1 — Inspectable, emergent traditions
 
 - Map clicks and phone taps open the selected tradition inspector, with current

@@ -3,7 +3,7 @@
 An interactive browser simulation of populations, states, cultures, and climate,
 hosted on GitHub Pages at https://mufradr.github.io/.
 
-The app identifies itself as version 0.14.1. It is a static site: no package
+The app identifies itself as version 0.15.0. It is a static site: no package
 installation or build step is required to run or publish it. `.nojekyll` enables
 direct static serving on GitHub Pages.
 
@@ -35,7 +35,7 @@ Google Fonts are optional external resources; fallback fonts work offline.
 | `styles/app.css` | App layout, map controls, and responsive styles |
 | `assets/earth.js` | Compressed elevation and Köppen climate data |
 | `js/core.js` | World generation, climate, and simulation rules; no DOM dependency |
-| `js/colonies.js` | Independent overseas settlements, immigration, and cultural development |
+| `js/colonies.js` | Dependent overseas colonies, independence, migration and cultural development |
 | `js/saves.js`, `js/save-codec.js` | Validated world checkpoints and binary graph format |
 | `js/save-ui.js`, `js/save-store.js`, `js/save-worker.js` | Slots, IndexedDB, autosaves and background file processing |
 | `js/history.js` | Compressed dated peak footprints and war map records |
@@ -96,7 +96,7 @@ the affected behavior; the regression suite does not cover all long-term outcome
 See [atlas and maritime development notes](docs/ATLAS.md) for score formulas,
 rendering limits, URL behaviour and settlement rules.
 
-## Save and continue a world in 0.14.1
+## Save and continue a world in 0.15.0
 
 Open **Saves** for three named manual slots, previous-save backups, and three
 rotating autosaves. Saving finishes the current year and pauses playback; loading
@@ -109,7 +109,7 @@ Local slots stay in this browser and may be cleared by browser/iOS storage
 cleanup, so export important worlds. No account or server is needed. World saves
 include custom terrain, simulation progress, histories, peak maps and RNG state;
 setup links/files still only reproduce starting conditions. The loader accepts
-v0.13.0, v0.14.0 and current-version saves and validates imports before replacing the live
+v0.13.0, v0.14.0, v0.14.1 and current-version saves and validates imports before replacing the live
 world.
 See [save format and device-storage notes](docs/SAVES.md) and
 [save/performance measurements and founding changes](docs/OPTIMIZATION.md).
@@ -218,34 +218,38 @@ This release does not rebalance abrupt civil-war fragmentation or add governed
 overseas colonies. Ocean voyages can settle unpopulated land and establish trade;
 existing inhabited shores are not automatically annexed.
 
-## Independent overseas communities in 0.9.0
+## Governed overseas colonies in 0.15.0
 
-Late-game ocean voyages can found independent settler communities on suitable,
-unclaimed coasts, or small enclaves accepted through peaceful treaties or mature
-trade under a local government. Earth requires 1300 CE or later, ocean-going ships, navigation,
-farming, a substantial sending population, and room to sustain newcomers. Founding
-is probabilistic; it does not annex land belonging to another state.
+A sending state can establish a dependent outpost on a suitable empty coast at
+first landfall; permanent charters follow a working ocean corridor of at least
+five years. Maritime knowledge, farming,
+food space and a viable port remain necessary. The separate 1300 CE cutoff is
+removed; the existing technology prerequisites still govern when long voyages
+become possible. Settlements accepted inside another country remain treaty
+communities under that host, rather than annexing its territory.
 
-Settlers leave the source population and carry culture, faith and practical
-knowledge. On sparsely populated shores they begin as a minority, preserving the
-existing majority. Sustained migration along a return route can grow the community;
-after generations it can develop a daughter culture. Ordinary simulation rules
-can then produce an independent local state. Communities can also dwindle, blend
-into neighbours or lose their connection to the homeland.
+New colonies share their parent's map colour, administration and inherited state
+tradition. Maintained sea corridors carry government as well as trade; cutting
+them increases isolation. At war, known corridors can carry overseas attacks.
+Settlers are removed from actual source populations and carry their people,
+language, skills and faith. Existing populations and significant third minorities
+are preserved. Assimilation changes cultural shares gradually; sustained contact
+and the Assimilation setting preserve homeland ties, while distance and time can
+produce daughter peoples/languages.
 
-Teal diamonds mark active communities on political, alliance, peoples and religion
-maps. Zoom in for names or inspect the province for founding people, local culture,
-settler descendants and current government. The Aa colony annotation switch controls these markers and names. At most 128 community records are retained; failed records can be
-replaced when new communities form.
+Connected overseas provinces are assessed together. Normal independence requires
+at least 60 years, 20,000 regional people, a substantial colonial community,
+at least 20% of the homeland's population, and high accumulated autonomy. Growth,
+isolation and weak parent government increase pressure; contact and cultural ties
+reduce it. Those are eligibility limits, not a guaranteed date. A strong parent
+may contest independence; a collapsed government can leave smaller successor
+states or unadministered communities.
 
-Maintained ocean trade retries settlement opportunities, supports immigration and
-small two-way passenger movements, and preserves trade-supported minorities.
-If a tiny mixed community cannot form a new people, both existing groups survive.
-Host governments retain ownership; war blocks their acceptance of new arrivals.
-
-National colony ownership, imperial administration and overseas conquest remain
-future work. JSON setups still reproduce starting conditions rather than saving
-an ongoing colony's progress.
+Tap a colonial landing on States/Alliances to inspect its parent, population,
+supply, autonomy and government. Parent-state pages link their dependencies.
+Saves retain the complete system. Older unclaimed communities can resume their
+charters on continuation if their parent and route survive; existing sovereign
+states and foreign hosts keep their ownership. See [colonial rules](docs/COLONIES.md).
 
 `npm run benchmark:size` reports the static app payload and initial save size.
 `npm run pack:earth` reproduces the lossless packed Earth asset; it changes

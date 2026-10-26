@@ -1,4 +1,4 @@
-# Atlas and maritime development — 0.14.1
+# Atlas and maritime development — 0.15.0
 
 ## Traditions and historical rankings
 
@@ -61,34 +61,34 @@ Incoming full setup links remain full so a refresh reproduces that setup. The
 Copy link action always exports the full starting configuration. Progress is not
 saved by either link format; imported worlds still require exported files.
 
-## Maritime communities
+## Overseas colonies and cultural exchange
 
-Maintained ocean routes retry founding in both directions. Every twenty years,
-at most eight eligible routes prospect neighbouring landfalls by tracing actual
-nearby great-circle voyages; they do not teleport settlements to adjacent land.
-Settlers need agricultural capacity, food space, maritime knowledge and a sending
-population. Immigration removes people from the sending port, preserving its
-minority population when majority members leave.
+The full dependency, autonomy, independence and cultural model is described in
+[COLONIES.md](COLONIES.md). Colonies on unclaimed shores belong to their sending
+state; treaty enclaves stay under their host. A first outpost can
+start on an empty shore at landfall; permanent charters follow five years of
+working ocean trade, without a separate 1300 CE gate. Government can
+travel along maintained routes, and declared enemies can fight across those
+corridors. Peaceful trade does not itself conquer an existing country.
 
-Unclaimed sites can support independent communities. Foreign governments must
-accept an enclave through an alliance/truce or at least twenty years of peaceful
-trade, sufficient law and cohesion. Wars block acceptance. Ownership stays local;
-there is no automatic imperial annexation. Existing substantial third minorities
-still block settlement because cells represent only two prominent peoples.
+Arrivals remove real source population and carry its culture and techniques.
+Dependent settlements use gradual assimilation; substantial third minorities
+block arrivals that the two-people representation cannot preserve. Sustained
+contact slows cultural divergence. Distance and isolation can produce daughter
+peoples whose languages descend from their founders, or hybrids through the
+existing mixing model.
 
-Passenger movements can create small two-way diasporas. Recent arrivals protect
-those minorities from immediate below-3% cleanup for forty years; continuing
-arrivals renew support. Unsupported tiny minorities can merge through the normal
-model. A failed attempt to create a hybrid people restores both original groups
-and their fractions. Named communities can grow, develop daughter cultures,
-become independent states through existing rules, or fail.
+Small passenger movements can create two-way diasporas. Recent arrivals protect
+those minorities from below-3% cleanup for forty years; continuing arrivals renew
+support. Unsupported tiny minorities can merge through the normal model. A
+failed hybrid attempt restores both original groups and their fractions.
 
-The route and community budgets remain 128 each, with at most 256 maritime
-minority-support records. Display optimizations never change these mechanics.
-`npm run validate:maritime` checks 300 years from prepared Age-of-Sail ports and a
-known Atlantic route without forcing colony founding RNG. It is a controlled
-mechanics scenario, not a historical replay or a promise that every full history
-will reach the same outcome.
+Route and community budgets remain 128 each, with at most 256 maritime minority
+records. Governance groups connected provinces once per five years, with bounded
+scratch storage outside saves. Display optimizations never change these rules.
+`npm run validate:maritime` checks 300 prepared years and ten-year integrity
+checks without forcing founding RNG. It is a mechanics scenario, not a historical
+replay or assurance that every full history reaches the same outcome.
 
 ## Historical footprint storage and display
 

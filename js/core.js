@@ -1,7 +1,7 @@
 
 "use strict";
 /* ================= SIMULATION CORE (no DOM) ================= */
-const ENGINE_VERSION='0.14.1';
+const ENGINE_VERSION='0.15.0';
 const calendarPhase=(year,period)=>((year%period)+period)%period;
 const W=400,H=200,N=W*H,SC=4,HW=W*SC,HH=H*SC,AGW=40,AGH=20;
 const PDEF=[
@@ -775,10 +775,12 @@ function traceVoyage(i,bearing,rangeKm){
 function seaContact(voyage){
   const s=S,w=WD,i=voyage.from,tgt=voyage.to;
   if(s.pop[i]<30||s.eth[i]<0)return;
-  tryIndependentColony(voyage);
+  tryColony(voyage);
+  if(s.pop[tgt]<1)tryColonyOutpost(voyage);
   if(s.pop[tgt]<1){
-    s.pop[tgt]=Math.min(60+s.pop[i]*0.02,s.K[tgt]*0.5+1);s.eth[tgt]=s.eth[i];s.rel[tgt]=s.rel[i];s.s[tgt]=0.4;
-    for(const f of s.tk)f[tgt]=Math.max(f[tgt],f[i]*0.8);s.admin[tgt]*=0.3;
+    if(P.migration<=0||(s.pol[tgt]&&!colonyHostAllows(i,tgt)))return;
+    const pioneer={source:i,cell:tgt,people:s.eth[i],settlers:0,lastPopulation:s.pop[tgt]},amount=Math.min(60+s.pop[i]*0.02,s.K[tgt]*0.5+1,s.pop[i]*0.05);
+    addColonyMigrants(pioneer,amount,i,0.05);s.admin[tgt]*=0.3;
     const lm=w.lm[tgt];
     if(!s.lmFound[lm]){s.lmFound[lm]=1;if(w.lmSize[lm]>=4){const e=s.eths[s.eth[i]];chron('migration',`Seafarers of the ${e.name} reach an unpeopled ${w.lmSize[lm]>60?'land':'island'}.`,tgt,[RE(e)])}}
   }else if(s.eth[tgt]!==s.eth[i]){
@@ -819,9 +821,9 @@ function seaTrade(){
       if(s.year-R.last>50)s.seaRoutes.delete(key);continue;
     }
     R.last=s.year;
-    tryIndependentColony(R);
-    tryIndependentColony({...R,from:b,to:a});maritimePassengerExchange(R);
-    if(s.year%20===0&&scouts<8&&s.pop[a]>=20000&&s.ocean[a]>=0.7&&!s.colonies.has(b)){scouts++;scoutColonyCoast(R)}
+    tryColony(R);
+    tryColony({...R,from:b,to:a});maritimePassengerExchange(R);
+    if(s.year%20===0&&scouts<8&&s.pop[a]>=8000&&s.ocean[a]>=0.6&&!s.colonies.has(b)){scouts++;scoutColonyCoast(R)}
     // Return voyages carry knowledge both ways; mature techniques take decades.
     for(const f of s.tk){const d=(f[a]-f[b])*0.08*P.techDiff;if(d>0)f[b]=Math.min(1,f[b]+d);else f[a]=Math.min(1,f[a]-d)}
     cropExchange(a,b);virginSoil(b,a);virginSoil(a,b);
@@ -1200,7 +1202,7 @@ function decisive(o,d,war){
     if(n>=8)chron('war',`With its capital taken, the ${old} submits and becomes a vassal of the ${o.full}.`,d.capital,[R_(d),R_(o),RW(war)])}
 }
 function distBFS(){
-  const s=S,w=WD,pols=s.pols;s.dist.fill(65535);
+  const s=S,w=WD,pols=s.pols,overseas=overseasTransport();s.dist.fill(65535);
   const B=[];for(let k=0;k<32;k++)B.push([]);let pending=0;
   for(const id of s.alive){const c=pols[id].capital;if(s.pol[c]===id){s.dist[c]=0;B[0].push(c);pending++}}
   const tf=P.terrain;
@@ -1211,6 +1213,7 @@ function distBFS(){
         let c=2+(w.tcost[j]-2)*tf;c+=(horde?2:4)*s.forest[j]*(1-s.roads[j])*tf;if(k<2)c*=w.cosLat[i];if(s.roads[j]>0.5)c*=0.6;if(w.desert[j]&&(s.camel[j]>0.5||horde))c*=0.5;if(horde&&w.nomad[j])c=Math.min(c,1.5);
         const nd=d+Math.max(1,Math.min(30,Math.round(c)));if(s.dist[j]>nd){s.dist[j]=nd;B[nd&31].push(j);pending++}}
       if(w.coast[i]&&s.sail[i]>0.5)for(let q=w.ls[i];q<w.ls[i+1];q++){const j=w.lt[q],dl=w.ld[q];if(dl>3&&s.nav[i]<0.5)continue;if(s.pol[j]!==p)continue;const nd=d+Math.min(30,2+2*dl);if(s.dist[j]>nd){s.dist[j]=nd;B[nd&31].push(j);pending++}}
+      const links=overseas.get(i);if(links)for(const link of links){const j=link.cell,nd=d+link.cost;if(s.pol[j]===p&&s.dist[j]>nd){s.dist[j]=nd;B[nd&31].push(j);pending++}}
     }
   }
 }
@@ -1503,6 +1506,8 @@ function updatePoliticalBorders(phase,from,to){
     if(o&&w.coast[i]&&s.sail[i]>0.5){for(let q2=w.ls[i];q2<w.ls[i+1];q2++){const j=w.lt[q2];if(w.ld[q2]>3&&s.nav[i]<0.5)continue;const q=pol[j];if(q===p)continue;
       if(q){o.nb.set(q,(o.nb.get(q)||0)+1);if(o.enemies.has(q)){nc+=1;if(r()*nc<1){cand=j;candSea=true}}}
       else if(o.kind==='state'&&w.coast[j]&&s.pop[j]>=0.3&&r()<0.012*P.seafaring*(0.4+s.nav[i])&&r()*(nc+1)<1){nc+=1;cand=j;candSea=true}}}
+    const overseas=phase.overseas?.get(i);
+    if(o&&overseas&&s.ocean[i]>=0.6)for(const link of overseas){const q=pol[link.cell];if(q&&q!==p&&voyageRange(i)>=link.km){o.nb.set(q,(o.nb.get(q)||0)+0.35);if(o.enemies.has(q)){threat=1;const weight=0.35*P.seafaring;nc+=weight;if(weight>0&&r()*nc<weight){cand=link.cell;candSea=true}}}}
     let sv=s.s[i];
     if(o){const decay=interiorDecay(o);
       sv+=fr?asR*sv*(1-sv):-decay*sv;sv+=0.004*infl*(o.ruler.char-0.5);if(ri>=0&&ri===o.rel)sv+=0.0015*(0.5+rels[ri].cent);
@@ -1513,7 +1518,7 @@ function updatePoliticalBorders(phase,from,to){
         else{const rate=q?wr*2*(1+3*s.circE[cand]):wr*(horde?1:Math.min(1,Math.max(0.1,pop[i]/w.area[i]/6))*(0.3+0.7*Math.min(1,o.press))*(1+2*s.gun[i]));if(r()<rate*o.aggrM*o.gate*expansionReadiness(o))attack(o,i,cand,candSea)}}
       if(horde&&rcand>=0&&r()<P.raid*0.025*o.aggrM*o.gate*(1-0.8*s.fort[rcand]))raid(o,i,rcand);
       const c=o.core;
-      if(ei>=0&&c>=0&&ei!==c&&pi>=1&&!o.conqDyn&&r()<P.assim*0.004*o.S*(1-0.8*ethDist(ei,c))*(ri>=0&&ri===o.rel?1.5:1))s.eth[i]=c;
+      if(ei>=0&&c>=0&&ei!==c&&pi>=1&&!o.conqDyn&&!isDependentColony(i,p)&&r()<P.assim*0.004*o.S*(1-0.8*ethDist(ei,c))*(ri>=0&&ri===o.rel?1.5:1))s.eth[i]=c;
       if(o.conqDyn&&ei!==c&&pi>=1)mixIn(i,c,0.0006);
       if(o.rel>=0&&ri!==o.rel&&pi>=1){const Rl=rels[o.rel];if(!(Rl.kind==='ethnic'&&ei>=0&&s.eths[ei].fam!==Rl.fam)&&r()<0.003*P.faith*o.S*(Rl.miss+0.3)*(0.7+0.6*Rl.cent))s.rel[i]=o.rel}
       // fortify threatened frontiers if the state is cohesive and can pay
@@ -1674,7 +1679,7 @@ function* politicsG(){
   yield;
   // border pass
   for(const id of s.alive)pols[id].nb=new Map();
-  Object.assign(phase,{asR:P.asabR,wr:P.warRate*0.03,rev:y&1,rels:s.rels,fz:P.fortify,infl});
+  Object.assign(phase,{asR:P.asabR,wr:P.warRate*0.03,rev:y&1,rels:s.rels,fz:P.fortify,infl,overseas:overseasTransport()});
   for(let from=0;from<L.length;from+=1024){if(from)yield;updatePoliticalBorders(phase,from,Math.min(from+1024,L.length))}
   // first great walls
   for(const id of s.alive){const o=pols[id];if(o.fortN>=8&&!o.wallLogged&&o.cells>=20){o.wallLogged=1;chron('culture',`The ${o.full} begins to fortify its frontier with a great line of walls and forts.`,o.capital,[R_(o)]);spot(`The ${o.full} builds a great wall`,o.capital,[R_(o)])}}
@@ -1684,7 +1689,7 @@ function* politicsG(){
       if(ob&&ob.kind==='state'&&ob.cells>=60&&s.integ[i]>0.55&&s.pop[i]>=1&&s.eths[ob.core]&&ecoD(i,ob)<0.6){const f=s.eths[ob.core].fam;if(s.uniFam[i]!==f){if(s.uni[i]<0.15){s.uniFam[i]=f;s.uni[i]=0}else{s.uni[i]*=0.985;continue}}s.uni[i]+=0.0035*(1-s.uni[i])}
       else s.uni[i]*=0.9975}
     if(y%10===0){yield;exitPass(0,0.25);yield;exitPass(0.25,0.5);yield;exitPass(0.5,0.75);yield;exitPass(0.75,1);yield}
-    for(const i of w.landIdx){const p=s.pol[i];if(!p)continue;const o=s.pols[p];if(o.kind!=='state'||i===o.capital)continue;const ce=cerealEff(i);
+    for(const i of w.landIdx){const p=s.pol[i];if(!p)continue;const o=s.pols[p];if(o.kind!=='state'||i===o.capital||isDependentColony(i,p))continue;const ce=cerealEff(i);
       if(isWaste(i)){let rim=0;for(let d=0;d<4;d++){const j=w.nb[i*4+d];if(j>=0&&s.pol[j]===p&&!isWaste(j))rim++}
         const keep=rim>0||s.fort[i]>0.3||s.car[i]>0.3||(dd(i)<0.35*o.h&&o.S>0.4&&(o.burden||0)<1.1);if(!keep&&r()<0.3){s.pol[i]=0;continue}}
       if(ce<0.35&&r()<0.15*(1-ce/0.35)*(1.2-0.5*s.integ[i]))s.pol[i]=0}}
@@ -1723,7 +1728,7 @@ function mixPass(){
     if(s.pop[i]<1||b===s.eth[i]){s.eth2[i]=-1;continue}
     let m=s.mix[i];
     if(m>0.5){const a=s.eth[i];s.eth[i]=b;s.eth2[i]=a;m=1-m;s.mix[i]=m}
-    const diaspora=s.seaDiasporas.get(i),supported=diaspora&&diaspora.people===s.eth2[i]&&s.year-diaspora.last<=40;
+    const diaspora=s.seaDiasporas.get(i),supported=(diaspora&&diaspora.people===s.eth2[i]&&s.year-diaspora.last<=40)||(P.assim<=0&&s.colonies.get(i)?.status==='active');
     if(m<0.03&&!supported){s.eth2[i]=-1;s.mixT[i]=0;continue}
     if(m>0.25)s.mixT[i]=Math.min(255,s.mixT[i]+1);else s.mixT[i]=Math.max(0,s.mixT[i]-1);
     if(s.mixT[i]>=15&&born<2&&r()<0.08*P.mixing){

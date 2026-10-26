@@ -384,7 +384,9 @@ function renderPage(){
       const tradition=traditionAt(i);
       h+=`<dl class="kv" style="margin-top:10px"><dt>State</dt><dd>${p?lp(p):'none'}</dd><dt>People</dt><dd>${e?le(e):'none'}</dd><dt>Faith</dt><dd>${R?lr(R):e?'folk religion':'–'}</dd><dt>Tradition</dt><dd>${tradition?`<button class="lnk" data-t="tradition" data-id="${esc(tradition.key)}">${esc(tradition.name)}</button>`:'none'}</dd><dt>Population</dt><dd>${fmtN(s.pop[i])} / ${fmtN(s.K[i])}</dd>${city?`<dt>City</dt><dd>${esc(city.name)}${p&&p.capital===i?' (capital)':''}, since ${fy(city.born)}</dd>`:''}</dl>`;
       const settlement=s.colonies.get(i);
-      if(settlement)h+=`<h3 class="sec">${settlement.status==='active'?'Overseas community':'Former overseas community'}: ${esc(settlement.name)}</h3><dl class="kv"><dt>Founded</dt><dd>${fy(settlement.founded)}</dd><dt>Origin people</dt><dd>${le(s.eths[settlement.founderPeople])}</dd><dt>Local people</dt><dd>${le(s.eths[settlement.people])}</dd><dt>Settler descendants</dt><dd>${fmtN(settlement.settlers)}</dd><dt>Local government</dt><dd>${p?lp(p):'Independent settlement; no centralized state'}</dd></dl>`;
+      if(settlement){const home=s.pols[settlement.homeState],administration=settlement.administration||(p&&p.id===settlement.homeState?'dependent':p?'enclave':'unaffiliated'),label={dependent:settlement.outpost?'Dependent outpost':'Dependent colony',integrated:'Integrated territory',independent:'Independent former colony',enclave:'Treaty settlement',occupied:'Under another state',unaffiliated:'Unadministered settlement'}[administration];
+        h+=`<h3 class="sec">${settlement.status==='active'?label:'Former overseas community'}: ${esc(settlement.name)}</h3><dl class="kv"><dt>Founded</dt><dd>${fy(settlement.founded)}</dd><dt>Parent state</dt><dd>${home?lp(home):'No surviving parent state'}</dd><dt>Origin people</dt><dd>${le(s.eths[settlement.founderPeople])}</dd><dt>Local people</dt><dd>${le(s.eths[settlement.people])}</dd><dt>Colonial community</dt><dd>${fmtN(settlement.settlers)}</dd><dt>Local government</dt><dd>${p?lp(p):'No centralized state'}</dd>${administration==='dependent'?`<dt>Autonomy</dt><dd>${Math.round((settlement.autonomy||0)*100)}%</dd><dt>Ocean supply</dt><dd>${colonySupply(settlement)>=0?'Maintained':'Interrupted'}</dd>${settlement.populationRatio!=null?`<dt>Region / homeland population</dt><dd>${Math.round(settlement.populationRatio*100)}%</dd>`:''}<dt>Independence</dt><dd>Requires a mature, self-sustaining region and substantial autonomy; growth relative to the homeland, isolation and weak government raise pressure.</dd>`:''}${settlement.independentYear!=null?`<dt>Independent since</dt><dd>${fy(settlement.independentYear)}</dd>`:''}</dl>`;
+      }
       h+=`<h3 class="sec">Land</h3><dl class="kv"><dt>Terrain</dt><dd>${BIOMES[w.biome[i]]}, ${Math.round(w.elev[i])} m</dd><dt>Simulation climate</dt><dd>${w.T[i].toFixed(1)} °C, ${Math.round(w.Pr[i])} mm/year</dd><dt>Seasonal swing</dt><dd>${w.amp[i].toFixed(0)} °C</dd>${w.kgGrid&&w.kgGrid[i]?`<dt>Observed zone</dt><dd>${KG_CODES[w.kgGrid[i]]}</dd><dt>Raw model zone</dt><dd>${KG_GROUPS[simGroup(w.rawT[i],w.rawP[i],w.rawA[i])]}</dd><dt>Raw model rain</dt><dd>${Math.round(w.rawP[i])} mm/year</dd><dt>Climate source</dt><dd>${w.fitted?'Observed-zone anchored':'Climate model'}</dd>`:''}<dt>This year's rain</dt><dd>${Math.round((s.wm[i]-1)*100)>=0?'+':''}${Math.round((s.wm[i]-1)*100)}%</dd><dt>River</dt><dd>${w.rv[i]>0?(w.rv[i]>0.6?'major':'yes'):'no'}</dd><dt>Soil fertility</dt><dd>${(s.fert[i]*100).toFixed(0)}%</dd><dt>Immunity</dt><dd>${(s.immune[i]*100).toFixed(0)}%</dd><dt>Cohesion</dt><dd>${s.s[i].toFixed(2)}</dd></dl>`;
       h+=`<h3 class="sec">Ecology</h3><div class="bars">${w.sF[i]>0.08?bar('Soil fertility',s.fert[i],1,'t'):''}${w.forest0[i]>0.05?bar('Forest standing',s.forest[i]/w.forest0[i],1,'t'):''}${s.salt[i]>0.02?bar('Salt in the soil',s.salt[i],1):''}${w.mal[i]>0.05?bar('Fever burden',w.mal[i]*(1-s.adapt[i]),1):''}${w.oncho[i]>0.05?bar('River blindness',w.oncho[i],1):''}${bar('Disease pool',s.dp[i],1,'t')}${w.sF[i]>0.1?bar('Hemmed in (circumscription)',s.circE[i],1,'t'):''}${s.car[i]>0.1?bar('Caravan traffic',s.car[i],1,'t'):''}</div>`;
       h+=`<h3 class="sec">Known techniques</h3><div class="bars">${TECH.map((T,k)=>s.tk[k][i]>0.05?bar(T.n,s.tk[k][i],1,'t'):'').join('')||'<div class="note">Foraging only.</div>'}</div>`;
@@ -394,6 +396,8 @@ function renderPage(){
     h+=`<div class="kind">${o.alive?(o.kind==='horde'?'Nomad '+o.tier.toLowerCase():o.tier):'Fallen state'}${o.island?' · island realm':''}${o.conqDyn?' · conquest dynasty':''}</div><h2 class="name">${esc(o.alive?o.full:o.peak)}</h2>`;
     h+=`<p class="sub2">${originText(o)}${o.civ&&o.civ!==o.base?` · ${esc(cap(o.civ))} tradition`:''}${o.alive?'':` · fell ${fy(o.died)}${o.lastBy&&s.pols[o.lastBy]?` to the ${lp(s.pols[o.lastBy])}`:''}`}</p>`;
     h+=spark(o.hist);
+    const dependencies=[...s.colonies.values()].filter(c=>c.status==='active'&&c.administration==='dependent'&&c.homeState===o.id&&s.pol[c.cell]===o.id);
+    if(dependencies.length)h+=`<h3 class="sec">Overseas dependencies</h3><p>${dependencies.map(c=>L_('cell',c.cell,c.name)).join(', ')}</p>`;
     if(o.alive){
       const age=s.year-R.birth;
       h+=`<h3 class="sec">Ruler</h3><p style="margin:0">${R.fig!=null?lf(s.figs[R.fig])+', '+esc(titleOf(o,R)):esc(cap(rulerName(o)))}, age ${age}, of the House of ${esc(o.dyn)}${o.gen>1?` (${o.gen} generations)`:''}. Reigning since ${fy(R.since)}; ${R.conq} provinces conquered.</p>`;
@@ -481,6 +485,7 @@ function renderPage(){
   if(t==='mig')drawMigMap(id);
 }
 function originText(o){const s=S,g=o.origin||{},from=g.from&&s.pols[g.from];
+  if(g.type==='colony-independence')return `Became independent in ${fy(o.born)} from ${from?lp(from):'its former parent state'}, growing from ${esc(g.settlement)} (founded ${fy(g.year)}).`;
   if(g.type==='colony')return `Grew from the independent overseas settlement of ${esc(g.settlement)}, founded in ${fy(g.year)} by the ${s.eths[g.people]?le(s.eths[g.people]):'settlers'}.`;
   switch(g.type){
     case'rebellion':return`Founded ${fy(o.born)} in a revolt against the ${from?lp(from):'old regime'}${g.why?' · '+esc(g.why.replace(/\.$/,'')):''}`;
@@ -779,7 +784,8 @@ mapCv.addEventListener('pointerleave',()=>{if(Date.now()>tipHold)$('tip').hidden
 mapCv.addEventListener('pointerup',e=>{clearTimeout(lpT);pts.delete(e.pointerId);if(pinch){if(pts.size<2)pinch=null;drag=null;return}
   if(drag&&!drag.moved&&!drag.noOpen&&S&&!ui.historical&&!dblTap(e)){const r=mapCv.getBoundingClientRect();const i=screenToCell(e.clientX-r.left,e.clientY-r.top);
   if(i>=0){const m=ui.mode;
-    if(WD.land[i]&&(m==='political'||m==='alliances')&&S.pol[i])openPage('pol',S.pol[i]);
+    if(WD.land[i]&&(m==='political'||m==='alliances')&&S.colonies.get(i)?.status==='active')openPage('cell',i);
+    else if(WD.land[i]&&(m==='political'||m==='alliances')&&S.pol[i])openPage('pol',S.pol[i]);
     else if(WD.land[i]&&m==='peoples'&&S.eth[i]>=0)openPage('eth',S.eth[i]);
     else if(WD.land[i]&&m==='religion'&&S.rel[i]>=0)openPage('rel',S.rel[i]);
     else if(m==='traditions'&&traditionAt(i))openPage('tradition',traditionAt(i).key);

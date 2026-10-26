@@ -22,6 +22,9 @@ test('graph schema 2 remains readable after byte-plane encoding',()=>{
 });
 for(const scenario of ['early','developed'])test(`political loop extraction preserves complete ${scenario} continuation`,()=>{
  const a=loadBenchmarkCore(),b=loadBenchmarkCore();b.inspect(`politicsG=(${reference.politicsG});`);
+ // Compare loop extraction with the later overseas-governance additions disabled
+ // in both engines; dedicated colony scenarios exercise those new model rules.
+ for(const app of [a,b])app.inspect('overseasTransport=()=>new Map();isDependentColony=()=>false');
  setup(a,scenario);setup(b,scenario);for(let k=0;k<40;k++){a.step();b.step()}assert.equal(digest(a),digest(b));
 });
 test('packed numeric histories retain a decoded memory budget and reject invalid layouts',()=>{

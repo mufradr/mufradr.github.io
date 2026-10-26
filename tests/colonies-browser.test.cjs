@@ -1,0 +1,21 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),http=require('node:http'),{chromium}=require('playwright');
+test('dependent colony map ownership, government inspector and portable saves on desktop and phone',async t=>{
+ const root=path.resolve(__dirname,'..'),server=http.createServer((req,res)=>{const file=new URL(req.url,'http://localhost').pathname.slice(1)||'index.html';if(!/^(index\.html|(?:assets|styles|js)\/[\w.-]+)$/.test(file)){res.writeHead(404).end();return}res.setHeader('Content-Type',file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':'text/html');res.end(fs.readFileSync(path.join(root,file)))});
+ await new Promise(r=>server.listen(0,'127.0.0.1',r));t.after(()=>new Promise(r=>server.close(r)));
+ const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||(fs.existsSync('/usr/bin/chromium')?'/usr/bin/chromium':undefined),args:['--no-sandbox']});t.after(()=>browser.close());
+ for(const width of [1280,390])await t.test(width+'px',async()=>{
+  const page=await browser.newPage({viewport:{width,height:900},hasTouch:width===390}),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.route('https://fonts.googleapis.com/**',r=>r.abort());await page.route('https://fonts.gstatic.com/**',r=>r.abort());
+  await page.goto(`http://127.0.0.1:${server.address().port}/#seed-dependent-colonies`);await page.waitForFunction(()=>typeof ui!=='undefined'&&ui.ready);
+  const site=await page.evaluate(()=>{
+   saveUI.auto=false;S.year=1200;P.warRate=P.crisis=0;const i=15790;S.pop[i]=150000;for(const k of [0,3,5,6,12,14,15,17,19,22]){S.tk[k][i]=1;S.firstTech[k]??={y:1190,cell:i}}
+   const home=newPolity(i,null,{base:'Homeland'}),v=traceVoyage(i,250*Math.PI/180,voyageRange(i)),j=v.to;S.pop[j]=0;S.pol[j]=0;S.eth[j]=S.eth2[j]=-1;S.mix[j]=0;S.seaRoutes.set('colony-test',{...v,born:1180,last:1200});const r=S.r;try{S.r=()=>0;seaContact(v)}finally{S.r=r}
+   ui.mode='political';ui.z=4;buildComp();centerOn(j);ui.dirty=false;const p=atlasScreenPoint(j,{scale:ui.bs*ui.z,ox:ui.ox,oy:ui.oy,width:mapDim.w,height:mapDim.h}),box=mapCv.getBoundingClientRect();return {i,j,home,owner:S.pol[j],name:S.colonies.get(j).name,x:box.left+p.x,y:box.top+p.y};
+  });
+  assert.equal(site.owner,site.home);if(width===390)await page.touchscreen.tap(site.x,site.y);else await page.mouse.click(site.x,site.y);
+  assert.deepEqual(await page.evaluate(()=>ui.page),{t:'cell',id:site.j});assert.match(await page.locator('#pane-insp').innerText(),/Dependent colony/i);assert.match(await page.locator('#pane-insp').innerText(),/Parent state[\s\S]*Homeland/);assert.match(await page.locator('#pane-insp').innerText(),/Ocean supply[\s\S]*Maintained/);
+  const saved=await page.evaluate(async j=>{const bytes=await processWorldFile('encode',captureWorldSave('Dependency')),data=validateWorldSave(await processWorldFile('decode',bytes));return {owner:data.state.pol[j],admin:data.state.colonies.get(j).administration}},site.j);assert.deepEqual(saved,{owner:site.home,admin:'dependent'});
+  await page.locator('#pane-insp .lnk[data-t="pol"]').first().click();assert.equal(await page.evaluate(()=>ui.page.t),'pol');assert.match(await page.locator('#pane-insp').innerText(),/OVERSEAS DEPENDENCIES/);
+  const independent=await page.evaluate(j=>{const c=S.colonies.get(j);S.year=1400;S.pop[j]=60000;c.settlers=c.lastPopulation=60000;c.autonomy=1;for(const r of S.seaRoutes.values())r.last=S.year;colonyGovernmentStep();openPage('cell',j);return {owner:S.pol[j],admin:c.administration}},site.j);assert.notEqual(independent.owner,site.home);assert.equal(independent.admin,'independent');assert.match(await page.locator('#pane-insp').innerText(),/Independent former colony/i);assert.match(await page.locator('#pane-insp').innerText(),/Independent since/);
+  assert.deepEqual(errors,[]);await page.close();
+ });
+});
