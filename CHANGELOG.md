@@ -1,5 +1,50 @@
 # Release history
 
+## 0.14.0 — Smoother playback, smaller saves and founding constraints
+
+- Compact graph schema 3 interns object layouts and stores long numeric histories
+  as binary blocks, preserving all historical records and shared references.
+- Replaced bit-by-bit CRC with a lookup table. Raised expanded save capacity to
+  512 MiB, file capacity to 256 MiB, metadata to 128 MiB and graph nodes to four
+  million. Bounds remain to protect browser memory and reject oversized imports.
+- Read legacy graph schemas 1/2 and accept validated v0.13.0 world saves. Continuing
+  an old world uses the new founding rules; existing states are not deleted.
+- Adapt map repaint frequency to measured render cost during playback, avoid
+  rebuilding the composite for highlight-only animations, and cache unchanged
+  timeline drawings. Rendering switches remain independent of simulation rules.
+- Require more reliable density/surplus for founding new agrarian states; unmanaged
+  rivers provide less organizational credit, and weakly storable crops have a
+  lower residual founding chance. Dense farming, irrigation and administrative
+  development remain eligible in every region. Peoples/cultures are unchanged.
+- Added oversized-history, legacy codec, and regional founding regression checks.
+- Reduce repeated neighborhood calculations without changing
+  random draws or numerical results. Historical atlas recording reuses scratch
+  buffers and builds territory runs only when an entity reaches a new peak.
+- Remove duplicate map-display handlers, coalesce drag/zoom repaints into animation
+  frames, reduce border/route drawing allocations and reuse numeric sorting setup
+  for large rankings. City and route detail switches remain independent.
+- Transfer imported file and decoded array buffers between the UI and save worker
+  instead of copying them again; live simulation arrays remain usable while saving.
+- Add repeatable performance benchmarks and deterministic regression checks for
+  the optimized paths. See docs/OPTIMIZATION.md for methods and measured limits.
+- Losslessly repack elevation as vertical residuals and zigzag variable-length
+  integers, reducing the Earth asset by 146 KB without changing a terrain cell.
+- Group typed-array bytes into planes before gzip and use exact-width integer
+  blocks for numeric histories, reducing an initial compressed save by about 20%.
+  Legacy graphs remain readable; decoded array memory budgets remain enforced.
+- Run hot political cell loops in ordinary functions between the existing yield
+  points, retaining responsive scheduling with less generator overhead.
+- Store uniform arrays as a repeated byte pattern and restore independent arrays
+  on load. This cuts initial raw save data by about 31%; gzip files shrink slightly.
+  Encoding and decoding both enforce the restored-memory budget.
+- Validate imported saves once before confirmation/recovery rather than rescanning
+  the entire world during installation. Public save loading still validates input.
+- Avoid encoding full imported terrain/climate maps to produce short seed URLs or
+  reject unsupported map-share links. Explicit setup exports retain all maps.
+- Skip expensive founding calculations for cells already ruled out by unchanged
+  maturity, land-use and population criteria; probabilities and RNG order match.
+- Read only autosave records during rotation and avoid repainting hidden save cards.
+
 ## 0.13.0 — World saves and portable histories
 
 - Added a Saves tab with three named manual slots and previous-save backups.

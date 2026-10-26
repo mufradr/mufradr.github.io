@@ -70,6 +70,13 @@ function restoreExperiment(input,earth){
 }
 
 // Keep ordinary Earth addresses compact; preserve full links for custom/reproducible setups.
+function currentExperimentAddressHash(preserveFull=false){
+ if(!WD||!S)throw new Error('Build a world first.');
+ // Imported maps cannot be embedded in links. Avoid encoding and validating
+ // several full-resolution maps merely to return their short seed address.
+ if(WD.generation.source==='import')return '#seed-'+encodeURIComponent(String(S.seed));
+ return experimentAddressHash(exportExperiment(),preserveFull);
+}
 function experimentAddressHash(config,preserveFull=false){
  if(config.world.source==='import')return '#seed-'+encodeURIComponent(config.historySeed);
  const defaults=config.world.source==='earth'&&config.world.fitClimate&&config.rules.hearthMode==='historical'&&!config.rules.shuffleNames

@@ -22,6 +22,7 @@ function warRenown(w){
  return 5*Math.log1p((w.populationAtStart||0)/1000)+3*Math.sqrt((w.gA||0)+(w.gD||0))
   +Math.sqrt(duration)+2*new Set([...w.a,...w.d]).size;
 }
+const ATLAS_ID_COLLATOR=new Intl.Collator(undefined,{numeric:true});
 function atlasRanking(kind,metric='renown',scope='all'){
  const list=kind==='tradition'?[...S.historicalAtlas.tradition.values()]:kind==='people'?S.eths:kind==='religion'?S.rels:kind==='war'?S.wars:S.pols.filter(Boolean);
  const score=o=>{
@@ -34,7 +35,7 @@ function atlasRanking(kind,metric='renown',scope='all'){
   }
   return kind==='religion'?religionRenown(o):kind==='war'?warRenown(o):kind==='tradition'?traditionRenown(o):kind==='people'?6*Math.log1p((r?.populationPeak?.population||o.peak||0)/1000)+Math.sqrt(r?.areaPeak?.area||0)/100:stateRenown(o);
  };
- return list.filter(o=>scope!=='living'||(kind==='war'?!o.finished:o.alive)).map(o=>({entity:o,score:score(o)})).sort((a,b)=>b.score-a.score||String(a.entity.id).localeCompare(String(b.entity.id),undefined,{numeric:true}));
+ return list.filter(o=>scope!=='living'||(kind==='war'?!o.finished:o.alive)).map(o=>({entity:o,score:score(o)})).sort((a,b)=>b.score-a.score||ATLAS_ID_COLLATOR.compare(String(a.entity.id),String(b.entity.id)));
 }
 // Resolve wrapped coordinates in CSS pixels before choosing display density.
 function atlasScreenPoint(cell,view){
@@ -46,22 +47,25 @@ function atlasScreenPoint(cell,view){
  return x>=-40&&x<=view.width+40&&y>=-40&&y<=view.height+40?{x,y}:null;
 }
 function selectAtlasCities(cities,view,optimize=true){
- const visible=cities.filter(c=>S.pop[c.cell]>=60000&&atlasScreenPoint(c.cell,view));
- if(!optimize)return visible;
- visible.sort((a,b)=>S.pop[b.cell]-S.pop[a.cell]||a.cell-b.cell);
- const gap=view.zoom>=5?14:view.zoom>=2.6?30:48,bins=new Map(),out=[];
- for(const c of visible){const p=atlasScreenPoint(c.cell,view),bx=Math.floor(p.x/gap),by=Math.floor(p.y/gap);let crowded=false;
-  for(let x=bx-1;x<=bx+1;x++)for(let y=by-1;y<=by+1;y++)for(const q of bins.get(x+','+y)||[])if(Math.hypot(p.x-q.x,p.y-q.y)<gap)crowded=true;
+ const visible=[];
+ for(const c of cities)if(S.pop[c.cell]>=60000){const p=atlasScreenPoint(c.cell,view);if(p)visible.push({city:c,point:p})}
+ if(!optimize)return visible.map(v=>v.city);
+ visible.sort((a,b)=>S.pop[b.city.cell]-S.pop[a.city.cell]||a.city.cell-b.city.cell);
+ const gap=view.zoom>=5?14:view.zoom>=2.6?30:48,gap2=gap*gap,bins=new Map(),out=[];
+ for(const {city:c,point:p} of visible){const bx=Math.floor(p.x/gap),by=Math.floor(p.y/gap);let crowded=false;
+  nearby:for(let x=bx-1;x<=bx+1;x++)for(let y=by-1;y<=by+1;y++)for(const q of bins.get(x+','+y)||[]){const dx=p.x-q.x,dy=p.y-q.y;if(dx*dx+dy*dy<gap2){crowded=true;break nearby}}
   if(crowded)continue;const key=bx+','+by;if(!bins.has(key))bins.set(key,[]);bins.get(key).push(p);out.push(c);
  }
  return out;
 }
 function selectAtlasRoutes(routes,view,optimize=true){
  if(!optimize)return routes.map(r=>({...r,displayPath:r.path}));
- const ranked=routes.filter(r=>r.path?.some(c=>atlasScreenPoint(c,view))).sort((a,b)=>(S.pop[b.from]||0)+(S.pop[b.to]||0)-(S.pop[a.from]||0)-(S.pop[a.to]||0)||a.from-b.from||a.to-b.to);
+ const ranked=[];
+ for(const r of routes){if(!r.path?.length)continue;let point=null;for(const c of r.path){point=atlasScreenPoint(c,view);if(point)break}if(point)ranked.push({route:r,point})}
+ ranked.sort((a,b)=>(S.pop[b.route.from]||0)+(S.pop[b.route.to]||0)-(S.pop[a.route.from]||0)-(S.pop[a.route.to]||0)||a.route.from-b.route.from||a.route.to-b.route.to);
  const limit=Math.max(8,Math.min(180,Math.ceil(view.width*view.height/(view.zoom<2?28000:view.zoom<5?12000:5000))));
  const bins=new Set(),out=[],gap=view.zoom<2?72:view.zoom<5?40:20;
- for(const r of ranked){let p=atlasScreenPoint(r.to,view)||atlasScreenPoint(r.from,view);if(!p){const cell=r.path.find(c=>atlasScreenPoint(c,view));p=atlasScreenPoint(cell,view)}
+ for(const {route:r,point} of ranked){const p=atlasScreenPoint(r.to,view)||atlasScreenPoint(r.from,view)||point;
   const key=Math.floor(p.x/gap)+','+Math.floor(p.y/gap);if(bins.has(key))continue;bins.add(key);
   const path=[r.path[0]];let last=path[0];
   for(let n=1;n<r.path.length-1;n++){const c=r.path[n];let dx=Math.abs(WD.cxA[c]-WD.cxA[last]);dx=Math.min(dx,W-dx);

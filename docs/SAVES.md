@@ -1,4 +1,4 @@
-# Saved worlds — v0.13.0
+# Saved worlds — v0.14.0
 
 Open **Saves** on a phone, tablet or desktop. Three manual slots hold independent
 histories. Give a slot a name and choose **Save here**. A save finishes any pending
@@ -44,7 +44,7 @@ links only recreate starting conditions; they are not progress saves.
 
 Damaged, unsupported or structurally invalid imports are rejected before the
 running world is replaced. Loading a valid file requires confirmation. This first
-save schema accepts this exact engine version; future releases need explicit
+save schema accepts v0.13.0 and this engine version; future releases need explicit
 compatibility handling or migrations. Older local records are never deleted just
 because their engine version differs; they remain exportable.
 
@@ -66,9 +66,11 @@ checks accidental damage; it is not an authenticity signature.
 
 Encoding/compression and decoding/decompression run in a dedicated worker on
 HTTP(S). Capturing a snapshot still requires a synchronous structured clone of the
-world, so very large worlds can cause a brief pause. File URLs or browsers without
-workers use a main-thread fallback. File input is limited to 128 MiB; expanded
-saves are limited to 256 MiB, including a 32 MiB graph-header limit. The initial
+world, so very large worlds can cause a brief pause. During loading, the worker
+transfers the imported bytes and decoded array buffers instead of copying them
+again; shared references are preserved. File URLs or browsers without
+workers use a main-thread fallback. File input is limited to 256 MiB; expanded
+saves are limited to 512 MiB, including a 128 MiB graph-header limit. The initial
 Earth save is approximately 8.5 MiB compressed; size grows with recorded history.
 
 Validation checks array types/sizes, references, parameters, entity identity,
@@ -83,3 +85,18 @@ advanced maritime world and continuing forty years, and exercise generated and
 imported maps. Browser tests cover manual slots, previous/recovery backups,
 rotating autosaves, reload persistence, pending-year completion, file round trips,
 invalid imports, quota failures and desktop/phone layouts.
+
+## v0.14 compact storage
+
+Graph schema 3 shares object-property layouts, represents uniform arrays with one
+byte pattern, packs long numeric histories into
+exact-width integer or Float64 blocks and groups byte positions before gzip.
+It restores histories as ordinary JavaScript arrays. Floating-point bytes,
+signed zero and aliases remain exact. Full chronicles and peak maps are retained; no histories are pruned to fit a save.
+Legacy graph schemas 1 and 2 remain readable. Engine v0.13.0 saves are accepted after
+structural validation; subsequent simulated years use the updated founding rules.
+
+The limits also include four million graph nodes. They protect browser memory,
+not a paid storage tier. Actual available device memory and IndexedDB quota can
+still be lower, so larger limits are not a guarantee on every iPhone/iPad. Export
+remains available when local storage is full. See OPTIMIZATION.md for measurements.

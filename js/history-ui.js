@@ -5,7 +5,10 @@ function historyKind(t){return {pol:'state',rel:'religion',eth:'people',traditio
 function historicalRaster(snapshot){
  if(historicalCache?.snapshot===snapshot)return historicalCache.canvas;
  const canvas=document.createElement('canvas');canvas.width=HW;canvas.height=HH;const ctx=canvas.getContext('2d');
- for(const side of snapshot.sides||[snapshot]){ctx.fillStyle=`rgba(${side.rgb.join(',')},0.86)`;eachFootprint(side.runs,i=>ctx.fillRect((i%W)*SC,Math.floor(i/W)*SC,SC,SC))}
+ for(const side of snapshot.sides||[snapshot]){ctx.fillStyle=`rgba(${side.rgb.join(',')},0.86)`;
+  // A run can cross map rows; draw its contiguous row segments in one operation.
+  for(let k=0;k<side.runs.length;k+=2){let i=side.runs[k],end=i+side.runs[k+1];while(i<end){const x=i%W,length=Math.min(end-i,W-x);ctx.fillRect(x*SC,Math.floor(i/W)*SC,length*SC,SC);i+=length}}
+ }
  historicalCache={snapshot,canvas};return canvas;
 }
 function historicalSection(t,id){

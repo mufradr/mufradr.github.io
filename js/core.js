@@ -1,7 +1,7 @@
 
 "use strict";
 /* ================= SIMULATION CORE (no DOM) ================= */
-const ENGINE_VERSION='0.13.0';
+const ENGINE_VERSION='0.14.0';
 const calendarPhase=(year,period)=>((year%period)+period)%period;
 const W=400,H=200,N=W*H,SC=4,HW=W*SC,HH=H*SC,AGW=40,AGH=20;
 const PDEF=[
@@ -100,7 +100,14 @@ function boxBlur(a,w,h,rx,ry,wrap){
 
 /* ---------- Earth assets ---------- */
 function decodeEarth(elevBytes,kgBytes){
-  const d=new Int16Array(elevBytes.buffer,elevBytes.byteOffset,HW*HH),h=new Float32Array(HW*HH);
+  const count=HW*HH,h=new Float32Array(count);let d;
+  if(elevBytes.length===count*2)d=new Int16Array(elevBytes.buffer,elevBytes.byteOffset,count);
+  else{
+    if(elevBytes[0]!==87||elevBytes[1]!==69||elevBytes[2]!==69||elevBytes[3]!==49)throw new Error('Invalid Earth elevation format.');
+    d=new Int16Array(count);let at=4;
+    for(let i=0;i<count;i++){let v=0,shift=0,b;do{if(at>=elevBytes.length||shift>14)throw new Error('Invalid Earth elevation data.');b=elevBytes[at++];v|=(b&127)<<shift;shift+=7}while(b&128);d[i]=((v>>>1)^-(v&1))+(i>=HW?d[i-HW]:0)}
+    if(at!==elevBytes.length)throw new Error('Invalid Earth elevation length.');
+  }
   for(let y=0;y<HH;y++){let acc=0;for(let x=0;x<HW;x++){acc+=d[y*HW+x];h[y*HW+x]=acc}}
   return{height:h,kg:new Uint8Array(kgBytes.buffer,kgBytes.byteOffset,HW*HH)};
 }
@@ -1096,16 +1103,21 @@ function collapse(o){
 function milAt(c){const s=S,w=WD,ts=w.tsetse[c]?0.15:1;return 1+0.4*s.metal[c]+0.3*s.wheel[c]*ts+0.5*s.iron[c]+ts*(s.horse[c]*(0.3+(w.nomad[c]?0.9:0))+0.6*s.caval[c]*(w.nomad[c]?1:0.5))+1.2*s.gun[c]+0.2*s.admin[c]+0.3*s.camel[c]*w.desert[c]}
 function stateFormationChance(i){
   // Mountain cells include large uninhabitable slopes: villages concentrate in valleys.
-  const s=S,w=WD,settledArea=w.area[i]*Math.max(0.35,1-0.65*w.rough[i]),dens=s.pop[i]/settledArea,crop=cerealEff(i);
+  const s=S,w=WD;
+  if((s.settled[i]<600&&s.admin[i]<0.7)||w.nomad[i])return 0;
   const agr=s.farm[i]*Math.max(w.sF[i],0.7*w.rv[i]*s.irrig[i]);
-  if((s.settled[i]<600&&s.admin[i]<0.7)||agr<=0.35||dens<=2||w.nomad[i]||localPop(i)<FLOOR.chief*3*P.floor)return 0;
+  if(agr<=0.35)return 0;
+  const settledArea=w.area[i]*Math.max(0.35,1-0.65*w.rough[i]),dens=s.pop[i]/settledArea;
+  if(dens<=2||localPop(i)<FLOOR.chief*3*P.floor)return 0;
+  const crop=cerealEff(i);
   const communal=0.35*s.farm[i]*crop*(0.4+0.6*s.circE[i]);
-  const organization=Math.max(communal,(s.irrig[i]+0.5*w.rv[i])*clamp(1-(w.Pr[i]-300)/700,0.2,1),0.5*s.metal[i],s.iron[i],0.8*s.admin[i]);
+  const organization=Math.max(communal,(s.irrig[i]+0.1*w.rv[i])*clamp(1-(w.Pr[i]-300)/700,0.2,1),0.5*s.metal[i],s.iron[i],0.8*s.admin[i]);
   const maturity=Math.max(clamp((s.settled[i]-500)/1500,0,1),s.admin[i]>=0.7?s.admin[i]:0);
   const settlement=clamp((dens-1.5)/4,0,1);
   return maturity*settlement*P.formRate*0.0012*(0.2+1.6*P.circ*s.circE[i])*(0.4+s.s[i])*(1+Math.min(2,dens/15))
     *Math.min(1,0.05+communal+s.metal[i]+s.admin[i]+s.horse[i]*0.5+Math.min(0.4,Math.max(0,dens-5)/25)+0.15*Math.max(0,s.circE[i]-0.5))
-    *(0.03+0.97*crop*crop)*Math.pow(0.05+0.95*organization,1.7);
+    *(0.003+0.997*crop*crop)*Math.pow(0.05+0.95*organization,1.7)
+    *Math.max(clamp((dens-2)/6,0,1),s.admin[i],riverAdministration(i));
 }
 // Governing capacity grows with institutions and transport, not the calendar or a region bonus.
 function riverAdministration(i){return S.irrig[i]*WD.rv[i]*(1-0.5*WD.rough[i])}
@@ -1461,16 +1473,76 @@ function culture(o){
     o.goldStart=0}
 }
 /* ---------- states, each year ---------- */
+// Hot cell loops use ordinary functions; the scheduler yields between chunks.
+// Keep phase inputs fixed and visit cells/RNG draws in their original order.
+function aggregatePoliticalCells(phase,from,to){
+  const {s,w,r,pols,L,pol,pop,sampleNow}=phase;
+  for(let k=from;k<to;k++){const i=L[k],p=pol[i];if(!p)continue;const o=pols[p],pp=pop[i];
+    o.pop+=pp;o.K+=s.K[i];o.cells++;o.area+=w.area[i];o.sS+=s.s[i];const di=dd(i);o.dS+=di;let eD=0;if(pp>=1){o.n0+=pp*w.nT[i];o.n1+=pp*w.nM[i];o.n2+=pp*w.nN[i];o.n3+=pp*w.nD[i];o.nw+=pp;if(o.ni){eD=ecoD(i,o);if(eD>0.8)o.forP+=pp}}o.ad+=s.admin[i];o.ig+=s.integ[i];const pl=s.ard[i]>0.5&&!w.tsetse[i];o.tax+=pp>=1?pp*s.farm[i]*cerealEff(i)*Math.exp(-di/(o.h||6))*(0.5+0.5*s.integ[i])*(0.6+0.4*s.circE[i])*(pl?1.1:0.8)/(1+0.3*P.eco*eD):0;if(pl)o.plN++;if(w.heavy[i]>0.4)o.hvN++;if(isWaste(i,o.kind==="horde"))o.wasteN++;if(s.car[i]>0.3){const tl=1500*s.car[i];o.tax+=tl;o.trade+=tl}
+    if(w.nomad[i])o.nom++;if(w.coast[i])o.coastN++;if(s.farm[i]>0.5&&w.sF[i]>0.25&&pp/w.area[i]>2)o.farmN++;if(s.fort[i]>0.5)o.fortN++;
+    o.cx+=w.cosLon[i];o.cy+=w.sinLon[i];o.yy+=w.cyA[i];if(pp>o.mp){o.mp=pp;o.mc=i}
+    if(sampleNow){if(o.sample.length<24)o.sample.push(i);else if(r()<24/o.cells)o.sample[(r()*24)|0]=i}}
+
+}
+function updatePoliticalBorders(phase,from,to){
+  const {s,w,r,y,pols,L,pol,pop,asR,wr,rev,rels,fz,infl}=phase;
+  for(let kk=from;kk<to;kk++){
+    const i=L[rev?L.length-1-kk:kk],p=pol[i],pi=pop[i],ei=s.eth[i],ri=s.rel[i];
+    const o=p?pols[p]:null,horde=o&&o.kind==='horde';
+    let fr=0,cand=-1,nc=0,candSea=false,threat=0,rcand=-1,rn=0;
+    const cl=w.cosLat[i];
+    for(let d=0;d<4;d++){const j=w.nb[i*4+d];if(j<0||!w.land[j])continue;const q=pol[j],wt=d<2?1:cl;
+      if(q!==p){const ej=s.eth[j];
+        if(ej>=0&&ei>=0&&ej!==ei&&ethDist(ei,ej)>0.22)fr=1;
+        else if(ri>=0&&s.rel[j]>=0&&s.rel[j]!==ri)fr=1;
+        if(o){if(q){const t=pols[q];o.nb.set(q,(o.nb.get(q)||0)+1);
+            if(t.kind==='horde'||o.enemies.has(q))threat=1;
+            if(o.enemies.has(q)||(horde&&t.kind==='horde')){nc+=3*wt;if(r()*nc<3*wt)cand=j}
+            else if(horde&&t.kind==='state'){rn+=wt;if(r()*rn<wt)rcand=j}}
+          else if(!horde||w.nomad[j]||w.desert[j]||pop[j]>=1){nc+=wt;if(r()*nc<wt)cand=j}}}}
+    if(o&&w.coast[i]&&s.sail[i]>0.5){for(let q2=w.ls[i];q2<w.ls[i+1];q2++){const j=w.lt[q2];if(w.ld[q2]>3&&s.nav[i]<0.5)continue;const q=pol[j];if(q===p)continue;
+      if(q){o.nb.set(q,(o.nb.get(q)||0)+1);if(o.enemies.has(q)){nc+=1;if(r()*nc<1){cand=j;candSea=true}}}
+      else if(o.kind==='state'&&w.coast[j]&&s.pop[j]>=0.3&&r()<0.012*P.seafaring*(0.4+s.nav[i])&&r()*(nc+1)<1){nc+=1;cand=j;candSea=true}}}
+    let sv=s.s[i];
+    if(o){const decay=interiorDecay(o);
+      sv+=fr?asR*sv*(1-sv):-decay*sv;sv+=0.004*infl*(o.ruler.char-0.5);if(ri>=0&&ri===o.rel)sv+=0.0015*(0.5+rels[ri].cent);
+      s.s[i]=clamp(sv,0.02,1);
+      if(s.integ[i]<1){const fam=ei>=0&&s.eths[ei]&&s.eths[o.core]&&s.eths[ei].fam===s.eths[o.core].fam;s.integ[i]=Math.min(1,s.integ[i]+0.0011/(1+0.8*P.eco*ecoD(i,o))*(0.5+s.admin[i]+s.roads[i]+0.5*s.law[i])*(fam?1.5:0.6)*(ri>=0&&ri===o.rel?1.2:0.8)*(s.uni[i]>0.3&&s.eths[o.core]&&s.uniFam[i]===s.eths[o.core].fam?1.6:1))}
+      if(cand>=0&&s.taken[i]!==y){const q=pol[cand];
+        if(horde&&!q&&!w.nomad[cand]&&!w.desert[cand]&&pop[cand]>=1){if(r()<P.raid*0.02*o.aggrM*o.gate){const t0=pop[cand]*0.03;pop[cand]-=t0;o.loot+=t0*0.5;displace(cand,0.02,o.id)}}
+        else{const rate=q?wr*2*(1+3*s.circE[cand]):wr*(horde?1:Math.min(1,Math.max(0.1,pop[i]/w.area[i]/6))*(0.3+0.7*Math.min(1,o.press))*(1+2*s.gun[i]));if(r()<rate*o.aggrM*o.gate*expansionReadiness(o))attack(o,i,cand,candSea)}}
+      if(horde&&rcand>=0&&r()<P.raid*0.025*o.aggrM*o.gate*(1-0.8*s.fort[rcand]))raid(o,i,rcand);
+      const c=o.core;
+      if(ei>=0&&c>=0&&ei!==c&&pi>=1&&!o.conqDyn&&r()<P.assim*0.004*o.S*(1-0.8*ethDist(ei,c))*(ri>=0&&ri===o.rel?1.5:1))s.eth[i]=c;
+      if(o.conqDyn&&ei!==c&&pi>=1)mixIn(i,c,0.0006);
+      if(o.rel>=0&&ri!==o.rel&&pi>=1){const Rl=rels[o.rel];if(!(Rl.kind==='ethnic'&&ei>=0&&s.eths[ei].fam!==Rl.fam)&&r()<0.003*P.faith*o.S*(Rl.miss+0.3)*(0.7+0.6*Rl.cent))s.rel[i]=o.rel}
+      // fortify threatened frontiers if the state is cohesive and can pay
+      if(threat&&!horde&&o.S>0.45&&o.gate>0.7&&s.admin[o.capital]>0.3&&s.fort[i]<1)s.fort[i]=Math.min(1,s.fort[i]+0.006*fz*(1+s.roads[i]));
+    }else{
+      sv+=fr?asR*0.6*sv*(1-sv):(0.3-sv)*0.02;s.s[i]=clamp(sv,0.02,1);
+      if(pi>=1){const dens=pi/w.area[i],past=s.herd[i]*Math.max(w.sH[i],w.desert[i]*s.camel[i]*0.6);
+        const founding=stateFormationChance(i);
+        if(founding>0){
+          if(r()<founding){
+            const id=newPolity(i,null);
+            for(let d=0;d<4;d++){const j=w.nb[i*4+d];if(j>=0&&w.land[j]&&!pol[j]&&s.eth[j]===ei&&pop[j]>=1&&r()<0.5){pol[j]=id;s.dist[j]=2}}}}
+        else if(past>0.3&&dens>0.5&&(w.nomad[i]||w.desert[i])&&fr){
+          if(r()<P.nomad*0.0003*(0.4+s.s[i])*(0.5+s.horse[i]+s.camel[i])){
+            const id=newPolity(i,null,{kind:'horde'});
+            for(let d=0;d<4;d++){const j=w.nb[i*4+d];if(j>=0&&w.land[j]&&!pol[j]&&(w.nomad[j]||w.desert[j])&&pop[j]>=1&&r()<0.6){pol[j]=id;s.dist[j]=2}}}}
+      }
+    }
+    if(s.fort[i]>0){const keep=o&&!horde&&o.S>0.3&&o.press<1;s.fort[i]=keep?s.fort[i]*0.9995:s.fort[i]*0.99;if(s.fort[i]<0.01)s.fort[i]=0}
+  }
+
+}
 function politics(){for(const _ of politicsG());}
 function* politicsG(){
   const s=S,w=WD,r=s.r,y=s.year,pols=s.pols,L=w.landIdx,pol=s.pol,pop=s.pop;
   const sampleNow=y%10===0;
   for(const id of s.alive){const o=pols[id];o.pop=0;o.K=0;o.cells=0;o.area=0;o.sS=0;o.dS=0;o.ad=0;o.nom=0;o.cx=0;o.cy=0;o.yy=0;o.mp=-1;o.mc=-1;o.coastN=0;o.farmN=0;o.fortN=0;o.lmN=0;o.tax=0;o.ig=0;o.wasteN=0;o.plN=0;o.hvN=0;o.trade=0;o.n0=0;o.n1=0;o.n2=0;o.n3=0;o.nw=0;o.forP=0;if(sampleNow)o.sample=[]}
-  for(let k=0;k<L.length;k++){const i=L[k],p=pol[i];if(!p)continue;const o=pols[p],pp=pop[i];
-    o.pop+=pp;o.K+=s.K[i];o.cells++;o.area+=w.area[i];o.sS+=s.s[i];const di=dd(i);o.dS+=di;let eD=0;if(pp>=1){o.n0+=pp*w.nT[i];o.n1+=pp*w.nM[i];o.n2+=pp*w.nN[i];o.n3+=pp*w.nD[i];o.nw+=pp;if(o.ni){eD=ecoD(i,o);if(eD>0.8)o.forP+=pp}}o.ad+=s.admin[i];o.ig+=s.integ[i];const pl=s.ard[i]>0.5&&!w.tsetse[i];o.tax+=pp>=1?pp*s.farm[i]*cerealEff(i)*Math.exp(-di/(o.h||6))*(0.5+0.5*s.integ[i])*(0.6+0.4*s.circE[i])*(pl?1.1:0.8)/(1+0.3*P.eco*eD):0;if(pl)o.plN++;if(w.heavy[i]>0.4)o.hvN++;if(isWaste(i,o.kind==="horde"))o.wasteN++;if(s.car[i]>0.3){const tl=1500*s.car[i];o.tax+=tl;o.trade+=tl}
-    if(w.nomad[i])o.nom++;if(w.coast[i])o.coastN++;if(s.farm[i]>0.5&&w.sF[i]>0.25&&pp/w.area[i]>2)o.farmN++;if(s.fort[i]>0.5)o.fortN++;
-    o.cx+=w.cosLon[i];o.cy+=w.sinLon[i];o.yy+=w.cyA[i];if(pp>o.mp){o.mp=pp;o.mc=i}
-    if(sampleNow){if(o.sample.length<24)o.sample.push(i);else if(r()<24/o.cells)o.sample[(r()*24)|0]=i}}
+  const phase={s,w,r,y,pols,L,pol,pop,sampleNow};
+  for(let from=0;from<L.length;from+=2048){if(from)yield;aggregatePoliticalCells(phase,from,Math.min(from+2048,L.length))}
   recordAtlasHistory();
   const next=[];
   for(const id of s.alive){const o=pols[id];
@@ -1602,55 +1674,8 @@ function* politicsG(){
   yield;
   // border pass
   for(const id of s.alive)pols[id].nb=new Map();
-  const asR=P.asabR,wr=P.warRate*0.03,rev=y&1,rels=s.rels,fz=P.fortify;
-  for(let kk=0;kk<L.length;kk++){
-    const i=L[rev?L.length-1-kk:kk],p=pol[i],pi=pop[i],ei=s.eth[i],ri=s.rel[i];
-    const o=p?pols[p]:null,horde=o&&o.kind==='horde';
-    let fr=0,cand=-1,nc=0,candSea=false,threat=0,rcand=-1,rn=0;
-    const cl=w.cosLat[i];
-    for(let d=0;d<4;d++){const j=w.nb[i*4+d];if(j<0||!w.land[j])continue;const q=pol[j],wt=d<2?1:cl;
-      if(q!==p){const ej=s.eth[j];
-        if(ej>=0&&ei>=0&&ej!==ei&&ethDist(ei,ej)>0.22)fr=1;
-        else if(ri>=0&&s.rel[j]>=0&&s.rel[j]!==ri)fr=1;
-        if(o){if(q){const t=pols[q];o.nb.set(q,(o.nb.get(q)||0)+1);
-            if(t.kind==='horde'||o.enemies.has(q))threat=1;
-            if(o.enemies.has(q)||(horde&&t.kind==='horde')){nc+=3*wt;if(r()*nc<3*wt)cand=j}
-            else if(horde&&t.kind==='state'){rn+=wt;if(r()*rn<wt)rcand=j}}
-          else if(!horde||w.nomad[j]||w.desert[j]||pop[j]>=1){nc+=wt;if(r()*nc<wt)cand=j}}}}
-    if(o&&w.coast[i]&&s.sail[i]>0.5){for(let q2=w.ls[i];q2<w.ls[i+1];q2++){const j=w.lt[q2];if(w.ld[q2]>3&&s.nav[i]<0.5)continue;const q=pol[j];if(q===p)continue;
-      if(q){o.nb.set(q,(o.nb.get(q)||0)+1);if(o.enemies.has(q)){nc+=1;if(r()*nc<1){cand=j;candSea=true}}}
-      else if(o.kind==='state'&&w.coast[j]&&s.pop[j]>=0.3&&r()<0.012*P.seafaring*(0.4+s.nav[i])&&r()*(nc+1)<1){nc+=1;cand=j;candSea=true}}}
-    let sv=s.s[i];
-    if(o){const decay=interiorDecay(o);
-      sv+=fr?asR*sv*(1-sv):-decay*sv;sv+=0.004*infl*(o.ruler.char-0.5);if(ri>=0&&ri===o.rel)sv+=0.0015*(0.5+rels[ri].cent);
-      s.s[i]=clamp(sv,0.02,1);
-      if(s.integ[i]<1){const fam=ei>=0&&s.eths[ei]&&s.eths[o.core]&&s.eths[ei].fam===s.eths[o.core].fam;s.integ[i]=Math.min(1,s.integ[i]+0.0011/(1+0.8*P.eco*ecoD(i,o))*(0.5+s.admin[i]+s.roads[i]+0.5*s.law[i])*(fam?1.5:0.6)*(ri>=0&&ri===o.rel?1.2:0.8)*(s.uni[i]>0.3&&s.eths[o.core]&&s.uniFam[i]===s.eths[o.core].fam?1.6:1))}
-      if(cand>=0&&s.taken[i]!==y){const q=pol[cand];
-        if(horde&&!q&&!w.nomad[cand]&&!w.desert[cand]&&pop[cand]>=1){if(r()<P.raid*0.02*o.aggrM*o.gate){const t0=pop[cand]*0.03;pop[cand]-=t0;o.loot+=t0*0.5;displace(cand,0.02,o.id)}}
-        else{const rate=q?wr*2*(1+3*s.circE[cand]):wr*(horde?1:Math.min(1,Math.max(0.1,pop[i]/w.area[i]/6))*(0.3+0.7*Math.min(1,o.press))*(1+2*s.gun[i]));if(r()<rate*o.aggrM*o.gate*expansionReadiness(o))attack(o,i,cand,candSea)}}
-      if(horde&&rcand>=0&&r()<P.raid*0.025*o.aggrM*o.gate*(1-0.8*s.fort[rcand]))raid(o,i,rcand);
-      const c=o.core;
-      if(ei>=0&&c>=0&&ei!==c&&pi>=1&&!o.conqDyn&&r()<P.assim*0.004*o.S*(1-0.8*ethDist(ei,c))*(ri>=0&&ri===o.rel?1.5:1))s.eth[i]=c;
-      if(o.conqDyn&&ei!==c&&pi>=1)mixIn(i,c,0.0006);
-      if(o.rel>=0&&ri!==o.rel&&pi>=1){const Rl=rels[o.rel];if(!(Rl.kind==='ethnic'&&ei>=0&&s.eths[ei].fam!==Rl.fam)&&r()<0.003*P.faith*o.S*(Rl.miss+0.3)*(0.7+0.6*Rl.cent))s.rel[i]=o.rel}
-      // fortify threatened frontiers if the state is cohesive and can pay
-      if(threat&&!horde&&o.S>0.45&&o.gate>0.7&&s.admin[o.capital]>0.3&&s.fort[i]<1)s.fort[i]=Math.min(1,s.fort[i]+0.006*fz*(1+s.roads[i]));
-    }else{
-      sv+=fr?asR*0.6*sv*(1-sv):(0.3-sv)*0.02;s.s[i]=clamp(sv,0.02,1);
-      if(pi>=1){const dens=pi/w.area[i],past=s.herd[i]*Math.max(w.sH[i],w.desert[i]*s.camel[i]*0.6);
-        const founding=stateFormationChance(i);
-        if(founding>0){
-          if(r()<founding){
-            const id=newPolity(i,null);
-            for(let d=0;d<4;d++){const j=w.nb[i*4+d];if(j>=0&&w.land[j]&&!pol[j]&&s.eth[j]===ei&&pop[j]>=1&&r()<0.5){pol[j]=id;s.dist[j]=2}}}}
-        else if(past>0.3&&dens>0.5&&(w.nomad[i]||w.desert[i])&&fr){
-          if(r()<P.nomad*0.0003*(0.4+s.s[i])*(0.5+s.horse[i]+s.camel[i])){
-            const id=newPolity(i,null,{kind:'horde'});
-            for(let d=0;d<4;d++){const j=w.nb[i*4+d];if(j>=0&&w.land[j]&&!pol[j]&&(w.nomad[j]||w.desert[j])&&pop[j]>=1&&r()<0.6){pol[j]=id;s.dist[j]=2}}}}
-      }
-    }
-    if(s.fort[i]>0){const keep=o&&!horde&&o.S>0.3&&o.press<1;s.fort[i]=keep?s.fort[i]*0.9995:s.fort[i]*0.99;if(s.fort[i]<0.01)s.fort[i]=0}
-  }
+  Object.assign(phase,{asR:P.asabR,wr:P.warRate*0.03,rev:y&1,rels:s.rels,fz:P.fortify,infl});
+  for(let from=0;from<L.length;from+=1024){if(from)yield;updatePoliticalBorders(phase,from,Math.min(from+1024,L.length))}
   // first great walls
   for(const id of s.alive){const o=pols[id];if(o.fortN>=8&&!o.wallLogged&&o.cells>=20){o.wallLogged=1;chron('culture',`The ${o.full} begins to fortify its frontier with a great line of walls and forts.`,o.capital,[R_(o)]);spot(`The ${o.full} builds a great wall`,o.capital,[R_(o)])}}
   for(const id of s.activeMigs.slice())migStep(s.migs[id]);
@@ -1849,12 +1874,17 @@ function statecraft(o,c,y){
 }
 function localPop(i){const w=WD,s=S;let t=s.pop[i];for(let d=0;d<4;d++){const j=w.nb[i*4+d];if(j>=0)t+=s.pop[j]}return t*1.8}
 // the exit option (Herbst, Scott): open land nearby lets subjects walk away; crowding or barren surroundings trap them (Carneiro)
+// Reusable scratch space stays outside saves; each call refreshes all land values.
+const exitOpportunity=new Float64Array(N);
 function exitPass(a0,b0){if(a0==null){a0=0;b0=1}
-  const s=S,w=WD,LL=w.landIdx;
+  const s=S,w=WD,LL=w.landIdx,opportunity=exitOpportunity;
+  // A destination's attraction is identical for every nearby origin. Compute it
+  // once, then sum in the same order as before to preserve exact results.
+  for(const j of LL){const q=Math.max(w.sF[j],0.5*w.forest0[j]*(w.T[j]>10?1:0.3),0.4*w.sH[j]),pd=Math.max(0.3,7*q);opportunity[j]=q*Math.max(0,1-s.pop[j]/w.area[j]/pd)*(s.pol[j]?0.4:1)}
   for(let kk=Math.floor(a0*LL.length),ke=Math.floor(b0*LL.length);kk<ke;kk++){const i=LL[kk];if(s.pop[i]<1||w.sF[i]<0.1){s.circE[i]=w.circ[i];continue}
     const cx=w.cxA[i],cy=w.cyA[i];let tot=0,n=0;
     for(let dy=-3;dy<=3;dy++){const yy=cy+dy;if(yy<0||yy>=H)continue;for(let dx=-3;dx<=3;dx++){if(!dx&&!dy)continue;const j=yy*W+(cx+dx+W)%W;n++;if(!w.land[j])continue;
-      const q=Math.max(w.sF[j],0.5*w.forest0[j]*(w.T[j]>10?1:0.3),0.4*w.sH[j]),pd=Math.max(0.3,7*q);tot+=q*Math.max(0,1-s.pop[j]/w.area[j]/pd)*(s.pol[j]?0.4:1)}}
+      tot+=opportunity[j]}}
     const ex=tot/n,own=w.sF[i]+0.1;s.exit[i]=ex;
     s.circE[i]=clamp(Math.max(w.circ[i],1-1.6*ex/own),0,1)}
 }

@@ -11,7 +11,7 @@ function captureWorldSave(name='',view=null){
 function validateWorldSave(data){
  const fail=m=>{throw new Error('Invalid world save: '+m)};
  if(!data||data.format!==WORLD_SAVE_FORMAT||data.schemaVersion!==WORLD_SAVE_SCHEMA)throw new Error('Unsupported world save format. Setup files are not world saves.');
- if(data.engineVersion!==ENGINE_VERSION)throw new Error('This save needs World Engine '+String(data.engineVersion).slice(0,30)+'; this engine is '+ENGINE_VERSION+'. Your current world has not been replaced.');
+ if(!['0.13.0',ENGINE_VERSION].includes(data.engineVersion))throw new Error('This save needs World Engine '+String(data.engineVersion).slice(0,30)+'; this engine is '+ENGINE_VERSION+'. Your current world has not been replaced.');
  if(data.width!==W||data.height!==H)fail('map dimensions');
  if(typeof data.name!=='string'||data.name.length>40||typeof data.savedAt!=='string'||!Number.isFinite(Date.parse(data.savedAt)))fail('save details');
  if(!Number.isInteger(data.rngState)||data.rngState<0||data.rngState>0xffffffff)fail('random state');
@@ -76,6 +76,10 @@ function validateWorldSave(data){
  return data;
 }
 function applyWorldSave(input){
- const data=validateWorldSave(input); // All checks complete before changing live globals.
+ return applyValidatedWorldSave(validateWorldSave(input));
+}
+// The load UI validates its detached candidate before confirmation and recovery.
+// Installation is shared so that path does not rescan every array a second time.
+function applyValidatedWorldSave(data){
  data.state.r=mulberry32(data.rngState);WD=data.world;S=data.state;Object.assign(P,data.rules);Object.assign(CL,data.climate);return data;
 }

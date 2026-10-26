@@ -10,6 +10,11 @@ test('save slots, backups, file transfer and autosaves on desktop and iPhone',as
   await page.route('https://fonts.googleapis.com/**',r=>r.abort());await page.route('https://fonts.gstatic.com/**',r=>r.abort());
   await page.goto(`http://127.0.0.1:${server.address().port}/#seed-save-slots`);await page.waitForFunction(()=>typeof ui!=='undefined'&&ui.ready);
   await page.getByRole('tab',{name:'Saves',exact:true}).click();await page.locator('#autosave-enabled').uncheck();
+  assert.deepEqual(await page.evaluate(async()=>{
+   const live=new Float32Array([1.25,2.5,3.75]),payload={a:live,b:live,map:new Map([[live,new Set([live])]])};payload.self=payload;
+   const file=await processWorldFile('encode',payload),out=await processWorldFile('decode',file);
+   return {live:[...live],inputTransferred:file.byteLength===0,values:[...out.a],alias:out.a===out.b,cycle:out.self===out,map:out.map.get(out.a).has(out.a)};
+  }),{live:[1.25,2.5,3.75],inputTransferred:true,values:[1.25,2.5,3.75],alias:true,cycle:true,map:true},'worker transfers decoded buffers while preserving live arrays and graph aliases');
   assert.equal(await page.locator('#save-slots .world-slot').count(),3);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'save slots fit the viewport');
   const first=page.locator('[data-slot="manual-1"]');await first.locator('input').fill('My Earth');
   await page.evaluate(()=>{ui.gen=stepG();ui.genS=S;ui.gen.next()});
@@ -17,7 +22,9 @@ test('save slots, backups, file transfer and autosaves on desktop and iPhone',as
   const original=await page.evaluate(()=>S.year);assert.equal(await page.evaluate(()=>ui.gen),null,'saving completes a pending year');
   await page.evaluate(()=>{step();step();ui.completedYear=S.year});await first.getByRole('button',{name:'Save here',exact:true}).click();await idle(page);
   assert.equal(await first.getByRole('button',{name:'Load previous save',exact:true}).count(),1);
+  await page.evaluate(()=>{globalThis.savedValidator=validateWorldSave;globalThis.validationPasses=0;validateWorldSave=(...args)=>{validationPasses++;return savedValidator(...args)}});
   await first.getByRole('button',{name:'Load previous save',exact:true}).click();await idle(page);
+  assert.equal(await page.evaluate(()=>{const count=validationPasses;validateWorldSave=savedValidator;return count}),1,'loading validates the detached candidate once before installation');
   assert.equal(await page.evaluate(()=>S.year),original);assert.equal(await page.evaluate(()=>ui.running),false);
   assert.ok(await page.locator('[data-slot="before-load"]').isVisible());
   const downloadEvent=page.waitForEvent('download');await page.locator('#export-world').click();const download=await downloadEvent;await idle(page);

@@ -3,7 +3,7 @@
 An interactive browser simulation of populations, states, cultures, and climate,
 hosted on GitHub Pages at https://mufradr.github.io/.
 
-The app identifies itself as version 0.13.0. It is a static site: no package
+The app identifies itself as version 0.14.0. It is a static site: no package
 installation or build step is required to run or publish it. `.nojekyll` enables
 direct static serving on GitHub Pages.
 
@@ -81,6 +81,10 @@ set `CHROMIUM_PATH` to its executable. The tests automatically use
   startup, map rendering, Play/Pause, Terrain selection, simulation pacing, and
   relative resource loading at both a domain root and a subdirectory.
 
+`npm run benchmark:simulation` and `npm run benchmark:render` report repeatable CPU
+and rendering measurements. See [performance notes](docs/OPTIMIZATION.md) for
+scenarios, baseline comparison options and limitations.
+
 Tests also run on GitHub Actions for pushes and pull requests. Test dependencies
 are development tools; the published site does not use Node.js or Playwright.
 
@@ -92,7 +96,7 @@ the affected behavior; the regression suite does not cover all long-term outcome
 See [atlas and maritime development notes](docs/ATLAS.md) for score formulas,
 rendering limits, URL behaviour and settlement rules.
 
-## Save and continue a world in 0.13.0
+## Save and continue a world in 0.14.0
 
 Open **Saves** for three named manual slots, previous-save backups, and three
 rotating autosaves. Saving finishes the current year and pauses playback; loading
@@ -104,9 +108,11 @@ file in Files/iCloud Drive. **Import world file** opens it on another device.
 Local slots stay in this browser and may be cleared by browser/iOS storage
 cleanup, so export important worlds. No account or server is needed. World saves
 include custom terrain, simulation progress, histories, peak maps and RNG state;
-setup links/files still only reproduce starting conditions. Schema 1 accepts the
-exact engine version and validates imports before replacing the live world.
-See [save format and device-storage notes](docs/SAVES.md).
+setup links/files still only reproduce starting conditions. The loader accepts
+v0.13.0 and current-version saves and validates imports before replacing the live
+world.
+See [save format and device-storage notes](docs/SAVES.md) and
+[save/performance measurements and founding changes](docs/OPTIMIZATION.md).
 
 ## Atlas and statistics
 
@@ -239,3 +245,8 @@ Host governments retain ownership; war blocks their acceptance of new arrivals.
 National colony ownership, imperial administration and overseas conquest remain
 future work. JSON setups still reproduce starting conditions rather than saving
 an ongoing colony's progress.
+
+`npm run benchmark:size` reports the static app payload and initial save size.
+`npm run pack:earth` reproduces the lossless packed Earth asset; it changes
+storage encoding without changing elevation or climate resolution. No build step
+is needed to use or publish the checked-in packed asset.

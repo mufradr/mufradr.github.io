@@ -39,7 +39,7 @@ test('browser: startup, controls, pacing, and Pages-relative resources', async t
       await page.waitForFunction(() => typeof ui !== 'undefined' && ui.ready && document.getElementById('busy').hidden);
       assert.equal(await page.title(), 'World Engine');
       assert.equal(await page.locator('.brand .mark').innerText(), 'World Engine');
-      assert.match(await page.locator('.brand .sub').innerText(), /v0\.13\.0/i);
+      assert.match(await page.locator('.brand .sub').innerText(), /v0\.14\.0/i);
       assert.equal(await page.locator('meta[property="og:title"]').getAttribute('content'), 'World Engine');
       const manifest = await page.evaluate(async () => (await fetch(document.querySelector('link[rel="manifest"]').href)).json());
       assert.equal(manifest.name, 'World Engine');
@@ -184,7 +184,7 @@ test('browser: startup, controls, pacing, and Pages-relative resources', async t
       await page.locator('#btn-export-setup').click();
       const download=await downloadPromise;
       const exported=JSON.parse(fs.readFileSync(await download.path(),'utf8'));
-      assert.equal(exported.engineVersion,'0.13.0');assert.equal(exported.rules.growth,.02);
+      assert.equal(exported.engineVersion,'0.14.0');assert.equal(exported.rules.growth,.02);
       const other=await browser.newPage();
       await other.route('https://fonts.googleapis.com/**',r=>r.abort());
       await other.goto(shared);
@@ -215,6 +215,10 @@ test('atlas: traditions, rankings, knowledge fade, borders and independent detai
   await page.route('https://fonts.googleapis.com/**',r=>r.abort());await page.route('https://fonts.gstatic.com/**',r=>r.abort());
   await page.goto(`http://127.0.0.1:${server.address().port}/#seed-atlas%20test%20%E4%B8%AD`);
   await page.waitForFunction(()=>typeof ui!=='undefined'&&ui.ready&&document.getElementById('busy').hidden);
+  const chartCache=await page.evaluate(()=>{const original=chartCtx.clearRect;let clears=0;chartCtx.clearRect=function(...args){clears++;return original.apply(this,args)};
+   try{ui.chartState=null;drawChart();const before=chartCtx.getImageData(0,0,chartCv.width,chartCv.height).data;drawChart();sizeCanvas(chartCv);drawChart();const after=chartCtx.getImageData(0,0,chartCv.width,chartCv.height).data;
+    const same=before.every((v,i)=>v===after[i]);recordStats();drawChart();return {clears,same}}finally{chartCtx.clearRect=original}});
+  assert.deepEqual(chartCache,{clears:2,same:true});
   assert.equal(await page.locator('#hseed').inputValue(),'atlas test 中');assert.match(new URL(page.url()).hash,/^#seed-/);
   await page.clock.install();
   assert.equal(await page.locator('#modes').isVisible(),false);

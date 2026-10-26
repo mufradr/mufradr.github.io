@@ -6,11 +6,13 @@ function setSaveBusy(on){saveUI.busy=on;for(const b of $('pane-saves').querySele
 function processWorldFile(action,payload){
  if(typeof Worker==='undefined'||location.protocol==='file:')return action==='encode'?encodeWorldFile(structuredClone(payload)):decodeWorldFile(payload);
  return new Promise((resolve,reject)=>{
-  const worker=new Worker('js/save-worker.js?v=0.13.0'),timer=setTimeout(()=>{worker.terminate();reject(new Error('Save processing timed out. Previous saves are unchanged.'))},120000);
+  const worker=new Worker('js/save-worker.js?v=0.14.0'),timer=setTimeout(()=>{worker.terminate();reject(new Error('Save processing timed out. Previous saves are unchanged.'))},120000);
   const done=()=>{clearTimeout(timer);worker.terminate()};
   worker.onmessage=({data})=>{done();data.error?reject(new Error(data.error)):resolve(data.result)};
   worker.onerror=()=>{done();reject(new Error('The save worker could not start. Reload the page and try again.'))};
-  try{worker.postMessage(action==='encode'?{action,payload}:{action,bytes:payload})}catch(error){done();reject(error)}
+  // Encoding must copy the live snapshot; decoding owns its input bytes and can
+  // transfer them. Never detach terrain or simulation arrays used by playback.
+  try{if(action==='encode')worker.postMessage({action,payload});else worker.postMessage({action,bytes:payload},[payload.buffer])}catch(error){done();reject(error)}
  });
 }
 function settleSaveYear(){
@@ -21,7 +23,7 @@ function currentSaveView(){return {mode:ui.mode,know:[...ui.know],z:ui.z,ox:ui.o
 function saveMetadata(data){let population=0;for(const p of data.state.pop)population+=p;return {name:data.name,savedAt:data.savedAt,year:data.state.year,seed:data.state.seed,source:data.world.generation.source,states:data.state.alive.length,population,engineVersion:data.engineVersion}}
 async function makeWorldSave(name){
  const payload=captureWorldSave(name,currentSaveView()),meta=saveMetadata(payload),bytes=await processWorldFile('encode',payload);
- if(bytes.byteLength>SAVE_MAX_FILE_BYTES)throw new Error('Compressed save exceeds the 128 MiB file limit.');
+ if(bytes.byteLength>SAVE_MAX_FILE_BYTES)throw new Error('Compressed save exceeds the 256 MiB file limit.');
  return {blob:new Blob([bytes],{type:'application/octet-stream'}),meta};
 }
 async function refreshWorldSlots(){
@@ -42,7 +44,7 @@ function renderWorldSaves(){
 }
 async function runSaveAction(action){
  if(saveUI.busy)return;setSaveBusy(true);
- try{await action()}catch(error){saveStatus(saveError(error),true)}finally{await refreshWorldSlots();setSaveBusy(false);renderWorldSaves()}
+ try{await action()}catch(error){saveStatus(saveError(error),true)}finally{await refreshWorldSlots();setSaveBusy(false);if(ui.pane==='saves')renderWorldSaves()}
 }
 async function saveManualSlot(id,name){
  const old=await readWorldSlot(id);
@@ -70,7 +72,7 @@ async function loadWorldBlob(blob){
  try{await writeWorldSlot('before-load',recovery.blob,recovery.meta)}catch(error){if(!confirm(saveError(error)+' Load without a recovery slot? Export your current world first if you want to keep it.')){saveStatus('Loading cancelled. The world on screen is unchanged.');return}}
  const previous={world:WD,state:S,rules:{...P},climate:{...CL},view:currentSaveView(),name:saveUI.name,src:ui.src,imported:IMPORTED};
  try{
- applyWorldSave(data);ui.src=WD.generation.source==='generated'?'gen':WD.generation.source;
+ applyValidatedWorldSave(data);ui.src=WD.generation.source==='generated'?'gen':WD.generation.source;
  for(const b of $('src').children)b.setAttribute('aria-pressed',b.dataset.v===ui.src);
  // Sync settings without recreating the world or consuming random draws.
  syncExperimentControls({historySeed:S.seed,world:WD.generation});paintBase();finishHistory();restoreSaveView(data.view);
@@ -89,7 +91,7 @@ function maybeAutosave(force=false){
  if(saveUI.lastState===S&&saveUI.lastYear===S.year)return;
  if(!force&&Date.now()-saveUI.lastAuto<60000)return;
  setSaveBusy(true);saveUI.lastAuto=Date.now();const state=S,year=S.year;
- makeWorldSave(saveUI.name||'World '+S.seed).then(async({blob,meta})=>{await writeWorldSlot('auto',blob,meta);saveUI.lastState=state;saveUI.lastYear=year;saveStatus('Autosaved '+meta.name+' at '+fy(year)+'.')}).catch(error=>{saveUI.storageError=saveError(error);saveStatus('Autosave failed: '+saveUI.storageError,true)}).finally(async()=>{await refreshWorldSlots();setSaveBusy(false);renderWorldSaves()});
+ makeWorldSave(saveUI.name||'World '+S.seed).then(async({blob,meta})=>{await writeWorldSlot('auto',blob,meta);saveUI.lastState=state;saveUI.lastYear=year;saveStatus('Autosaved '+meta.name+' at '+fy(year)+'.')}).catch(error=>{saveUI.storageError=saveError(error);saveStatus('Autosave failed: '+saveUI.storageError,true)}).finally(async()=>{await refreshWorldSlots();setSaveBusy(false);if(ui.pane==='saves')renderWorldSaves()});
 }
 $('pane-saves').addEventListener('input',e=>{if(e.target.matches('.slot-name'))e.target.dataset.edited='yes'});
 $('pane-saves').addEventListener('click',e=>{
@@ -104,7 +106,7 @@ $('pane-saves').addEventListener('click',e=>{
 });
 $('export-world').addEventListener('click',()=>runSaveAction(async()=>{settleSaveYear();saveStatus('Preparing save file…');const {blob,meta}=await makeWorldSave(saveUI.name||'World '+S.seed);downloadWorldFile(blob,meta.name);saveStatus('Current world exported at '+fy(meta.year)+'. Keep the file in Files or iCloud Drive.')}));
 document.querySelector('[for="import-world"]').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e.stopPropagation();if(!saveUI.busy)$('import-world').click()}});
-$('import-world').addEventListener('change',e=>{const file=e.target.files[0];e.target.value='';if(!file)return;runSaveAction(async()=>{if(file.size>SAVE_MAX_FILE_BYTES)throw new Error('Save file is too large (maximum 128 MiB).');await loadWorldBlob(file)})});
+$('import-world').addEventListener('change',e=>{const file=e.target.files[0];e.target.value='';if(!file)return;runSaveAction(async()=>{if(file.size>SAVE_MAX_FILE_BYTES)throw new Error('Save file is too large (maximum 256 MiB).');await loadWorldBlob(file)})});
 $('autosave-enabled').addEventListener('change',e=>{saveUI.auto=e.target.checked;saveUI.storageError='';saveUI.lastAuto=Date.now();try{localStorage.setItem('world-engine.autosave',String(saveUI.auto))}catch(error){}saveStatus(saveUI.auto?'Autosave enabled.':'Autosave disabled. Manual slots are unchanged.')});
 // Best effort on pause/background; rotating timed saves remain the reliable fallback
 // when iOS suspends a tab before asynchronous storage can finish.

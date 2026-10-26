@@ -16,7 +16,7 @@ async function listWorldSlots(){const db=await openSaveDatabase();return new Pro
 async function writeWorldSlot(id,blob,meta){
  const db=await openSaveDatabase();return new Promise((resolve,reject)=>{
   const tx=db.transaction('slots','readwrite'),store=tx.objectStore('slots');let saved;
-  const r=id==='auto'?store.getAll():store.get(id);
+  const r=id==='auto'?store.getAll(IDBKeyRange.bound('auto-1','auto-3')):store.get(id);
   r.onsuccess=()=>{try{
    let previous=r.result;
    if(id==='auto'){

@@ -4,18 +4,24 @@ function appendFootprintRun(runs,cell){const n=runs.length;if(n&&runs[n-2]+runs[
 function encodeFootprint(cells){const runs=[];for(const c of [...cells].sort((a,b)=>a-b))appendFootprintRun(runs,c);return Uint32Array.from(runs)}
 function eachFootprint(runs,visit){for(let k=0;k<runs.length;k+=2)for(let c=runs[k],end=c+runs[k+1];c<end;c++)visit(c)}
 function newHistoricalAtlas(){return {state:new Map(),religion:new Map(),people:new Map(),tradition:new Map(),war:new Map(),active:{state:new Set(),religion:new Set(),people:new Set(),tradition:new Set()}}}
+// Scratch links live outside saved state. Build footprint runs only for new peaks.
+let historicalLinks=null;
 function recordAtlasHistory(){
  const s=S,w=WD,h=s.historicalAtlas;if(!h)return;
- const groups={state:new Map(),religion:new Map(),people:new Map(),tradition:new Map()},stateKeys=new Map(),familyKeys=new Map();
- for(const id of s.alive){const o=s.pols[id];stateKeys.set(id,'state:'+String(o.civ||o.base))}
- const add=(kind,id,cell,pop)=>{let g=groups[kind].get(id);if(!g){g={area:0,population:0,cells:0,runs:[]};groups[kind].set(id,g)}g.area+=w.area[cell];g.population+=pop;g.cells++;appendFootprintRun(g.runs,cell)};
- for(const i of w.landIdx){const p=s.pop[i],id=s.pol[i];if(id)add('state',id,i,p);
+ if(!historicalLinks)historicalLinks={state:new Int32Array(N),religion:new Int32Array(N),people:new Int32Array(N),tradition:new Int32Array(N)};
+ const groups={state:new Map(),religion:new Map(),people:new Map(),tradition:new Map()},states=[],religions=[],peoples=[],stateTraditions=[],peopleTraditions=[];
+ const create=(kind,id)=>{let g=groups[kind].get(id);if(!g){g={area:0,population:0,cells:0,first:-1,last:-1};groups[kind].set(id,g)}return g};
+ const add=(g,links,cell,pop)=>{g.area+=w.area[cell];g.population+=pop;g.cells++;if(g.last>=0)links[g.last]=cell;else g.first=cell;g.last=cell};
+ const stateLinks=historicalLinks.state,religionLinks=historicalLinks.religion,peopleLinks=historicalLinks.people,traditionLinks=historicalLinks.tradition;
+ for(const i of w.landIdx){const p=s.pop[i],id=s.pol[i];if(id)add(states[id]||(states[id]=create('state',id)),stateLinks,i,p);
   if(p<1)continue;
-  if(s.rel[i]>=0)add('religion',s.rel[i],i,p);
-  if(s.eth[i]>=0)add('people',s.eth[i],i,p);
-  let key;if(id){const o=s.pols[id];key=stateKeys.get(id)||'state:'+String(o.civ||o.base)}
-  else if(s.eth[i]>=0){const family=s.eths[s.eth[i]].fam;if(!familyKeys.has(family))familyKeys.set(family,'people:'+family);key=familyKeys.get(family)}
-  if(key)add('tradition',key,i,p);
+  const religion=s.rel[i],people=s.eth[i];
+  if(religion>=0)add(religions[religion]||(religions[religion]=create('religion',religion)),religionLinks,i,p);
+  if(people>=0)add(peoples[people]||(peoples[people]=create('people',people)),peopleLinks,i,p);
+  let tradition;
+  if(id){tradition=stateTraditions[id];if(!tradition){const o=s.pols[id];tradition=stateTraditions[id]=create('tradition','state:'+String(o.civ||o.base))}}
+  else if(people>=0)tradition=peopleTraditions[people]||(peopleTraditions[people]=create('tradition','people:'+s.eths[people].fam));
+  if(tradition)add(tradition,traditionLinks,i,p);
  }
  for(const kind of Object.keys(groups)){
   for(const id of h.active[kind]){const r=h[kind].get(id);r.alive=false;r.area=0;r.population=0;r.cells=0}
@@ -26,7 +32,7 @@ function recordAtlasHistory(){
    if(!r){r={id,name,born:s.year,alive:true,area:0,population:0,cells:0,areaPeak:null,populationPeak:null};h[kind].set(id,r)}
    r.name=name;r.lastYear=s.year;r.alive=true;r.area=g.area;r.population=g.population;r.cells=g.cells;
    const growArea=!r.areaPeak||g.area>r.areaPeak.area,growPopulation=!r.populationPeak||g.population>r.populationPeak.population;
-   if(growArea||growPopulation){const snap={year:s.year,area:g.area,population:g.population,cells:g.cells,runs:Uint32Array.from(g.runs),rgb:o?Array.from(o.rgb):traditionColor(id)};if(growArea)r.areaPeak=snap;if(growPopulation)r.populationPeak=snap}
+   if(growArea||growPopulation){const runs=[],links=historicalLinks[kind];let cell=g.first;for(let n=0;n<g.cells;n++){appendFootprintRun(runs,cell);cell=links[cell]}const snap={year:s.year,area:g.area,population:g.population,cells:g.cells,runs:Uint32Array.from(runs),rgb:o?Array.from(o.rgb):traditionColor(id)};if(growArea)r.areaPeak=snap;if(growPopulation)r.populationPeak=snap}
   }
  }
 }

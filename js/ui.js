@@ -121,8 +121,9 @@ function buildComp(){
     const seg=(p,x1,y1,x2,y2)=>{p.moveTo(x1,y1);p.lineTo(x2,y2)};
     for(const i of w.landIdx){
       const a=key[i],x=w.cxA[i],y=w.cyA[i],jr=w.nb[i*4+1],jd=w.nb[i*4+3];
-      for(const [j,x1,y1,x2,y2] of [[jr,(x+1)*SC,y*SC,(x+1)*SC,(y+1)*SC],[jd,x*SC,(y+1)*SC,(x+1)*SC,(y+1)*SC]]){
-        if(j<0||!w.land[j]||(j===jr&&x>=W-1))continue;const b=key[j];if(b===a)continue;
+      for(let d=0;d<2;d++){
+        const j=d?jd:jr;if(j<0||!w.land[j]||(!d&&x>=W-1))continue;const b=key[j];if(b===a)continue;
+        const x1=(x+(d?0:1))*SC,y1=(y+(d?1:0))*SC,x2=(x+1)*SC,y2=(y+1)*SC;
         if(polMode&&a>0&&b>0&&s.pols[a].enemies.has(b)){seg(war,x1,y1,x2,y2);continue}
         if(a<=0&&b<=0&&!(m==='peoples'))continue;
         seg(selP>0&&(a===selP||b===selP)?hi:thin,x1,y1,x2,y2)}
@@ -141,13 +142,14 @@ function buildComp(){
 }
 
 /* ---------- map view ---------- */
-function sizeCanvas(cv){const r=cv.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1);cv.width=Math.max(1,Math.round(r.width*dpr));cv.height=Math.max(1,Math.round(r.height*dpr));return{w:r.width,h:r.height,dpr}}
+function sizeCanvas(cv){const r=cv.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1);const width=Math.max(1,Math.round(r.width*dpr)),height=Math.max(1,Math.round(r.height*dpr));if(cv.width!==width)cv.width=width;if(cv.height!==height)cv.height=height;return{w:r.width,h:r.height,dpr}}
 let mapDim={w:1,h:1,dpr:1};
 function resize(){mapDim=sizeCanvas(mapCv);ui.bs=Math.max(mapDim.w/HW,mapDim.h/HH);clampView();sizeCanvas(chartCv);drawChart();drawMap()}
 function clampView(){const mw=HW*ui.bs*ui.z,mh=HH*ui.bs*ui.z;ui.oy=clamp(ui.oy,mapDim.h-mh,0);ui.ox=((ui.ox%mw)-mw)%mw}
 const lonToMx=l=>(l/(2*Math.PI)+0.5)*HW,laToMy=la=>(0.5-la/Math.PI)*HH;
+function requestMapDraw(){ui.viewDirty=true}
 function drawMap(){
-  if(!baseCv||!S)return;
+  ui.viewDirty=false;if(!baseCv||!S)return;
   const ctx=mapCtx,{w,h,dpr}=mapDim,k=ui.bs*ui.z,mw=HW*k,mh=HH*k,m=ui.mode;
   ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
   ctx.imageSmoothingEnabled=ui.z<2.5;
@@ -155,7 +157,8 @@ function drawMap(){
   if(ui.historical)return;
   const k_=k,s=S,W2=WD,each=(mx,my,f)=>{for(let c=-1;c<3;c++){const sx=ui.ox+c*mw+mx*k,sy=ui.oy+my*k;if(sx>-80&&sx<w+80&&sy>-40&&sy<h+40)f(sx,sy)}};
   const view={scale:k,zoom:ui.z,ox:ui.ox,oy:ui.oy,width:w,height:h};
-  const displayRoutes=mapLayers.routes?selectAtlasRoutes([...s.routes.map(r=>({...r,from:r.a,to:r.b,kind:'land'})),...[...s.seaRoutes.values()].map(r=>({...r,kind:'sea'}))],view,mapLayers.optimizeRoutes):[];
+  const showLandRoutes=mapLayers.routes&&['political','alliances','religion','peoples'].includes(m),showSeaRoutes=mapLayers.routes&&['political','alliances','peoples','religion','traditions','knowledge'].includes(m);
+  const displayRoutes=showSeaRoutes?selectAtlasRoutes([...s.routes.map(r=>({...r,from:r.a,to:r.b,kind:'land'})),...[...s.seaRoutes.values()].map(r=>({...r,kind:'sea'}))],view,mapLayers.optimizeRoutes):[];
   const cellXY=i=>[(W2.cxA[i]+0.5)*SC,(W2.cyA[i]+0.5)*SC];
   // alliance lines
   if(m==='alliances'){ctx.strokeStyle='rgba(255,246,230,.75)';ctx.lineWidth=1.3;ctx.setLineDash([4,3]);
@@ -164,15 +167,15 @@ function drawMap(){
       each(x1,y1,(sx,sy)=>{ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(sx+(x2-x1)*k,sy+(y2-y1)*k);ctx.stroke()})}}
     ctx.setLineDash([])}
   // caravan routes
-  if(mapLayers.routes&&(m==='political'||m==='alliances'||m==='religion'||m==='peoples')&&s.routes){ctx.lineWidth=1.6;ctx.strokeStyle='rgba(232,200,140,.85)';ctx.setLineDash([2,3]);
-    for(const R of displayRoutes.filter(r=>r.kind==='land')){const pts=R.displayPath.map(cellXY);if(pts.length<2)continue;
+  if(showLandRoutes&&s.routes){ctx.lineWidth=1.6;ctx.strokeStyle='rgba(232,200,140,.85)';ctx.setLineDash([2,3]);
+    for(const R of displayRoutes){if(R.kind!=='land')continue;const pts=R.displayPath.map(cellXY);if(pts.length<2)continue;
       each(pts[0][0],pts[0][1],(sx0,sy0)=>{ctx.beginPath();let px=pts[0][0];ctx.moveTo(sx0,sy0);
         for(let k=1;k<pts.length;k++){let dx=pts[k][0]-px;if(Math.abs(dx)>HW/2){dx-=Math.sign(dx)*HW}px+=dx;ctx.lineTo(sx0+(px-pts[0][0])*k_,sy0+(pts[k][1]-pts[0][1])*k_)}ctx.stroke()})}
     ctx.setLineDash([])}
   // Established overseas routes, retained after the first expedition returns.
-  if(mapLayers.routes&&['political','alliances','peoples','religion','traditions','knowledge'].includes(m)&&s.seaRoutes){
+  if(showSeaRoutes&&s.seaRoutes){
     ctx.lineWidth=1.5;ctx.strokeStyle='rgba(65,160,210,.9)';ctx.setLineDash([5,4]);
-    for(const R of displayRoutes.filter(r=>r.kind==='sea')){
+    for(const R of displayRoutes){if(R.kind!=='sea')continue;
       const pts=R.displayPath.map(cellXY);if(pts.length<2)continue;
       each(pts[0][0],pts[0][1],(sx0,sy0)=>{ctx.beginPath();let px=pts[0][0];ctx.moveTo(sx0,sy0);
         for(let q=1;q<pts.length;q++){let dx=pts[q][0]-px;if(Math.abs(dx)>HW/2)dx-=Math.sign(dx)*HW;px+=dx;ctx.lineTo(sx0+(px-pts[0][0])*k_,sy0+(pts[q][1]-pts[0][1])*k_)}ctx.stroke()});
@@ -209,16 +212,15 @@ function drawMap(){
     }
   }
   // labels
-  const lab=[];
-  if(m==='political'||m==='alliances'){for(const id of s.alive){const o=s.pols[id];if(o.cells>=6)lab.push([lonToMx(o.lx),(o.ly+0.5)*SC,o.base,o.cells,o.tier==='Empire'||o.tier==='Khaganate'])}}
+  const lab=[],showNames=(m==='political'||m==='alliances'||m==='traditions')?mapLayers.states:m==='peoples'?mapLayers.peoples:mapLayers.faiths;
+  if(showNames){if(m==='political'||m==='alliances'){for(const id of s.alive){const o=s.pols[id];if(o.cells>=6)lab.push([lonToMx(o.lx),(o.ly+0.5)*SC,o.base,o.cells,o.tier==='Empire'||o.tier==='Khaganate'])}}
   else if(m==='traditions'){for(const g of ui.traditions?.values()||[])if(g.count>=6)lab.push([lonToMx(Math.atan2(g.sin,g.cos)),(g.y/g.count+0.5)*SC,g.name,g.count,false])}
   else if(m==='peoples'){for(const e of s.eths)if(e.alive&&e.cells>=18)lab.push([lonToMx(e.lon),laToMy(e.la),e.name,e.cells,false])}
   else if(m==='religion'){for(const R of s.rels)if(R.alive&&R.cells>=12&&R.lon!=null)lab.push([lonToMx(R.lon),laToMy(R.la),R.name.replace(/^the /,''),R.cells,false])}
-  lab.sort((a,b)=>b[3]-a[3]);
+  lab.sort((a,b)=>b[3]-a[3]);}
   ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';
   const placed=[],narrow=mapDim.w<640;
-  const showNames=(m==='political'||m==='alliances'||m==='traditions')?mapLayers.states:m==='peoples'?mapLayers.peoples:mapLayers.faiths;
-  for(const [mx,my,name,n,big] of showNames?lab.slice(0,narrow?40:110):[]){
+  for(const [mx,my,name,n,big] of lab.slice(0,narrow?40:110)){
     const size=clamp(9+Math.sqrt(n)*1.3,10,30)*Math.min(1.6,Math.sqrt(ui.z))*(narrow?0.7:1);
     ctx.font=`${big?'':'italic '}${size}px ${DISPLAY_FONT}`;
     const txt=big?name.toUpperCase().split('').join(' '):name,tw=ctx.measureText(txt).width;
@@ -291,7 +293,10 @@ $('legend').addEventListener('click',e=>{const b=e.target.closest('button');if(!
 
 /* ---------- chart ---------- */
 function drawChart(){
-  if(!S)return;const r=chartCv.getBoundingClientRect(),ctx=chartCtx,w=r.width,h=r.height;const dpr=Math.min(2,window.devicePixelRatio||1);
+  if(!S)return;
+  const lastStat=S.stats[S.stats.length-1],rect=chartCv.getBoundingClientRect(),chartKey=[chartCv.width,chartCv.height,rect.width,rect.height,window.devicePixelRatio].join();
+  if(ui.chartState===S&&ui.chartLast===lastStat&&ui.chartKey===chartKey)return;
+  ui.chartState=S;ui.chartLast=lastStat;ui.chartKey=chartKey;const r=rect,ctx=chartCtx,w=r.width,h=r.height;const dpr=Math.min(2,window.devicePixelRatio||1);
   ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
   const st=S.stats;if(st.length<2){ctx.fillStyle=cssVar('--muted');ctx.font='13px system-ui,sans-serif';ctx.textAlign='center';ctx.fillText('Press Play to start the timeline',w/2,h/2);ctx.textAlign='left';return}
   const ink=cssVar('--ink'),mut=cssVar('--muted'),line=cssVar('--line'),acc=cssVar('--accent');
@@ -510,7 +515,7 @@ function buildFilters(){
 $('filters').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;const k=b.dataset.k;ui.filters.has(k)?ui.filters.delete(k):ui.filters.add(k);b.setAttribute('aria-pressed',ui.filters.has(k));renderChron(true)});
 let qTimer=0;$('q').addEventListener('input',e=>{clearTimeout(qTimer);qTimer=setTimeout(()=>{ui.q=e.target.value.trim().toLowerCase();renderChron(true)},150)});
 function renderChron(force){
-  if(!S)return;const c=S.chron,key=c.length+'|'+ui.q+'|'+[...ui.filters].join();if(!force&&key===ui.lastChronKey)return;ui.lastChronKey=key;
+  if(!S)return;const c=S.chron,key=c.length+'|'+(c[c.length-1]?.y??'')+'|'+(c[c.length-1]?.txt??'')+'|'+ui.q+'|'+[...ui.filters].join();if(!force&&key===ui.lastChronKey)return;ui.lastChronKey=key;
   const q=ui.q,out=[];let total=0;
   for(let k=c.length-1;k>=0;k--){const e=c[k];if(!ui.filters.has(e.t))continue;if(q&&!e.txt.toLowerCase().includes(q)&&!(e.why&&e.why.toLowerCase().includes(q)))continue;total++;if(out.length<300)out.push(e)}
   $('entries').innerHTML=out.length?out.map(entryHTML).join('')+(total>out.length?`<div class="more">Showing the latest 300 of ${total} entries. Search or filter to narrow them down.</div>`:''):`<div class="empty">${q?'Nothing matches that search.':'Nothing recorded yet. Press Play.'}</div>`;
@@ -720,8 +725,6 @@ $('speed').innerHTML=SPEEDS.map(([v,l])=>`<button type="button" data-v="${v}" ar
 $('speed').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setRate(+b.dataset.v)});
 $('speedr').addEventListener('input',()=>setRate(rateFromSlider(+$('speedr').value)));
 $('autoslow').addEventListener('change',()=>{ui.slowUntil=0;simClock.reset(performance.now());resetRateMeter();updateSpeedLabel()});
-$('map-layers').addEventListener('change',e=>{const k=e.target.dataset.layer;if(k in mapLayers){mapLayers[k]=e.target.checked;ui.dirty=true;buildComp();drawMap()}});
-document.addEventListener('click',e=>{if(!e.target.closest('#map-layers,[data-z="lab"]')){$('map-layers').hidden=true;$('zoomc').querySelector('[data-z="lab"]').setAttribute('aria-expanded','false')}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('map-layers').hidden=true;$('zoomc').querySelector('[data-z="lab"]').setAttribute('aria-expanded','false')}if(e.target.matches('input,textarea,select,button,a,[contenteditable="true"]')||e.ctrlKey||e.metaKey)return;
   if(e.key===']')setRate((ui.target>=1e9?1000:ui.target)*1.5);else if(e.key==='[')setRate((ui.target>=1e9?1000:ui.target)/1.5)});
 setRate(window.matchMedia('(max-width:900px)').matches?10:25);
@@ -742,14 +745,12 @@ function toggleMapOptions(open,restoreFocus=false){
 $('map-options-toggle').addEventListener('click',()=>toggleMapOptions($('modes').hidden));
 document.addEventListener('click',e=>{if(!e.target.closest('#modes,#map-options-toggle'))toggleMapOptions(false)});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('modes').hidden)toggleMapOptions(false,true)});
-$('modes').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(ui.historical)closeHistorical();ui.mode=b.dataset.m;$('map-mode-name').textContent=b.textContent;toggleMapOptions(false,true);for(const x of $('modes').children)x.setAttribute('aria-pressed',x===b);drawLegend();wakeKnowledgeSelector();ui.dirty=true});
-$('map-layers').addEventListener('change',e=>{const k=e.target.dataset.layer;if(k in mapLayers){mapLayers[k]=e.target.checked;ui.dirty=true;buildComp();drawMap()}});
-document.addEventListener('click',e=>{if(!e.target.closest('#map-layers,[data-z="lab"]')){$('map-layers').hidden=true;$('zoomc').querySelector('[data-z="lab"]').setAttribute('aria-expanded','false')}});
+$('modes').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(ui.historical)closeHistorical();ui.mode=b.dataset.m;$('map-mode-name').textContent=b.textContent;toggleMapOptions(false,true);for(const x of $('modes').children)x.setAttribute('aria-pressed',x===b);drawLegend();wakeKnowledgeSelector();ui.dirty=true;ui.controlsDirty=true});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('map-layers').hidden=true;$('zoomc').querySelector('[data-z="lab"]').setAttribute('aria-expanded','false')}if(e.target.matches('input,textarea,select,button,a,[contenteditable="true"]'))return;if(e.code==='Space'){e.preventDefault();setRunning(!ui.running)}});
 let drag=null;
 const ZMAX=12,pts=new Map();let pinch=null,lastTap={t:0,x:0,y:0};
 const isMob=()=>window.matchMedia('(max-width:900px)').matches;
-function zoomAt(sx,sy,f){const z2=clamp(ui.z*f,1,ZMAX),f2=z2/ui.z;ui.ox=sx-(sx-ui.ox)*f2;ui.oy=sy-(sy-ui.oy)*f2;ui.z=z2;clampView();drawMap()}
+function zoomAt(sx,sy,f){const z2=clamp(ui.z*f,1,ZMAX),f2=z2/ui.z;ui.ox=sx-(sx-ui.ox)*f2;ui.oy=sy-(sy-ui.oy)*f2;ui.z=z2;clampView();requestMapDraw()}
 function dblTap(e){const n=performance.now(),r=mapCv.getBoundingClientRect(),sx=e.clientX-r.left,sy=e.clientY-r.top;
   if(n-lastTap.t<320&&Math.hypot(sx-lastTap.x,sy-lastTap.y)<30){lastTap.t=0;zoomAt(sx,sy,ui.z>=ZMAX*0.8?1/ui.z:2.2);return true}
   lastTap={t:n,x:sx,y:sy};return false}
@@ -762,8 +763,8 @@ mapCv.addEventListener('pointermove',e=>{
   const r=mapCv.getBoundingClientRect(),sx=e.clientX-r.left,sy=e.clientY-r.top;
   if(pts.has(e.pointerId))pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(pinch){if(pts.size<2)return;const[a,b]=[...pts.values()],d=Math.hypot(a.x-b.x,a.y-b.y)||1,cx=(a.x+b.x)/2-r.left,cy=(a.y+b.y)/2-r.top,z2=clamp(pinch.z*d/pinch.d,1,ZMAX),f=z2/pinch.z;
-    ui.ox=cx-(pinch.cx-pinch.ox)*f;ui.oy=cy-(pinch.cy-pinch.oy)*f;ui.z=z2;clampView();drawMap();return}
-  if(drag){const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.abs(dx)+Math.abs(dy)>4)drag.moved=true;if(drag.moved){ui.ox=drag.ox+dx;ui.oy=drag.oy+dy;clampView();drawMap()}return}
+    ui.ox=cx-(pinch.cx-pinch.ox)*f;ui.oy=cy-(pinch.cy-pinch.oy)*f;ui.z=z2;clampView();requestMapDraw();return}
+  if(drag){const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.abs(dx)+Math.abs(dy)>4)drag.moved=true;if(drag.moved){ui.ox=drag.ox+dx;ui.oy=drag.oy+dy;clampView();requestMapDraw()}return}
   const i=screenToCell(sx,sy),tip=$('tip');
   if(ui.historical||i<0||!S||!WD.land[i]){tip.hidden=true;return}
   const p=S.pol[i]?S.pols[S.pol[i]]:null,e2=S.eth[i]>=0?S.eths[S.eth[i]]:null,R=S.rel[i]>=0?S.rels[S.rel[i]]:null;
@@ -783,7 +784,7 @@ mapCv.addEventListener('wheel',e=>{e.preventDefault();const r=mapCv.getBoundingC
   zoomAt(sx,sy,Math.exp(-e.deltaY*(e.ctrlKey?0.01:0.0025)))},{passive:false});
 $('zoomc').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const v=b.dataset.z;
   if(v==='play')$('play').click();else if(v==='lab'){const panel=$('map-layers');panel.hidden=!panel.hidden;b.setAttribute('aria-expanded',String(!panel.hidden))}else if(v==='reset'){ui.z=1;ui.ox=0;ui.oy=0;clampView();drawMap()}else zoomAt(mapDim.w/2,mapDim.h/2,v==='in'?1.6:1/1.6)});
-$('map-layers').addEventListener('change',e=>{const k=e.target.dataset.layer;if(k in mapLayers){mapLayers[k]=e.target.checked;ui.dirty=true;buildComp();drawMap()}});
+$('map-layers').addEventListener('change',e=>{const k=e.target.dataset.layer;if(k in mapLayers){mapLayers[k]=e.target.checked;ui.dirty=true;ui.controlsDirty=true}});
 document.addEventListener('click',e=>{if(!e.target.closest('#map-layers,[data-z="lab"]')){$('map-layers').hidden=true;$('zoomc').querySelector('[data-z="lab"]').setAttribute('aria-expanded','false')}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('map-layers').hidden=true;$('zoomc').querySelector('[data-z="lab"]').setAttribute('aria-expanded','false')}if(e.target.matches('input,textarea,select,button,a,[contenteditable="true"]')||e.ctrlKey||e.metaKey)return;
   if(e.key==='+'||e.key==='=')zoomAt(mapDim.w/2,mapDim.h/2,1.4);else if(e.key==='-')zoomAt(mapDim.w/2,mapDim.h/2,1/1.4)});
@@ -833,7 +834,7 @@ function finishHistory(){
   if(typeof saveUI!=='undefined'){saveUI.name='';saveUI.lastAuto=Date.now();saveUI.lastState=S;saveUI.lastYear=S.year}
   ui.historical=null;historicalCache=null;$('historical-banner').hidden=true;$('legend').hidden=false;$('legtog').hidden=false;
   // Compact ordinary addresses; custom and explicitly shared setups remain reproducible.
-  try{history.replaceState(null,'',experimentAddressHash(exportExperiment(),location.hash.startsWith('#experiment=')))}catch(error){console.error(error)}
+  try{history.replaceState(null,'',currentExperimentAddressHash(location.hash.startsWith('#experiment=')))}catch(error){console.error(error)}
   ui.gen=null;ui.genS=S;ui.completedYear=S.year;ui.slowUntil=0;simClock.reset(performance.now());resetRateMeter();updateSpeedLabel();
   ui.page=null;ui.stack=[];ui.lastChronKey='';ui.lastSpotObj=null;$('toast').hidden=true;ui.pausedAtEnd=false;ui.dirty=true;ui.ready=true;$('play').disabled=false;
   showPane(ui.pane);updateTop();drawChart();drawLegend();wakeKnowledgeSelector();
@@ -868,7 +869,7 @@ $('btn-world').addEventListener('click',()=>buildWorld(ui.src));
 $('btn-rerun').addEventListener('click',()=>{setRunning(false);startHistory()});
 $('btn-reroll').addEventListener('click',()=>{$('hseed').value=String(Math.floor(Math.random()*1e6));setRunning(false);startHistory()});
 $('btn-share').addEventListener('click',async()=>{let base='';try{base=(window.top===window?location.href:document.referrer||location.href).split('#')[0]}catch(e){base=location.href.split('#')[0]}
-  const st=$('share-status');let link;try{link=base+experimentHash(exportExperiment())}catch(error){st.textContent=error.message;return}$('share-link').value=link;
+  const st=$('share-status');let link;try{if(WD?.generation.source==='import')throw new Error('Imported maps travel with the exported experiment file. Use Export setup to share this world.');link=base+experimentHash(exportExperiment())}catch(error){st.textContent=error.message;return}$('share-link').value=link;
   try{await navigator.clipboard.writeText(link);st.textContent='Link copied. It recreates the starting setup, including custom rules, in this engine version.'}catch(e){$('share-link').select();st.textContent='Copy the link above.'}});
 $('btn-export-setup').addEventListener('click',()=>{
   try{
@@ -928,8 +929,10 @@ function frame(t){
   if(S&&S.spot.length&&S.spot[S.spot.length-1]!==ui.lastSpotObj){const sp=S.spot[S.spot.length-1];ui.lastSpotObj=sp;if(ui.running&&$('autoslow').checked){ui.slowUntil=t+6000;updateSpeedLabel(t)};
     if(ui.ready&&ui.running){const el=$('toast');el.innerHTML=`<span class="ty">${fy(sp.y)}</span> ${linkify(sp.txt,sp.refs)}`;el.hidden=false;ui.toastT=t+5000;ui.ringCell=sp.cell;ui.ringT=performance.now()+4000;if(ui.follow&&sp.cell>=0)centerOn(sp.cell)}}
   if(ui.toastT&&t>ui.toastT){$('toast').hidden=true;ui.toastT=0}
-  if(ui.ringT&&performance.now()<ui.ringT)ui.dirty=true;
-  if(ui.dirty&&S&&baseCv&&t-ui.lastRender>110){ui.lastRender=t;ui.dirty=false;buildComp();drawMap();updateTop()}
+  if(ui.ringT&&performance.now()<ui.ringT&&!ui.dirty&&t-(ui.lastRingDraw||0)>110){ui.lastRingDraw=t;drawMap()}
+  if(ui.ringT&&performance.now()>=ui.ringT){ui.ringT=0;drawMap()}
+  if(ui.dirty&&S&&baseCv&&(ui.controlsDirty||t-ui.lastRender>(ui.running?Math.max(110,Math.min(500,(ui.renderCost||0)*4)):110))){ui.lastRender=t;ui.dirty=false;ui.controlsDirty=false;const started=performance.now();buildComp();drawMap();updateTop();ui.renderCost=performance.now()-started}
+  if(ui.viewDirty)drawMap();
   if(S&&t-ui.lastSide>700){ui.lastSide=t;
     if(ui.pane==='chron')renderChron();else if(ui.running){if(ui.pane==='insp')renderPage();else if(ui.pane==='figs')renderFigs();else if(ui.pane==='plague')renderPlagues();else if(ui.pane==='stats'&&t-(ui.lastStats||0)>3000){ui.lastStats=t;renderAtlasStats()}}
     if(ui.mode==='knowledge'&&ui.running&&t%3000<700&&!$('legend').matches(':focus-within'))drawLegend();

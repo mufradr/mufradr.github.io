@@ -34,6 +34,10 @@ function addColonyMigrants(colony,amount){
   const origin=s.colonies.get(i);if(origin&&origin!==colony){origin.settlers=Math.min(Math.max(0,origin.settlers-(origin.people===people?amount:0)),s.pop[i]);origin.lastPopulation=s.pop[i]}
   return amount;
 }
+function colonyRoute(source,cell){
+ for(const route of S.seaRoutes.values())if(route.from===source&&route.to===cell||route.to===source&&route.from===cell)return route;
+ return null;
+}
 function colonyHostAllows(source,cell){
  const s=S,owner=s.pol[cell]?s.pols[s.pol[cell]]:null,home=s.pol[source]?s.pols[s.pol[source]]:null;
  if(!owner)return true;
@@ -41,7 +45,7 @@ function colonyHostAllows(source,cell){
  if(home&&(home.enemies.has(owner.id)||owner.enemies.has(home.id)))return false;
  if(home&&(home.allies.includes(owner.id)||(home.truce.get(owner.id)||-Infinity)>s.year))return true;
  // Established peaceful trade can support a small enclave under the local government.
- const route=[...s.seaRoutes.values()].find(r=>r.from===source&&r.to===cell||r.to===source&&r.from===cell);
+ const route=colonyRoute(source,cell);
  return !!(route&&s.year-(route.born??route.last)>=20&&s.year-route.last<=10&&owner.S>=0.35&&s.law[cell]>=0.3);
 }
 function tryIndependentColony(voyage){
@@ -84,10 +88,10 @@ function colonyStep(){
       colony.status='failed';colony.settlers=0;colony.lastPopulation=pop;
       chron('migration','An overseas settler community dwindles or merges into its neighbours; it no longer survives as a distinct community.',j,[RE(s.eths[colony.people])]);continue;
     }
+    // Route and diplomatic checks are only needed in a resupply year.
     const owner=s.pol[j]?s.pols[s.pol[j]]:null;
-    const accepting=!owner||colonyDescendant(owner.core,colony.founderPeople)||colonyHostAllows(i,j);
-    const route=[...s.seaRoutes.values()].some(r=>(r.from===i&&r.to===j)||(r.from===j&&r.to===i));
-    if(s.year-colony.founded>=5&&calendarPhase(s.year,5)===0&&accepting&&route&&P.seafaring>0&&P.migration>0&&s.pop[i]>=20000&&s.ocean[i]>=0.7&&voyageRange(i)>=Math.max(2000,6371*angDist(i,j))){
+    if(s.year-colony.founded>=5&&calendarPhase(s.year,5)===0&&P.seafaring>0&&P.migration>0&&s.pop[i]>=20000&&s.ocean[i]>=0.7
+      &&(!owner||colonyDescendant(owner.core,colony.founderPeople)||colonyHostAllows(i,j))&&colonyRoute(i,j)&&voyageRange(i)>=Math.max(2000,6371*angDist(i,j))){
       const room=Math.max(0,colonyCapacity(i,j)-pop);
       if((s.eth2[j]<0||s.eth2[j]===colony.people||s.eth[j]===colony.people||s.mix[j]<0.03)&&s.eth[i]>=0&&colonyDescendant(s.eth[i],colony.founderPeople)){
         addColonyMigrants(colony,Math.min(1200*P.migration,s.pop[i]*0.015,room*0.15));
