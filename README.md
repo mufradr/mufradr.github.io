@@ -3,13 +3,14 @@
 An interactive browser simulation of populations, states, cultures, and climate,
 hosted on GitHub Pages at https://mufradr.github.io/.
 
-The app identifies itself as version 0.17.0-dev.1. It is a static site: no package
+The app identifies itself as version 0.17.0-dev.2. It is a static site: no package
 installation or build step is required to run or publish it. `.nojekyll` enables
 direct static serving on GitHub Pages.
 
-The local development build completes the economic-foundation chunk of the
-civilization-development plan: conserved food reserves, physical infrastructure
-condition and consistent government budgets. See [economic rules](docs/ECONOMY.md).
+The local development build completes the economic foundation and government
+chunks of the civilization-development plan: conserved food reserves, maintained
+infrastructure, gradual provincial decline/recovery, autonomy and actual tribute.
+See [economic rules](docs/ECONOMY.md) and [government rules](docs/GOVERNMENT.md).
 Publication as v0.17.0 follows the remaining implementation and integration chunks.
 
 ## Run locally
@@ -39,6 +40,7 @@ Google Fonts are optional external resources; fallback fonts work offline.
 | `styles/base.css` | Base styles and safe-area defaults |
 | `styles/app.css` | App layout, map controls, and responsive styles |
 | `assets/earth.js` | Compressed elevation and Köppen climate data |
+| `js/government.js` | Provincial control, autonomy, gradual decline and dependency obligations |
 | `js/economy.js` | Food reserves, infrastructure condition and government budgets |
 | `js/core.js` | World generation, climate, and simulation rules; no DOM dependency |
 | `js/colonies.js` | Dependent overseas colonies, independence, migration and cultural development |
@@ -54,7 +56,7 @@ Google Fonts are optional external resources; fallback fonts work offline.
 | `tools/baseline/` | Fixed-protocol history, performance, browser and comparison tools |
 | `benchmarks/baselines/v0.16.0/` | Preserved measurements and readable baseline reports |
 
-Scripts load in order: Earth data, simulation core, economy, colonies, atlas analysis, experiments, diagnostics, then interface. They use
+Scripts load in order: Earth data, simulation core, economy, government, colonies, atlas analysis, experiments, diagnostics, then interface. They use
 classic scripts with shared bindings; preserve that order. Edit the relevant
 file and reload the browser. Keep all these directories alongside `index.html`
 when serving or publishing the site. Relative asset URLs also support hosting

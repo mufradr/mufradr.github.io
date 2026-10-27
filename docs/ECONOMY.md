@@ -1,5 +1,8 @@
 # Economic foundation — 0.17.0-dev.1
 
+This describes the completed economic checkpoint. The later government checkpoint
+adds control, autonomy and tribute accounting: see [GOVERNMENT.md](GOVERNMENT.md).
+
 This completes chunk 2 of the civilization-development plan. It is a local
 development version, not a published v0.17.0 release. Government/autonomy,
 campaign sustainability and cities/knowledge remain separate later chunks.

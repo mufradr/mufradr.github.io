@@ -105,9 +105,11 @@ instability raise it. Supply and assimilation/contact ties reduce it. Therefore
 This is a coarse model of growing self-government and capacity, not an equation
 calibrated to particular historical independence dates.
 
-A cohesive, stable parent may contest independence through a civil independence
-war when wars are enabled. A weak or disconnected parent can lose its dependency
-peacefully. With an actually collapsed parent, a 20-year-old region with 5,000
+The government checkpoint connects colonial autonomy and collection to shared
+[provincial government rules](GOVERNMENT.md). Loyal communities with a legitimate
+parent can negotiate independence. A cohesive, stable parent may contest a hostile
+breakaway through a civil independence war when wars are enabled. A weak or
+disconnected parent can lose its dependency peacefully. With an actually collapsed parent, a 20-year-old region with 5,000
 people and a 500-person community can organize its own government; smaller
 orphans continue without a centralized state, preserving their people.
 

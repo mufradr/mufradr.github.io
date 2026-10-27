@@ -1,7 +1,7 @@
 "use strict";
 const WORLD_SAVE_FORMAT='world-engine-save',WORLD_SAVE_SCHEMA=1;
 const SAVE_ARRAY_SCHEMA={"world":{"eHi":["Float32Array","HI"],"kgHi":["Uint8Array","HI"],"tHi":["Float32Array","HI"],"pHi":["Float32Array","HI"],"aHi":["Float32Array","HI"],"elev":["Float32Array","N"],"T":["Float32Array","N"],"Pr":["Float32Array","N"],"amp":["Float32Array","N"],"rough":["Float32Array","N"],"land":["Uint8Array","N"],"rawT":["Float32Array","N"],"rawP":["Float32Array","N"],"rawA":["Float32Array","N"],"kgGrid":["Uint8Array","N"],"lat":["Float32Array","N"],"area":["Float32Array","N"],"x3":["Float32Array","N"],"y3":["Float32Array","N"],"z3":["Float32Array","N"],"cosLon":["Float32Array","N"],"sinLon":["Float32Array","N"],"cxA":["Int16Array","N"],"cyA":["Int16Array","N"],"nb":["Int32Array",320000],"cosLat":["Float32Array","N"],"landIdx":["Int32Array",null],"coastIdx":["Int32Array",null],"coast":["Uint8Array","N"],"lm":["Int32Array","N"],"down":["Int32Array","N"],"acc":["Float32Array","N"],"rv":["Float32Array","N"],"gs":["Float32Array","N"],"leach":["Float32Array","N"],"trop":["Float32Array","N"],"sF":["Float32Array","N"],"sH":["Float32Array","N"],"nomad":["Uint8Array","N"],"biome":["Uint8Array","N"],"tcost":["Uint8Array","N"],"tsetse":["Uint8Array","N"],"monZone":["Float32Array","N"],"desert":["Uint8Array","N"],"wi":["Int32Array",320000],"wf":["Float32Array",160000],"ls":["Int32Array",80001],"lt":["Int32Array",null],"ld":["Uint8Array",null],"medCells":["Int32Array",null],"chinaCells":["Int32Array",null],"forest0":["Float32Array","N"],"heavy":["Float32Array","N"],"mal":["Float32Array","N"],"oncho":["Float32Array","N"],"circ":["Float32Array","N"],"nT":["Float32Array","N"],"nM":["Float32Array","N"],"nN":["Float32Array","N"],"nD":["Float32Array","N"]},"state":{"settled":["Uint16Array","N"],"pop":["Float32Array","N"],"K":["Float32Array","N"],"eth":["Int32Array","N"],"eth2":["Int32Array","N"],"mix":["Float32Array","N"],"mixT":["Uint8Array","N"],"pol":["Int32Array","N"],"s":["Float32Array","N"],"rel":["Int32Array","N"],"fort":["Float32Array","N"],"fert":["Float32Array","N"],"immune":["Float32Array","N"],"infect":["Uint8Array","N"],"ob":["Int32Array","N"],"dist":["Uint16Array","N"],"taken":["Int32Array","N"],"q":["Int32Array","N"],"lab":["Int32Array","N"],"city":["Int32Array","N"],"AG":["Float32Array","AG"],"anom":["Float32Array","N"],"wm":["Float32Array","N"],"lmPop":["Int32Array","LM"],"lmFound":["Uint8Array","LM"],"farm":["Float32Array","N"],"herd":["Float32Array","N"],"irrig":["Float32Array","N"],"metal":["Float32Array","N"],"horse":["Float32Array","N"],"sail":["Float32Array","N"],"admin":["Float32Array","N"],"wheel":["Float32Array","N"],"iron":["Float32Array","N"],"coin":["Float32Array","N"],"law":["Float32Array","N"],"roads":["Float32Array","N"],"nav":["Float32Array","N"],"caval":["Float32Array","N"],"paper":["Float32Array","N"],"crops":["Float32Array","N"],"gun":["Float32Array","N"],"ocean":["Float32Array","N"],"camel":["Float32Array","N"],"grain":["Float32Array","N"],"ard":["Float32Array","N"],"plough":["Float32Array","N"],"manure":["Float32Array","N"],"xcrops":["Float32Array","N"],"integ":["Float32Array","N"],"uni":["Float32Array","N"],"uniFam":["Int32Array","N"],"forest":["Float32Array","N"],"salt":["Float32Array","N"],"adapt":["Float32Array","N"],"dp":["Float32Array","N"],"poolNext":["Float32Array","N"],"car":["Float32Array","N"],"exit":["Float32Array","N"],"circE":["Float32Array","N"],"rp":["Float32Array","N"],"bfsPar":["Int32Array","N"],"bfsD":["Int16Array","N"],"bfsMark":["Int32Array","N"]}};
-Object.assign(SAVE_ARRAY_SCHEMA.state,{foodStock:['Float64Array','N'],works:['Float32Array','N']});
+Object.assign(SAVE_ARRAY_SCHEMA.state,{foodStock:['Float64Array','N'],works:['Float32Array','N'],control:['Float32Array','N'],loyalty:['Float32Array','N'],autonomy:['Float32Array','N'],governor:['Int32Array','N']});
 function captureWorldSave(name='',view=null){
  if(!WD||!S)throw new Error('Build a world first.');
  const {r,...state}=S;
@@ -12,7 +12,7 @@ function captureWorldSave(name='',view=null){
 function validateWorldSave(data){
  const fail=m=>{throw new Error('Invalid world save: '+m)};
  if(!data||data.format!==WORLD_SAVE_FORMAT||data.schemaVersion!==WORLD_SAVE_SCHEMA)throw new Error('Unsupported world save format. Setup files are not world saves.');
- if(!['0.13.0','0.14.0','0.14.1','0.15.0','0.16.0',ENGINE_VERSION].includes(data.engineVersion))throw new Error('This save needs World Engine '+String(data.engineVersion).slice(0,30)+'; this engine is '+ENGINE_VERSION+'. Your current world has not been replaced.');
+ if(!['0.13.0','0.14.0','0.14.1','0.15.0','0.16.0','0.17.0-dev.1',ENGINE_VERSION].includes(data.engineVersion))throw new Error('This save needs World Engine '+String(data.engineVersion).slice(0,30)+'; this engine is '+ENGINE_VERSION+'. Your current world has not been replaced.');
  if(data.width!==W||data.height!==H)fail('map dimensions');
  if(typeof data.name!=='string'||data.name.length>40||typeof data.savedAt!=='string'||!Number.isFinite(Date.parse(data.savedAt)))fail('save details');
  if(!Number.isInteger(data.rngState)||data.rngState<0||data.rngState>0xffffffff)fail('random state');
@@ -23,6 +23,13 @@ function validateWorldSave(data){
   data={...data,state:{...data.state,economyVersion:1,foodStock:new Float64Array(N),works:new Float32Array(N).fill(1),worksYear:null,foodLedger:null}};
  }
  if(data.state?.economyVersion!==1)fail('economy schema');
+ if(data.state.governmentVersion===undefined){
+  if(data.engineVersion===ENGINE_VERSION||['control','loyalty','autonomy','governor'].some(k=>data.state[k]!==undefined))fail('government schema');
+  const s=data.state,control=new Float32Array(N),loyalty=new Float32Array(N),autonomy=new Float32Array(N),governor=new Int32Array(N);
+  for(let i=0;i<N;i++)if(s.pol?.[i]){governor[i]=s.pol[i];control[i]=clamp(0.35+0.5*s.integ[i],0.2,0.9);loyalty[i]=clamp(0.25+0.6*s.integ[i],0.2,0.9)}
+  data={...data,state:{...s,governmentVersion:1,control,loyalty,autonomy,governor,governmentYear:null,tributeLedger:null}};
+ }
+ if(data.state.governmentVersion!==1)fail('government schema');
  const w=data.world,s=data.state;if(!w||!s||!Number.isInteger(s.year)||!Number.isInteger(s.start)||s.year<s.start||typeof s.seed!=='string'||typeof w.seed!=='string'||!Number.isInteger(w.lmCount)||w.lmCount<0||w.lmCount>N)fail('world or date');
  for(const [key,o]of [['world',w],['state',s]])for(const [field,[type,size]]of Object.entries(SAVE_ARRAY_SCHEMA[key])){
   const a=o[field],length=size==='N'?N:size==='HI'?HW*HH:size==='AG'?AGW*AGH:size==='LM'?w.lmCount:typeof size==='number'?size:null;
@@ -89,6 +96,7 @@ function applyWorldSave(input){
 // The load UI validates its detached candidate before confirmation and recovery.
 // Installation is shared so that path does not rescan every array a second time.
 function applyValidatedWorldSave(data){
+ governmentScratch.state=null;governmentScratch.candidates.clear();
  networkEconomy.state=null;networkEconomy.states.clear();
  data.state.r=mulberry32(data.rngState);WD=data.world;S=data.state;Object.assign(P,data.rules);Object.assign(CL,data.climate);return data;
 }

@@ -56,6 +56,8 @@ test('calendar, scratch buffers, institutions and state integrity',async t=>{
     const result=app.inspect(`(()=>{
       const c=cellAt(30.5,112),id=newPolity(c,null,{kind:'horde'}),o=S.pols[id];
       ring(c,3,j=>{if(WD.land[j]){S.pol[j]=id;S.pop[j]=20000;S.integ[j]=.2;S.dist[j]=20}});
+      // An exceptional, already failing confederation can still split at succession.
+      ring(c,3,j=>{if(WD.land[j])S.s[j]=.1});o.fiscalStress=.9;o.treas=-2;o.burden=3;
       S.year=100;o.ruler.birth=0;o.ruler.death=30;S.r=()=>.1;
       const oldCount=S.pols.length;politics();
       return {newborns:S.pols.slice(oldCount).map(o=>({why:o.why,cult:o.cult,psi:o.psi})),issues:simulationIssues()};

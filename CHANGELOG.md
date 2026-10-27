@@ -1,5 +1,26 @@
 # Release history
 
+## 0.17.0-dev.2 — Government and dependencies (local development)
+
+- Track provincial control, loyalty and negotiated autonomy separately from cultural
+  integration. Persistent fiscal stress, weak legitimacy and isolation gradually
+  reduce collection and allegiance; restored finances and connections support recovery.
+- Let bounded peripheral regions negotiate self-government as vassals or rebel after
+  prolonged loss of authority. Ordinary instability no longer routinely shatters the
+  whole realm. Exceptional compound shocks and military defeats can still do so.
+- Transfer actual bounded tribute from domestic receipts into the protector's budget;
+  record withheld payments and declining confidence in failed protection. Prevent
+  dependency cycles and repeatedly forwarding incoming tribute along a hierarchy.
+- Call capable protectors into defensive wars, with military costs in the existing
+  budget. Failed protection and persistent disaffection raise independence pressure.
+- Connect overseas autonomy and tax collection to the same provincial rules without
+  charging separately for tribute inside a state's own territory. Keep mature colonies'
+  population/age requirements and permit negotiated independence.
+- Preserve provincial populations, people, knowledge, stocks and works at succession;
+  successor governments inherit fiscal distress instead of receiving a fresh treasury.
+- Add government/tribute inspector explanations, saved provincial fields and validation.
+  Migrate v0.13–0.16 and economic-development saves. Chunk 3 is local; no push/release.
+
 ## 0.17.0-dev.1 — Economic foundation (local development)
 
 - Separate annual harvest, consumption, food transfers and stored reserves from

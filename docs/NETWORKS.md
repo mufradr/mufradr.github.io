@@ -1,5 +1,9 @@
 # Connected systems — v0.16.0
 
+This records the v0.16 network foundation. The later [economy](ECONOMY.md)
+separates actual food flows and reserves from capacity; [government](GOVERNMENT.md)
+adds control-dependent tax collection and matched tribute payments.
+
 The integration goal is for a change in one system to have useful consequences
 elsewhere. For example: war interrupts commerce and food deliveries; shortages
 reduce tax receipts and legitimacy; fiscal pressure and shocks feed the existing

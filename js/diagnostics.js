@@ -6,15 +6,18 @@ function simulationIssues(limit=50,state=S,world=WD){
   if(!s||!w)return ['No simulation is loaded.'];
   const index=(v,list,empty=-1)=>Number.isInteger(v)&&(v===empty||(v>=0&&v<list.length&&list[v]!=null));
   if(s.economyVersion!==1||!(s.foodStock instanceof Float64Array)||s.foodStock.length!==N||!(s.works instanceof Float32Array)||s.works.length!==N)return ['Invalid economy schema'];
+  if(s.governmentVersion!==1||['control','loyalty','autonomy'].some(k=>!(s[k] instanceof Float32Array)||s[k].length!==N)||!(s.governor instanceof Int32Array)||s.governor.length!==N)return ['Invalid government schema'];
+  if(s.governmentYear!==null&&!Number.isSafeInteger(s.governmentYear))report('Invalid government clock');
   for(let i=0;i<N;i++)if(!w.land[i]){if(s.pol[i]!==0||s.pop[i]!==0)report('Invalid water-cell settlement at '+i);if(s.foodStock[i]!==0)report('Invalid water-cell food stock at '+i)}
   if(s.worksYear!==null&&!Number.isSafeInteger(s.worksYear))report('Invalid infrastructure clock');
   for(const i of w.landIdx){
     if(!Number.isFinite(s.foodStock[i])||s.foodStock[i]<0)report('Invalid food stock at '+i);
     if(!Number.isFinite(s.works[i])||s.works[i]<0.049999||s.works[i]>1)report('Invalid infrastructure condition at '+i);
+    if(!index(s.governor[i],s.pols,0))report('Invalid governor at '+i);
     if(!Number.isFinite(s.pop[i])||s.pop[i]<0)report('Invalid population at '+i);
     if(!Number.isInteger(s.settled[i])||s.settled[i]<0||s.settled[i]>2000)report('Invalid settlement history at '+i);
     if(!Number.isFinite(s.K[i])||s.K[i]<0)report('Invalid carrying capacity at '+i);
-    for(const name of ['dp','immune','mix','integ','s','fert','salt','adapt'])if(!Number.isFinite(s[name][i])||s[name][i]<0||s[name][i]>1)report('Invalid '+name+' at '+i);
+    for(const name of ['control','loyalty','autonomy','dp','immune','mix','integ','s','fert','salt','adapt'])if(!Number.isFinite(s[name][i])||s[name][i]<0||s[name][i]>1)report('Invalid '+name+' at '+i);
     if(!index(s.pol[i],s.pols,0))report('Invalid owner at '+i);
     if(!index(s.eth[i],s.eths)||!index(s.eth2[i],s.eths))report('Invalid people at '+i);
     if(s.pop[i]>=1&&s.eth[i]<0)report('Peopled cell has no people at '+i);
@@ -35,18 +38,28 @@ function simulationIssues(limit=50,state=S,world=WD){
     for(const key of ['pop','K','S','press','h','cult','psi'])if(!Number.isFinite(o[key]))report('Nonfinite polity '+key+' for '+id);
     for(const key of ['foodStress','foodImports','foodExports'])if(o[key]!==undefined&&(!Number.isFinite(o[key])||o[key]<0||(key==='foodStress'&&o[key]>1)))report('Invalid polity '+key+' for '+id);
     if(o.foodCrisisYear!==undefined&&!Number.isSafeInteger(o.foodCrisisYear))report('Invalid food crisis year for '+id);
-    for(const key of ['infrastructureFunding','infrastructureCondition'])if(o[key]!==undefined&&(!Number.isFinite(o[key])||o[key]<0||o[key]>1))report('Invalid '+key+' for '+id);
+    for(const key of ['infrastructureFunding','infrastructureCondition','fiscalStress','control','loyalty','autonomy','successionShock'])if(o[key]!==undefined&&(!Number.isFinite(o[key])||o[key]<0||o[key]>1))report('Invalid '+key+' for '+id);
     if(o.treas!==undefined&&(!Number.isFinite(o.treas)||o.treas < -2||o.treas>1))report('Invalid treasury for '+id);
     if(o.budget){const b=o.budget,positive=['revenue','administrationRequired','militaryRequired','administration','military','infrastructure','maintenanceRequired','spending','unpaid','surplusDiscarded','debtRelief'];
       if(!(b.revenue>0)||positive.some(k=>!Number.isFinite(b[k])||b[k]<0)||!Number.isFinite(b.balance)||!Number.isFinite(b.openingTreasury)||!Number.isFinite(b.closingTreasury))report('Invalid government budget for '+id);
-      else if(Math.abs(b.administrationRequired+b.militaryRequired-b.administration-b.military-b.unpaid)>1e-8*Math.max(1,b.revenue)||Math.abs(b.revenue-b.spending-b.balance)>1e-8*Math.max(1,b.revenue)||Math.abs(b.administration+b.military+b.infrastructure-b.spending)>1e-8*Math.max(1,b.spending)||Math.abs(b.closingTreasury-b.openingTreasury-0.04*(b.balance-b.surplusDiscarded+b.debtRelief)/b.revenue)>1e-8)report('Government budget does not balance for '+id);
+      else if(Math.abs(b.administrationRequired+b.militaryRequired-b.administration-b.military-b.unpaid)>1e-8*Math.max(1,b.revenue)||Math.abs(b.revenue-b.spending-b.balance)>1e-8*Math.max(1,b.revenue)||Math.abs(b.administration+b.military+b.infrastructure+(b.tributeOut||0)-b.spending)>1e-8*Math.max(1,b.spending)||Math.abs(b.closingTreasury-b.openingTreasury-0.04*(b.balance-b.surplusDiscarded+b.debtRelief)/b.revenue)>1e-8)report('Government budget does not balance for '+id);
     }
     if(!Number.isInteger(o.capital)||o.capital<0||o.capital>=N||!w.land[o.capital])report('Invalid capital for '+id);
     if(!index(o.core,s.eths,-2))report('Invalid core people for '+id);
+    if(o.budget?.domesticRevenue!==undefined){const b=o.budget;if(['domesticRevenue','tributeIn','tributeOut'].some(k=>!Number.isFinite(b[k])||b[k]<0)||Math.abs(b.domesticRevenue+b.tributeIn-b.revenue)>1e-8*Math.max(1,b.revenue)||b.tributeOut>b.domesticRevenue+1e-8)report('Invalid tribute budget for '+id)}
+    if(o.dependency){const d=o.dependency;if(d.parent!==o.over||!o.over||['loyalty','pressure','protection','withheld'].some(k=>!Number.isFinite(d[k])||d[k]<0||d[k]>1)||['since','year'].some(k=>!Number.isSafeInteger(d[k]))||!Number.isFinite(d.due)||!Number.isFinite(d.paid)||d.paid<0||d.paid>d.due+1e-8)report('Invalid dependency for '+id)}
     if(o.over&&!index(o.over,s.pols,0))report('Invalid overlord for '+id);
     for(const other of o.allies)if(!s.pols[other]||!s.pols[other].allies.includes(id))report('Nonreciprocal alliance '+id+':'+other);
-    for(const [other,war] of o.enemies)if(!s.pols[other]||s.pols[other].enemies.get(id)!==war||!s.wars[war])report('Invalid war relation '+id+':'+other);
+  for(const [other,war] of o.enemies)if(!s.pols[other]||s.pols[other].enemies.get(id)!==war||!s.wars[war])report('Invalid war relation '+id+':'+other);
     if(o.why&&(!Number.isFinite(o.psi)||Math.abs(Object.values(o.why).reduce((a,b)=>a+b,0)-o.psi)>1e-6))report('Instability explanation does not sum for '+id);
+  }
+  const done=new Set();for(const id of s.alive){let p=id;const path=new Set();while(p&&!done.has(p)){if(path.has(p)){report('Cyclic dependency');break}path.add(p);p=s.pols[p]?.over||0}for(const k of path)done.add(k)}
+  if(s.tributeLedger){const l=s.tributeLedger;let paid=0,withheld=0;
+   if(!Number.isInteger(l.year)||!Array.isArray(l.transfers)||[l.paid,l.received,l.withheld].some(v=>!Number.isFinite(v)||v<0))report('Invalid tribute ledger');
+   else {const payers=new Set(),receipts=new Map();for(const t of l.transfers){if(!index(t.from,s.pols,0)||!index(t.to,s.pols,0)||!t.from||!t.to||t.from===t.to||payers.has(t.from)||!Number.isFinite(t.due)||!Number.isFinite(t.paid)||t.paid<0||t.paid>t.due)report('Invalid tribute transfer');payers.add(t.from);paid+=t.paid;withheld+=t.due-t.paid;receipts.set(t.to,(receipts.get(t.to)||0)+t.paid);const b=s.pols[t.from]?.budget;if(b?.year===l.year&&Math.abs((b.tributeOut||0)-t.paid)>1e-8*Math.max(1,t.paid))report('Tribute payment does not match budget')}
+    for(const [id,received]of receipts){const b=s.pols[id]?.budget;if(b?.year===l.year&&Math.abs((b.tributeIn||0)-received)>1e-8*Math.max(1,received))report('Tribute receipt does not match budget')}
+    if(Math.abs(l.paid-paid)>1e-8*Math.max(1,paid)||Math.abs(l.received-paid)>1e-8*Math.max(1,paid)||Math.abs(l.withheld-withheld)>1e-8*Math.max(1,withheld))report('Tribute ledger does not balance');
+   }
   }
   for(const id of s.activeWars)if(!s.wars[id])report('Invalid active war '+id);
   for(const war of s.wars)for(const id of war.a.concat(war.d))if(!s.pols[id])report('Invalid war participant '+id);

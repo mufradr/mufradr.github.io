@@ -1,4 +1,4 @@
-# Saved worlds — 0.17.0-dev.1
+# Saved worlds — 0.17.0-dev.2
 
 Open **Saves** on a phone, tablet or desktop. Three manual slots hold independent
 histories. Give a slot a name and choose **Save here**. A save finishes any pending
@@ -128,3 +128,14 @@ years follow the new model. Keep original exports for rollback.
 The development engine version prevents the released v0.16 client from accepting
 new saves while ignoring their economic fields. Final v0.17 release compatibility
 must explicitly retain these development saves. See ECONOMY.md for rules and units.
+
+### Government checkpoint (0.17.0-dev.2)
+
+Government version 1 saves provincial control, loyalty, autonomy and the recorded
+administrator, the annual clock, dependency allegiance/protection and the tribute
+transfer ledger. Validated v0.13–v0.16 and economic-development saves gain initial
+control/loyalty from existing integration, zero autonomy and no fabricated past
+tribute. Partial new schemas, nonfinite/out-of-range values and dependency cycles
+are rejected. `0.17.0-dev.1` remains accepted; old clients reject dev.2 saves.
+Preserve both development versions in the final release's compatibility allowlist.
+See [GOVERNMENT.md](GOVERNMENT.md) for units, accounting and migration limits.

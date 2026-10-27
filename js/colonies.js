@@ -109,9 +109,10 @@ function colonyGovernmentStep(){
   for(const c of g.colonies){
    const elapsed=clamp(s.year-(c.governmentYear??s.year-5),0,10),supplied=colonySupply(c)>=0;
    c.governmentYear=s.year;c.isolationYears=supplied?0:(c.isolationYears||0)+elapsed;
-   const distance=clamp(6371*angDist(c.source,c.cell)/8000,0,1),weakness=home?.alive?clamp((home.psi||0)/4+(1-(home.S??0.5))*0.4,0,1):1;
+   const distance=clamp(6371*angDist(c.source,c.cell)/8000,0,1),weakness=home?.alive?clamp((home.psi||0)/4+(1-(home.S??0.5))*0.4+0.35*(home.fiscalStress||0)+0.25*(1-(home.mandate??1)),0,1):1;
    const ties=clamp(P.assim*(supplied?1:0),0,1),target=clamp(0.2+0.35*distance+0.75*clamp(ratio/0.35,0,1)+0.35*clamp(c.isolationYears/30,0,1)+0.25*weakness-(supplied?0.2:0)-0.15*ties,0,1);
-   c.autonomy=clamp((c.autonomy||0)+(target-(c.autonomy||0))*Math.min(0.25,elapsed/40),0,1);
+   c.autonomy=clamp(Math.max(s.governor[c.cell]===home?.id?s.autonomy[c.cell]:0,(c.autonomy||0)+(target-(c.autonomy||0))*Math.min(0.25,elapsed/40)),0,1);
+   if(s.governor[c.cell]===home?.id)s.autonomy[c.cell]=c.autonomy;
    c.populationRatio=ratio;c.regionalPopulation=g.population;c.regionalCommunityPopulation=regionalCommunity;c.homelandPopulation=homePop;
    pressure+=c.autonomy;settlers+=c.settlers;age=Math.min(age,s.year-Math.max(c.founded,c.lastReintegration??-Infinity));
   }
@@ -123,12 +124,15 @@ function colonyGovernmentStep(){
  if(released)distBFS();
 }
 function releaseColonialRegion(region,home,orphan){
- const s=S,leader=region.colonies.reduce((a,b)=>s.pop[a.cell]>=s.pop[b.cell]?a:b),id=newPolity(leader.cell,home,{origin:{type:'colony-independence',from:home?.id||0,people:leader.founderPeople,settlement:leader.name,year:leader.founded}}),state=s.pols[id];
+ const s=S,leader=region.colonies.reduce((a,b)=>s.pop[a.cell]>=s.pop[b.cell]?a:b);
+ // Decide from the departing province's allegiance before newPolity installs its capital.
+ const negotiated=!orphan&&(s.governor[leader.cell]!==home.id||s.loyalty[leader.cell]>=0.4)&&(home.mandate??1)>=0.4;
+ const id=newPolity(leader.cell,home,{origin:{type:'colony-independence',from:home?.id||0,people:leader.founderPeople,settlement:leader.name,year:leader.founded}}),state=s.pols[id];
  for(const i of region.cells){s.pol[i]=id;s.taken[i]=s.year;s.integ[i]=Math.max(s.integ[i],0.5)}
  if(home){home.pop=0;home.cells=0;home.area=0;for(const i of WD.landIdx)if(s.pol[i]===home.id){home.pop+=s.pop[i];home.cells++;home.area+=WD.area[i]}}
  s.dist[leader.cell]=0;state.cells=region.cells.length;state.pop=region.population;state.maxCells=state.cells;state.maxPop=state.pop;state.area=region.cells.reduce((n,i)=>n+WD.area[i],0);state.peakArea=state.area;state.tier=tierOf(state);state.full=fullName(state);state.peak=state.full;
  for(const c of region.colonies){c.administration='independent';c.independentState=id;c.independentYear=s.year;c.autonomy=1}
- const contested=P.warRate>0&&!orphan&&home.S>0.4&&(home.psi||0)<2&&region.colonies.some(c=>colonySupply(c)>=0);
+ const contested=!negotiated&&P.warRate>0&&!orphan&&home.S>0.4&&(home.psi||0)<2&&region.colonies.some(c=>colonySupply(c)>=0);
  chron('rise',`${state.full} becomes independent ${orphan?'after its parent government collapses':'as its overseas population and autonomy outgrow rule from the '+home.full}.`,leader.cell,[R_(state),...(home?[R_(home)]:[])]);
  if(contested){const war=declareWar([state],[home],`the Independence War of ${state.base}`,true,true,false);chron('war',`The ${home.full} contests the independence of the ${state.full}.`,leader.cell,[R_(home),R_(state),RW(war)])}
 }

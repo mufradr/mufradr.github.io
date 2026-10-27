@@ -45,20 +45,21 @@ function finishFoodYear(i,ledger){
  // potential K of a lightly settled landscape is not reduced to its small harvest.
  if(food<p)s.K[i]=Math.min(s.K[i],food);
 }
-function governmentBudget(o,c,administration,revenue,maintenance){
+function governmentBudget(o,c,administration,domesticRevenue,maintenance){
+ const tributeIn=o.tributeIn||0,tributeOut=o.tributeOut||0,revenue=domesticRevenue+tributeIn;
  const opening=o.treas,military=o.enemies.size?revenue*0.5:0;
  const reserveDraw=Math.min(Math.max(0,opening)*revenue/0.04,revenue*0.2);
- const infrastructure=Math.min(maintenance,Math.max(0,revenue+reserveDraw-administration-military));
+ const infrastructure=Math.min(maintenance,Math.max(0,revenue+reserveDraw-tributeOut-administration-military));
  // Mandatory costs may borrow against the existing bounded credit line. At its
  // limit unpaid costs remain explicit instead of disappearing into a clamp.
  const mandatory=administration+military,credit=Math.max(0,opening+2)*revenue/0.04;
- const paid=mandatory?Math.min(1,Math.max(0,revenue+credit-infrastructure)/mandatory):1;
+ const paid=mandatory?Math.min(1,Math.max(0,revenue+credit-infrastructure-tributeOut)/mandatory):1;
  const administrationPaid=administration*paid,militaryPaid=military*paid;
- const spending=administrationPaid+militaryPaid+infrastructure,balance=revenue-spending;
+ const spending=administrationPaid+militaryPaid+infrastructure+tributeOut,balance=revenue-spending;
  const closing=clamp(opening+0.04*balance/revenue,-2,1),retained=(closing-opening)*revenue/0.04;
  o.treas=closing;o.infrastructureFunding=maintenance?infrastructure/maintenance:1;
- o.burden=(administration+military+maintenance)/revenue;
- o.budget={year:S.year,revenue,administrationRequired:administration,militaryRequired:military,administration:administrationPaid,military:militaryPaid,infrastructure,maintenanceRequired:maintenance,spending,balance,
+ o.burden=(administration+military+maintenance+tributeOut)/revenue;
+ o.budget={year:S.year,revenue,domesticRevenue,tributeIn,tributeOut,administrationRequired:administration,militaryRequired:military,administration:administrationPaid,military:militaryPaid,infrastructure,maintenanceRequired:maintenance,spending,balance,
   unpaid:mandatory*(1-paid),openingTreasury:opening,closingTreasury:closing,surplusDiscarded:Math.max(0,balance-retained),debtRelief:0};
  return o.budget;
 }

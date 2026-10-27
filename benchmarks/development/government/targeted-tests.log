@@ -1,0 +1,61 @@
+▶ dependent colony map ownership, government inspector and portable saves on desktop and phone
+  ✔ 1280px (4859.170785ms)
+  ✔ 390px (4500.437339ms)
+✔ dependent colony map ownership, government inspector and portable saves on desktop and phone (9819.44287ms)
+▶ dependent overseas colonies and cultural exchange
+  ✔ a viable empty coast receives real emigrants, knowledge and homeland ownership (283.790236ms)
+  ✔ inhabited unclaimed coasts keep their existing majority and gain a settler minority (136.852695ms)
+  ✔ an existing emigrant majority can organize without erasing its local minority (139.699396ms)
+  ✔ early ships, crowded shores, foreign ownership and existing minorities block founding (473.594537ms)
+  ✔ settlers inherit their source people and develop a daughter language over generations (137.252013ms)
+  ✔ cutting routes or migration stops arrivals without deleting existing settlers (36.427962ms)
+  ✔ a failed community does not resurrect its population or culture (182.760221ms)
+  ✔ revisited ocean trade can found a community without forcing random success (146.231582ms)
+  ✔ peaceful treaty settlements keep the host government and existing majority (56.453742ms)
+  ✔ trade carries real migrants and small diasporas persist while supported (94.984173ms)
+  ✔ passenger exchange respects third minorities and disabled migration (56.356315ms)
+  ✔ a small port does not lose its minority when a hybrid culture cannot form (116.979414ms)
+  ✔ real yearly processes preserve colony integrity through growth, migration and disease (4709.116696ms)
+  ✔ maintained ocean trade permits dependent founding before the old 1300 cutoff (62.140984ms)
+  ✔ ocean supply gives real administrative distance and disappears when routes close (98.128534ms)
+  ✔ small dependencies remain owned even after many decades (79.801784ms)
+  ✔ connected overseas provinces gain independence together when large relative to the homeland (174.161774ms)
+  ✔ absolute colony size alone does not release a small share of a much larger homeland (94.256304ms)
+  ✔ assimilation changes cultural shares without creating population and can be disabled (108.208259ms)
+  ✔ captured territories are not magically reassigned to their former parent (50.478374ms)
+  ✔ legacy unclaimed charters rejoin surviving parents but existing independent states stay sovereign (83.044319ms)
+  ✔ mature orphaned dependencies can form a state when their parent collapses (130.358255ms)
+  ✔ another homeland port can supply a colony after its original port is captured (60.729186ms)
+  ✔ declared enemies can fight along a known ocean corridor without peaceful annexation (58.14664ms)
+  ✔ old colony saves upgrade on continuation and invalid autonomy is rejected before installation (3324.71763ms)
+  ✔ small inhabited coasts can receive a charter without erasing their native population (97.966418ms)
+  ✔ first ocean landfalls create parent-owned outposts using real source population (121.270543ms)
+  ✔ pioneers from small stateless ports also leave real source people behind (52.395912ms)
+  ✔ prospecting uses the same capable-port floor as colonial founding (55.697933ms)
+✔ dependent overseas colonies and cultural exchange (12218.169189ms)
+▶ provincial government, gradual decline and bounded dependency obligations
+  ✔ persistent trouble erodes control, tax collection and loyalty over decades (265.933672ms)
+  ✔ solvent legitimate government and reconnection recover without recreating the state (140.431605ms)
+  ✔ tax aggregation uses provincial control and concessions; same-year recalculation does not age government (56.786667ms)
+  ✔ negotiated autonomy creates a bounded vassal region without erasing people, works or fiscal distress (172.502058ms)
+  ✔ rebellion is regional; routine instability does not authorize sudden disintegration (60.412742ms)
+  ✔ tribute is a matched payment and receipt, constrained to domestic means (189.310431ms)
+  ✔ debt relief balances against total receipts when a protector receives tribute (139.061098ms)
+  ✔ fiscal exhaustion withholds tribute without minting money or erasing the relationship (93.7659ms)
+  ✔ nested vassals cannot forward the same tribute repeatedly or form cycles (125.887595ms)
+  ✔ a capable protector joins a defensive war; an exhausted one loses credibility (229.973862ms)
+  ✔ protectors do not join vassal aggression and explicit war ends dependence (121.88803ms)
+  ✔ prolonged protection failure and withholding lead to independence; recovery eases pressure (104.818109ms)
+  ✔ owned colonies share provincial concessions without paying a second layer of tribute (209.146395ms)
+  ✔ overseas separation negotiates with loyal communities but can contest a hostile breakaway (320.024452ms)
+  ✔ a dynasty changes without resetting the treasury, province identity, infrastructure or technical knowledge (42.383569ms)
+  ✔ development-1 saves migrate without fabricated tribute or mutating the caller; new fields resume exactly (8432.00938ms)
+✔ provincial government, gradual decline and bounded dependency obligations (11711.541101ms)
+ℹ tests 50
+ℹ suites 0
+ℹ pass 50
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 12325.833532
