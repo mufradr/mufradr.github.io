@@ -7,6 +7,8 @@ function simulationIssues(limit=50,state=S,world=WD){
   const index=(v,list,empty=-1)=>Number.isInteger(v)&&(v===empty||(v>=0&&v<list.length&&list[v]!=null));
   if(s.economyVersion!==1||!(s.foodStock instanceof Float64Array)||s.foodStock.length!==N||!(s.works instanceof Float32Array)||s.works.length!==N)return ['Invalid economy schema'];
   if(s.governmentVersion!==1||['control','loyalty','autonomy'].some(k=>!(s[k] instanceof Float32Array)||s[k].length!==N)||!(s.governor instanceof Int32Array)||s.governor.length!==N)return ['Invalid government schema'];
+  if(s.urbanVersion!==1||!(s.faith2 instanceof Int32Array)||s.faith2.length!==N||!(s.faithMix instanceof Float32Array)||s.faithMix.length!==N||!(s.faith3 instanceof Int32Array)||s.faith3.length!==N||!(s.faithMix3 instanceof Float32Array)||s.faithMix3.length!==N)return ['Invalid urban schema'];
+  if(s.urbanYear!==null&&!Number.isSafeInteger(s.urbanYear))report('Invalid urban clock');
   if(s.warfareVersion!==1||s.militaryYear!==null&&!Number.isSafeInteger(s.militaryYear))report('Invalid warfare schema');
   if(s.governmentYear!==null&&!Number.isSafeInteger(s.governmentYear))report('Invalid government clock');
   for(let i=0;i<N;i++)if(!w.land[i]){if(s.pol[i]!==0||s.pop[i]!==0)report('Invalid water-cell settlement at '+i);if(s.foodStock[i]!==0)report('Invalid water-cell food stock at '+i)}
@@ -22,6 +24,8 @@ function simulationIssues(limit=50,state=S,world=WD){
     if(!index(s.pol[i],s.pols,0))report('Invalid owner at '+i);
     if(!index(s.eth[i],s.eths)||!index(s.eth2[i],s.eths))report('Invalid people at '+i);
     if(s.pop[i]>=1&&s.eth[i]<0)report('Peopled cell has no people at '+i);
+    const m2=s.faithMix[i],m3=s.faithMix3[i],major=1-m2-m3;
+    if(!Number.isFinite(m2)||!Number.isFinite(m3)||m2<0||m3<0||major< -1e-6||major+1e-6<Math.max(m2,m3)||[s.faith2[i],s.faith3[i]].some(id=>id< -2||id>=s.rels.length)||s.faith2[i]===-2&&m2!==0||s.faith3[i]===-2&&m3!==0||s.faith2[i]===s.rel[i]&&m2>0||s.faith3[i]===s.rel[i]&&m3>0||s.faith2[i]===s.faith3[i]&&m2+m3>0)report('Invalid faith mixture at '+i);
     if(!index(s.rel[i],s.rels))report('Invalid religion at '+i);
     if(!index(s.city[i],s.cities)||(s.city[i]>=0&&s.cities[s.city[i]].cell!==i))report('Invalid city at '+i);
     if(!index(s.ob[i],s.outbreaks))report('Invalid outbreak at '+i);
@@ -72,7 +76,13 @@ function simulationIssues(limit=50,state=S,world=WD){
   for(const id of s.activeWars)if(!s.wars[id])report('Invalid active war '+id);
   for(const war of s.wars)if(war.campaignLosses&&(['a','d','civilian'].some(k=>!Number.isFinite(war.campaignLosses[k])||war.campaignLosses[k]<0)||!Number.isFinite(war.campaignLosses.militia??0)||(war.campaignLosses.militia??0)<0))report('Invalid campaign casualty record');
   for(const war of s.wars)for(const id of war.a.concat(war.d))if(!s.pols[id])report('Invalid war participant '+id);
-  for(const city of s.cities)if(!w.land[city.cell]||!index(city.eth,s.eths))report('Invalid city record');
+  const cityCells=new Set();if(s.cities.length>N)report('Too many urban records');
+  for(let id=0;id<s.cities.length;id++){const c=s.cities[id];
+   if(!w.land[c.cell]||!index(c.eth,s.eths)||s.city[c.cell]!==id||cityCells.has(c.cell))report('Invalid city record');cityCells.add(c.cell);
+   if(['population','peak','provincePopulation','urbanTarget'].some(k=>!Number.isFinite(c[k])||c[k]<0)||c.population>s.pop[c.cell]+Math.max(.02,s.pop[c.cell]*1e-6)||c.peak+1e-5<c.population||!Number.isSafeInteger(c.lastYear))report('Invalid urban population');
+   if(['institutions','scholarship','foodAccess','security','commerce'].some(k=>!Number.isFinite(c[k])||c[k]<0||c[k]>1))report('Invalid civic institution');
+   if(c.knowledge!==null&&(!(c.knowledge instanceof Float32Array)||c.knowledge.length!==TECH.length||c.knowledge.some(v=>!Number.isFinite(v)||v<0||v>1)))report('Invalid urban knowledge archive');
+  }
   for(const route of s.seaRoutes.values())if(!w.land[route.from]||!w.land[route.to]||!Number.isFinite(route.km)||route.km<=0||route.path.some(i=>!Number.isInteger(i)||i<0||i>=N))report('Invalid sea route');
   if(s.seaDiasporas.size>256)report('Too many maritime diaspora records');
   for(const [cell,d] of s.seaDiasporas)if(!w.land[cell]||!index(d.people,s.eths,-2)||!Number.isFinite(d.last))report('Invalid maritime diaspora');

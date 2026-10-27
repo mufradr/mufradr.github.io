@@ -85,14 +85,14 @@ test('dependent overseas colonies and cultural exchange',async t=>{
     app.inspect(`declareWar([S.pols[${site.home}]],[S.pols[${host}]],null,false,false,false)`);
     assert.equal(app.inspect(`colonyHostAllows(${site.source},${site.cell})`),false);
   });
-  await t.test('trade carries real migrants and small diasporas persist while supported',()=>{
+  await t.test('trade carries real migrants and small diasporas persist after contact ends',()=>{
     const site=prepare(25000),before=app.state.pop[site.source]+app.state.pop[site.cell];
     app.inspect(`S.seaRoutes.set('passengers',{...colonyVoyage,born:1480,last:1500});S.year=1520;maritimePassengerExchange(S.seaRoutes.get('passengers'))`);
     assert.ok(Math.abs(app.state.pop[site.source]+app.state.pop[site.cell]-before)<.1);
     assert.equal(app.state.eth2[site.cell],site.founder);assert.ok(app.state.mix[site.cell]<.03);
     app.inspect('mixPass()');assert.equal(app.state.eth2[site.cell],site.founder,'trade-supported minority is retained');
     assert.ok(app.state.seaRoutes.get('passengers').migrants>0);
-    app.inspect('S.year=1600;mixPass()');assert.equal(app.state.eth2[site.cell],-1,'unsupported tiny minority eventually merges');
+    app.inspect('S.year=1600;mixPass()');assert.equal(app.state.eth2[site.cell],site.founder,'loss of shipping alone does not erase an established identity');
     assert.deepEqual(app.inspect('simulationIssues()'),[]);
   });
   await t.test('passenger exchange respects third minorities and disabled migration',()=>{

@@ -16,8 +16,11 @@ function recordAtlasHistory(){
  for(const i of w.landIdx){const p=s.pop[i],id=s.pol[i];if(id)add(states[id]||(states[id]=create('state',id)),stateLinks,i,p);
   if(p<1)continue;
   const religion=s.rel[i],people=s.eth[i];
-  if(religion>=0)add(religions[religion]||(religions[religion]=create('religion',religion)),religionLinks,i,p);
-  if(people>=0)add(peoples[people]||(peoples[people]=create('people',people)),peopleLinks,i,p);
+  if(religion>=0)add(religions[religion]||(religions[religion]=create('religion',religion)),religionLinks,i,p*(1-s.faithMix[i]-s.faithMix3[i]));
+  if(s.faith2[i]>=0){const g=religions[s.faith2[i]]||(religions[s.faith2[i]]=create('religion',s.faith2[i]));g.population+=p*s.faithMix[i]}
+  if(s.faith3[i]>=0){const g=religions[s.faith3[i]]||(religions[s.faith3[i]]=create('religion',s.faith3[i]));g.population+=p*s.faithMix3[i]}
+  if(people>=0)add(peoples[people]||(peoples[people]=create('people',people)),peopleLinks,i,p*(1-s.mix[i]));
+  if(s.eth2[i]>=0){const g=peoples[s.eth2[i]]||(peoples[s.eth2[i]]=create('people',s.eth2[i]));g.population+=p*s.mix[i]}
   let tradition;
   if(id){tradition=stateTraditions[id];if(!tradition){const o=s.pols[id];tradition=stateTraditions[id]=create('tradition','state:'+String(o.civ||o.base))}}
   if(tradition)add(tradition,traditionLinks,i,p);

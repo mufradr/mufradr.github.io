@@ -1,0 +1,293 @@
+{
+  "schemaVersion": 1,
+  "protocol": "civilization-development-v1",
+  "source": {
+    "commit": "4009d5bf4328f11a3c924eaff580e46b80737e75",
+    "runtimeSHA256": "6d097fc384c19f6ccd6a5c371464e4b2635fd87fd154e0919f55a635013d89f4",
+    "files": {
+      "index.html": "484fbfecb45f1df6202d3987262a4b3657093f1fddbfac4abc47ca6f903be7e5",
+      "assets/earth.js": "d9aabf45fa947490a75542987d792156b807e0d04deb898ec5261ea53f598c83",
+      "js/core.js": "0cc8930433edab5166ea755f837a51ba465dce3c0c88742c74fd12bdc2082ca4",
+      "js/economy.js": "bdbd05a15b1d2b3e9298a1f3f1ab87023616d47b3f057d1bb4f0a104bb4c285d",
+      "js/government.js": "4218e7346ba0007d01259490fbe155b97ad96fe8bdfae96ee3d702f99afdc0f1",
+      "js/warfare.js": "e0860566edbf2cf65a5a893aec0981e2e6a0020cca8c93c9a8104d2a73202361",
+      "js/cities.js": "45f475c45c1b8f887e4f575461d155239a0d0a3d21272be586c5e2797c3eb07d",
+      "js/communities.js": "065083646291e9b53b1e8e207abd49bcecbe3e848c03ef4a051785354c4236cd",
+      "js/colonies.js": "773d28a06ad9551d8f90bde8ed4d521211c082bcf87dcc07d1eb5191d1ef01ef",
+      "js/atlas.js": "3cf7c9ae0023b13bb5a66704a57fbf6bd247e26206165a8c8d8c80865879abe8",
+      "js/history.js": "291ba4cb5c6157ddd25e49b4194642d6747011d6bd427cbf4653f7a44d1509fd",
+      "js/experiments.js": "eae05399b8c60577b02064b22eedadecee966e9aac0d706477bfe91241a34d5a",
+      "js/diagnostics.js": "f504758ab9efca84f6a8df42d7455ac9dd98a332c709aa1f76e42f9aea5e77fc",
+      "js/save-codec.js": "b5ecec26a2f1cf8160115cfead4e7eb8d73bac3741ac2b02c0271ca08be799f5",
+      "js/saves.js": "53b3caeb7cc1ce53c2965b1c76d0019a1352a2228e7a85fb8696ff3588cf814c",
+      "js/ui.js": "8d19b5ff9cd7cc3855279aa2a2cd6d9f7a47cc1bf5ff2cee33890111ab7c69f5",
+      "js/history-ui.js": "7034b508a99669305782db2c552f8ef41687231c76dcf1e6c9bf6d36ff1ddcc6",
+      "js/save-ui.js": "6907d98f9f66c19f610c761ddf3c8e94bc8b98a99bcbc5566da9a694f8eb8644",
+      "js/save-store.js": "7d153a175f2c2c7bd54a1f70caf604a00c2fd698eba9d4add30bea8258d620ef",
+      "js/save-worker.js": "46951987885a81cf979dea36e5df3b067b9130aa7e1657852ed8132781ea2c6b",
+      "styles/base.css": "a4a477526673b7cbb466775e39698516d7867f308f9c94fd1f243e5ffe190c75",
+      "styles/app.css": "8be08ad21030d1b0d4bd7e1022fb1574acc4ef2d16c796ab62a1b208706bcd29"
+    }
+  },
+  "runnerSHA256": "dce8c1f4488cbf753d3a87c3accc29b372c4ead8790e52476e1aa6c2a32577c7",
+  "browserVersion": "154.0.8037.57",
+  "environment": {
+    "node": "v24.19.0",
+    "cpu": "AMD EPYC 9V74 80-Core Processor"
+  },
+  "deviceNote": "Desktop headless Chromium at three viewport sizes; no CPU throttling, Safari or physical iPhone measurement.",
+  "cases": [
+    {
+      "scenario": "early",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "requestedDurationMs": 8000,
+      "elapsedMs": 8000.699999988079,
+      "completedYears": 199,
+      "yearsPerSecond": 24.872823627969616,
+      "autoStoppedAt": null,
+      "frameGapsMs": {
+        "count": 476,
+        "median": 16.699999999999818,
+        "p95": 16.700000000000728,
+        "p99": 16.800000000000182,
+        "max": 33.40000000000009
+      },
+      "frameGapsOver50ms": 0,
+      "frameGapsOver100ms": 0,
+      "longTasksSupported": true,
+      "longTasksMs": {
+        "count": 0,
+        "median": null,
+        "p95": null,
+        "p99": null,
+        "max": null
+      },
+      "memory": {
+        "usedJSHeapBytes": 108377706,
+        "totalJSHeapBytes": 127962398,
+        "jsHeapLimitBytes": 4395630592
+      },
+      "measurementYear": -8781,
+      "verifiedYear": -8781,
+      "pendingYear": false,
+      "states": 0,
+      "records": 1,
+      "cities": 0,
+      "integrityIssues": [],
+      "errors": []
+    },
+    {
+      "scenario": "developed",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "requestedDurationMs": 8000,
+      "elapsedMs": 8057,
+      "completedYears": 78,
+      "yearsPerSecond": 9.681022713168673,
+      "autoStoppedAt": null,
+      "frameGapsMs": {
+        "count": 334,
+        "median": 16.700000000000273,
+        "p95": 50,
+        "p99": 66.60000000000036,
+        "max": 83.39999999999964
+      },
+      "frameGapsOver50ms": 12,
+      "frameGapsOver100ms": 0,
+      "longTasksSupported": true,
+      "longTasksMs": {
+        "count": 14,
+        "median": 53,
+        "p95": 92,
+        "p99": 92,
+        "max": 92
+      },
+      "memory": {
+        "usedJSHeapBytes": 117574129,
+        "totalJSHeapBytes": 196952997,
+        "jsHeapLimitBytes": 4395630592
+      },
+      "measurementYear": 1499,
+      "verifiedYear": 1499,
+      "pendingYear": true,
+      "states": 268,
+      "records": 279,
+      "cities": 9701,
+      "integrityIssues": [],
+      "errors": []
+    },
+    {
+      "scenario": "early",
+      "viewport": {
+        "width": 820,
+        "height": 1180
+      },
+      "requestedDurationMs": 8000,
+      "elapsedMs": 8000.800000011921,
+      "completedYears": 79,
+      "yearsPerSecond": 9.874012598725415,
+      "autoStoppedAt": null,
+      "frameGapsMs": {
+        "count": 478,
+        "median": 16.699999999999818,
+        "p95": 16.700000000000728,
+        "p99": 16.800000000000182,
+        "max": 33.19999999999982
+      },
+      "frameGapsOver50ms": 0,
+      "frameGapsOver100ms": 0,
+      "longTasksSupported": true,
+      "longTasksMs": {
+        "count": 0,
+        "median": null,
+        "p95": null,
+        "p99": null,
+        "max": null
+      },
+      "memory": {
+        "usedJSHeapBytes": 108435505,
+        "totalJSHeapBytes": 119289361,
+        "jsHeapLimitBytes": 4395630592
+      },
+      "measurementYear": -8901,
+      "verifiedYear": -8901,
+      "pendingYear": false,
+      "states": 0,
+      "records": 1,
+      "cities": 0,
+      "integrityIssues": [],
+      "errors": []
+    },
+    {
+      "scenario": "developed",
+      "viewport": {
+        "width": 820,
+        "height": 1180
+      },
+      "requestedDurationMs": 8000,
+      "elapsedMs": 8006.300000011921,
+      "completedYears": 57,
+      "yearsPerSecond": 7.119393477625761,
+      "autoStoppedAt": null,
+      "frameGapsMs": {
+        "count": 356,
+        "median": 16.699999999999818,
+        "p95": 33.400000000001455,
+        "p99": 116.60000000000036,
+        "max": 150
+      },
+      "frameGapsOver50ms": 12,
+      "frameGapsOver100ms": 6,
+      "longTasksSupported": true,
+      "longTasksMs": {
+        "count": 14,
+        "median": 96,
+        "p95": 152,
+        "p99": 152,
+        "max": 152
+      },
+      "memory": {
+        "usedJSHeapBytes": 129896469,
+        "totalJSHeapBytes": 196108897,
+        "jsHeapLimitBytes": 4395630592
+      },
+      "measurementYear": 1478,
+      "verifiedYear": 1478,
+      "pendingYear": true,
+      "states": 264,
+      "records": 275,
+      "cities": 9634,
+      "integrityIssues": [],
+      "errors": []
+    },
+    {
+      "scenario": "early",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "requestedDurationMs": 8000,
+      "elapsedMs": 8001,
+      "completedYears": 79,
+      "yearsPerSecond": 9.87376577927759,
+      "autoStoppedAt": null,
+      "frameGapsMs": {
+        "count": 477,
+        "median": 16.699999999999818,
+        "p95": 16.799999999999272,
+        "p99": 16.80000000000109,
+        "max": 33.30000000000018
+      },
+      "frameGapsOver50ms": 0,
+      "frameGapsOver100ms": 0,
+      "longTasksSupported": true,
+      "longTasksMs": {
+        "count": 0,
+        "median": null,
+        "p95": null,
+        "p99": null,
+        "max": null
+      },
+      "memory": {
+        "usedJSHeapBytes": 108603807,
+        "totalJSHeapBytes": 118497415,
+        "jsHeapLimitBytes": 4395630592
+      },
+      "measurementYear": -8901,
+      "verifiedYear": -8901,
+      "pendingYear": false,
+      "states": 0,
+      "records": 1,
+      "cities": 0,
+      "integrityIssues": [],
+      "errors": []
+    },
+    {
+      "scenario": "developed",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "requestedDurationMs": 8000,
+      "elapsedMs": 8001.5,
+      "completedYears": 68,
+      "yearsPerSecond": 8.498406548772104,
+      "autoStoppedAt": null,
+      "frameGapsMs": {
+        "count": 404,
+        "median": 16.699999999999818,
+        "p95": 33.30000000000109,
+        "p99": 83.40000000000146,
+        "max": 133.30000000000018
+      },
+      "frameGapsOver50ms": 12,
+      "frameGapsOver100ms": 1,
+      "longTasksSupported": true,
+      "longTasksMs": {
+        "count": 12,
+        "median": 90,
+        "p95": 123,
+        "p99": 123,
+        "max": 123
+      },
+      "memory": {
+        "usedJSHeapBytes": 121217572,
+        "totalJSHeapBytes": 197011920,
+        "jsHeapLimitBytes": 4395630592
+      },
+      "measurementYear": 1489,
+      "verifiedYear": 1489,
+      "pendingYear": true,
+      "states": 264,
+      "records": 275,
+      "cities": 9669,
+      "integrityIssues": [],
+      "errors": []
+    }
+  ]
+}

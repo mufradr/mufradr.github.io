@@ -1,5 +1,22 @@
 # Release history
 
+## 0.17.0-dev.4 — Cities, learning and communities (local development)
+
+- Track actual urban residents as a subset of province population. Connect town
+  growth/decline to conserved food access, security, works and commerce, with one
+  shared civilian/military workforce and no extra population or food demand.
+- Let local civic/scholarly institutions support administration, collection,
+  innovation and gradual knowledge preservation across political collapse.
+- Move actual people and faith cohorts through ordinary/overseas migration.
+  Retain two peoples and three faiths per province; protect existing communities
+  when slots are full and count represented minorities in population statistics.
+- Make conversion/integration gradual, exchange practices through contact, and
+  connect cultural divergence and related regional churches to political separation.
+- Rank/map cities by urban residents and explain these mechanisms in existing
+  province/state/faith inspectors. Migrate older city records to labelled estimates.
+- Add interaction, save, browser and prepared-stress checks with preserved timing,
+  memory/save measurements. Chunk 5 is local; calibration/release remain later work.
+
 ## 0.17.0-dev.3 — Campaign sustainability (local development)
 
 - Add bounded, gradual mobilization and demobilization with one annual service

@@ -28,12 +28,14 @@ for(const scenario of ['early','developed'])test(`political loop extraction pres
  let aggregate=src.slice(src.indexOf('  for(let k=0;k<L.length;k++){if(k&&'),src.indexOf('  recordAtlasHistory();'))
   .replace('for(let k=0;k<L.length;k++){if(k&&(k&2047)===0)yield;','for(let k=from;k<to;k++){')
   .replace('const o=pols[p],pp=pop[i];','const o=pols[p],pp=pop[i];linkMilitaryHome(i,o);const collection=provincialGovernment(i,o,phase.governmentAdvance??false);')
-  .replace('/(1+0.3*P.eco*eD):0;','/(1+0.3*P.eco*eD)*collection:0;');
+  .replace('/(1+0.3*P.eco*eD):0;','/(1+0.3*P.eco*eD)*collection:0;')
+  .replace('o.tax+=tl;o.trade+=tl}','o.tax+=tl;o.trade+=tl}o.tax+=urbanTax(i)*collection;aggregateUrban(i,o);');
  let borders=src.slice(src.indexOf('  for(let kk=0;kk<L.length;kk++){'),src.indexOf('  // first great walls'))
   .replace('for(let kk=0;kk<L.length;kk++){','for(let kk=from;kk<to;kk++){')
   .replace('if(kk&&(kk&1023)===0)yield;','')
   .replace('const t0=pop[cand]*0.03;pop[cand]-=t0;o.loot+=t0*0.5;displace(cand,0.02,o.id)','raid(o,i,cand)')
   .replace('s.integ[i]+0.0011/','s.integ[i]+0.0011*s.control[i]*(1-0.5*s.autonomy[i])/');
+ const affiliation=borders.indexOf('      if(ei>=0&&c>=0&&ei!==c&&pi>=1&&!o.conqDyn');borders=borders.slice(0,affiliation)+'      politicalCommunityChange(i,o);\n'+borders.slice(borders.indexOf('      // fortify',affiliation));
  b.inspect(`aggregatePoliticalCells=function(phase,from,to){const {s,w,r,pols,L,pol,pop,sampleNow}=phase;${aggregate}};updatePoliticalBorders=function(phase,from,to){const {s,w,r,y,pols,L,pol,pop,asR,wr,rev,rels,fz,infl}=phase;${borders}};`);
  // Compare loop extraction with the later overseas-governance additions disabled
  // in both engines. Also neutralize maintained-road/canal condition because the

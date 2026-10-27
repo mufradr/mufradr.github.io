@@ -1,0 +1,33 @@
+{
+  "identity": {
+    "source": {
+      "commit": "4009d5bf4328f11a3c924eaff580e46b80737e75",
+      "runtimeSHA256": "3ddc66d17636f63777debf2b0fa0b8eac8da0965181562488f39a0d8171e8498",
+      "files": {
+        "index.html": "484fbfecb45f1df6202d3987262a4b3657093f1fddbfac4abc47ca6f903be7e5",
+        "assets/earth.js": "d9aabf45fa947490a75542987d792156b807e0d04deb898ec5261ea53f598c83",
+        "js/core.js": "85272f7eb43107c915ed03f1404c33e65cd62ca62836a7c0f3682487743340f5",
+        "js/economy.js": "bdbd05a15b1d2b3e9298a1f3f1ab87023616d47b3f057d1bb4f0a104bb4c285d",
+        "js/government.js": "4218e7346ba0007d01259490fbe155b97ad96fe8bdfae96ee3d702f99afdc0f1",
+        "js/warfare.js": "e0860566edbf2cf65a5a893aec0981e2e6a0020cca8c93c9a8104d2a73202361",
+        "js/cities.js": "491a5a90d5815f867f66e14bd6e6c85f47a288e17b49483d8bcfbbe71949ed7d",
+        "js/communities.js": "0efc8eb443101b975253b9bdbb9b0677db84d7b1cd3196047c4d718da6ddeee7",
+        "js/colonies.js": "773d28a06ad9551d8f90bde8ed4d521211c082bcf87dcc07d1eb5191d1ef01ef",
+        "js/atlas.js": "3cf7c9ae0023b13bb5a66704a57fbf6bd247e26206165a8c8d8c80865879abe8",
+        "js/history.js": "291ba4cb5c6157ddd25e49b4194642d6747011d6bd427cbf4653f7a44d1509fd",
+        "js/experiments.js": "eae05399b8c60577b02064b22eedadecee966e9aac0d706477bfe91241a34d5a",
+        "js/diagnostics.js": "f504758ab9efca84f6a8df42d7455ac9dd98a332c709aa1f76e42f9aea5e77fc",
+        "js/save-codec.js": "b5ecec26a2f1cf8160115cfead4e7eb8d73bac3741ac2b02c0271ca08be799f5",
+        "js/saves.js": "53b3caeb7cc1ce53c2965b1c76d0019a1352a2228e7a85fb8696ff3588cf814c",
+        "js/ui.js": "8d19b5ff9cd7cc3855279aa2a2cd6d9f7a47cc1bf5ff2cee33890111ab7c69f5",
+        "js/history-ui.js": "7034b508a99669305782db2c552f8ef41687231c76dcf1e6c9bf6d36ff1ddcc6",
+        "js/save-ui.js": "6907d98f9f66c19f610c761ddf3c8e94bc8b98a99bcbc5566da9a694f8eb8644",
+        "js/save-store.js": "7d153a175f2c2c7bd54a1f70caf604a00c2fd698eba9d4add30bea8258d620ef",
+        "js/save-worker.js": "46951987885a81cf979dea36e5df3b067b9130aa7e1657852ed8132781ea2c6b",
+        "styles/base.css": "a4a477526673b7cbb466775e39698516d7867f308f9c94fd1f243e5ffe190c75",
+        "styles/app.css": "8be08ad21030d1b0d4bd7e1022fb1574acc4ef2d16c796ab62a1b208706bcd29"
+      }
+    }
+  },
+  "note": "Local chunk 5 checkpoint. Git revision is pre-commit parent; runtime hash identifies the measured working tree."
+}

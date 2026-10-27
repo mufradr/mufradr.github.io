@@ -39,7 +39,7 @@ test('browser: startup, controls, pacing, and Pages-relative resources', async t
       await page.waitForFunction(() => typeof ui !== 'undefined' && ui.ready && document.getElementById('busy').hidden);
       assert.equal(await page.title(), 'World Engine');
       assert.equal(await page.locator('.brand .mark').innerText(), 'World Engine');
-      assert.match(await page.locator('.brand .sub').innerText(), /v0\.17\.0-dev\.3/i);
+      assert.match(await page.locator('.brand .sub').innerText(), /v0\.17\.0-dev\.4/i);
       assert.equal(await page.locator('meta[property="og:title"]').getAttribute('content'), 'World Engine');
       const manifest = await page.evaluate(async () => (await fetch(document.querySelector('link[rel="manifest"]').href)).json());
       assert.equal(manifest.name, 'World Engine');
@@ -94,7 +94,7 @@ test('browser: startup, controls, pacing, and Pages-relative resources', async t
           const id = S.pols.length;
           S.pols.push({capital:first,cells:12,lx:WD.cxA[first]*2*Math.PI/W-Math.PI,ly:WD.cyA[first],base:'Test Country',tier:'Kingdom'});S.alive.push(id); S.pol[first]=id; S.pol[second]=0;
           S.pop[first]=S.pop[second]=100000;
-          S.cities=[{cell:first,name:'Test Capital'},{cell:second,name:'Test Town'}];
+          S.cities=[{cell:first,name:'Test Capital',population:20000},{cell:second,name:'Test Town',population:15000}];
           S.colonies.set(first,{cell:first,name:'Test Colony',status:'active'});
           ui.z=3; centerOn(first);
           for (const name of methods) mapCtx[name] = function(...args) {
@@ -184,7 +184,7 @@ test('browser: startup, controls, pacing, and Pages-relative resources', async t
       await page.locator('#btn-export-setup').click();
       const download=await downloadPromise;
       const exported=JSON.parse(fs.readFileSync(await download.path(),'utf8'));
-      assert.equal(exported.engineVersion,'0.17.0-dev.3');assert.equal(exported.rules.growth,.02);
+      assert.equal(exported.engineVersion,'0.17.0-dev.4');assert.equal(exported.rules.growth,.02);
       const other=await browser.newPage();
       await other.route('https://fonts.googleapis.com/**',r=>r.abort());
       await other.goto(shared);

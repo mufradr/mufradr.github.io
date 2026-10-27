@@ -22,7 +22,7 @@ test('atlas traditions, rankings and screen-space selection',async t=>{
  });
  await t.test('city spacing prefers larger visible cities and the limit can be disabled',()=>{
   a.start();const r=a.inspect(`(()=>{const c=cellAt(40,20),j=WD.nb[c*4+1];S.pop[c]=100000;S.pop[j]=300000;
-   const cities=[{cell:c},{cell:j}],v={scale:1,zoom:1,ox:-(WD.cxA[c]+.5)*SC+100,oy:-(WD.cyA[c]+.5)*SC+100,width:300,height:300};
+   const cities=[{cell:c,population:10000},{cell:j,population:30000}],v={scale:1,zoom:1,ox:-(WD.cxA[c]+.5)*SC+100,oy:-(WD.cyA[c]+.5)*SC+100,width:300,height:300};
    const low=selectAtlasCities(cities,v),all=selectAtlasCities(cities,v,false),high=selectAtlasCities(cities,{...v,scale:15,zoom:15,ox:-(WD.cxA[c]+.5)*SC*15+100,oy:-(WD.cyA[c]+.5)*SC*15+100});
    return {low:low.map(c=>c.cell),all:all.length,high:high.length,big:j}})()`);
   assert.deepEqual(r.low,[r.big]);assert.equal(r.all,2);assert.equal(r.high,2);

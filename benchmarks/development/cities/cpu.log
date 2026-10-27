@@ -1,0 +1,28 @@
+before early 1/3
+after early 1/3
+after early 2/3
+before early 2/3
+before early 3/3
+after early 3/3
+before developed 1/3
+after developed 1/3
+after developed 2/3
+before developed 2/3
+before developed 3/3
+after developed 3/3
+{
+  "early": {
+    "kernelRatio": 1.0635745401348773,
+    "worldBufferDelta": 1280008,
+    "saveRatio": 1.00052433649817,
+    "beforeStates": 0,
+    "afterStates": 0
+  },
+  "developed": {
+    "kernelRatio": 1.2400023859575229,
+    "worldBufferDelta": 2469600,
+    "saveRatio": 1.1658037586813406,
+    "beforeStates": 281,
+    "afterStates": 283
+  }
+}

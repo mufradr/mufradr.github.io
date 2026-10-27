@@ -1,0 +1,3 @@
+{"seed":"campaign-a","year":1520,"states":251,"wars":545,"seaOperations":10149,"overseasOperations":147,"commitments":28112,"militaryDeaths":7021026.141812589,"peaceMeanExhaustion":0.013141922438180763,"militarySpending":774792241,"campaignProvisions":228096594,"peakExhaustion":1,"warMeanExhaustion":0.3240755918949209}
+{"seed":"campaign-b","year":1520,"states":253,"wars":520,"seaOperations":9794,"overseasOperations":103,"commitments":28337,"militaryDeaths":7274243.386711545,"peaceMeanExhaustion":0.01257666423089523,"militarySpending":814839588,"campaignProvisions":238122686,"peakExhaustion":1,"warMeanExhaustion":0.34627888499029713}
+Passed: two 120-year prepared campaign/recovery worlds, including real overseas operations.

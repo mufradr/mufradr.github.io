@@ -1,4 +1,4 @@
-# Saved worlds — 0.17.0-dev.3
+# Saved worlds — 0.17.0-dev.4
 
 Open **Saves** on a phone, tablet or desktop. Three manual slots hold independent
 histories. Give a slot a name and choose **Save here**. A save finishes any pending
@@ -44,7 +44,7 @@ links only recreate starting conditions; they are not progress saves.
 
 Damaged, unsupported or structurally invalid imports are rejected before the
 running world is replaced. Loading a valid file requires confirmation. This first
-save schema accepts v0.13.0, v0.14.0, v0.14.1, v0.15.0 and this engine version; future releases need explicit
+save schema accepts v0.13.0–v0.16.0, v0.17.0-dev.1–dev.3 and this engine version; future releases need explicit
 compatibility handling or migrations. Older local records are never deleted just
 because their engine version differs; they remain exportable.
 
@@ -78,7 +78,7 @@ terrain links and simulation consistency before swapping globals. The pre-existi
 colony-coast diagnostic is advisory: communities with valid stored records are not
 rejected merely because a valid land source fails the existing coastal-source
 diagnostic. Destinations must still be coastal land and all locations valid.
-No simulation rules or random sequence were intentionally changed.
+Continuing an older checkpoint applies the receiving engine's simulation rules.
 
 Tests compare every world/state value and RNG state after saving and reloading an
 advanced maritime world and continuing forty years, and exercise generated and
@@ -149,3 +149,15 @@ and broken manpower/food/fiscal identities. Legacy worlds and dev.1/dev.2 saves
 start military bookkeeping without fabricated past armies or casualty histories.
 The final release must keep all development versions in its compatibility list.
 See [WARFARE.md](WARFARE.md) for accounting, scheduling and model limits.
+
+### Cities checkpoint (0.17.0-dev.4)
+
+Urban version 1 saves real urban residents, local institutions, optional bounded
+technique archives, an annual clock and three fixed faith shares per province.
+Older cities receive labelled urban estimates, retaining the old whole-province
+peak separately; no past urban peak, archive or minority faith census is invented.
+Current-format partial fields, overpopulated cities and malformed shares/archives
+are rejected. dev.3 and all earlier supported checkpoints remain readable.
+Population rankings now include represented minorities, while map footprints
+remain dominant identities. Previous recorded peaks retain their older meaning.
+See [CITIES.md](CITIES.md) for migration details and storage limits.

@@ -20,7 +20,7 @@ function foodStorageCapacity(i,efficiency=cerealEff(i),quality=worksQuality(i)){
 function beginFoodYear(i,ledger){
  const s=S,n=networkEconomy,p=s.pop[i],opening=s.foodStock[i];
  if(!p&&!opening){n.production[i]=n.food[i]=n.available[i]=0;return false}
- const production=Math.min(s.K[i],p*(1-militaryLabor(i))*(1.04+0.26*s.farm[i]+0.05*s.herd[i]));
+ const production=Math.min(s.K[i],p*civilianHarvestLabor(i)*(1.04+0.26*s.farm[i]+0.05*s.herd[i]));
  if(!s.farm[i]&&!opening){
   n.production[i]=n.food[i]=production;n.available[i]=s.herd[i]>=0.5?Math.max(0,production-p)*0.15:0;
   ledger.production+=production;ledger.demand+=p;ledger.unmet+=Math.max(0,p-production);return s.herd[i]>0;

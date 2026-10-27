@@ -3,16 +3,17 @@
 An interactive browser simulation of populations, states, cultures, and climate,
 hosted on GitHub Pages at https://mufradr.github.io/.
 
-The app identifies itself as version 0.17.0-dev.3. It is a static site: no package
+The app identifies itself as version 0.17.0-dev.4. It is a static site: no package
 installation or build step is required to run or publish it. `.nojekyll` enables
 direct static serving on GitHub Pages.
 
-The local development build completes the economic foundation, government and warfare
+The local development build completes the economic foundation, government, warfare and cities
 chunks of the civilization-development plan: conserved food reserves, maintained
-infrastructure, gradual provincial decline/recovery, autonomy, actual tribute and sustainable campaigns.
+infrastructure, gradual provincial decline/recovery, autonomy, actual tribute, sustainable campaigns,
+food-supported urban populations, local institutions and gradual cultural/religious change.
 See [economic rules](docs/ECONOMY.md), [government rules](docs/GOVERNMENT.md)
-and [warfare rules](docs/WARFARE.md).
-Publication as v0.17.0 follows the remaining implementation and integration chunks.
+and [warfare rules](docs/WARFARE.md), plus [cities and communities](docs/CITIES.md).
+Publication as v0.17.0 follows final integration and historical calibration.
 
 ## Run locally
 
@@ -41,6 +42,8 @@ Google Fonts are optional external resources; fallback fonts work offline.
 | `styles/base.css` | Base styles and safe-area defaults |
 | `styles/app.css` | App layout, map controls, and responsive styles |
 | `assets/earth.js` | Compressed elevation and Köppen climate data |
+| `js/cities.js` | Urban residents, civic/scholarly institutions and local knowledge archives |
+| `js/communities.js` | Bounded demographic shares, migration, conversion and cultural contact |
 | `js/warfare.js` | Bounded service, campaign supply, losses, recovery and dependency defense |
 | `js/government.js` | Provincial control, autonomy, gradual decline and dependency obligations |
 | `js/economy.js` | Food reserves, infrastructure condition and government budgets |
@@ -58,7 +61,8 @@ Google Fonts are optional external resources; fallback fonts work offline.
 | `tools/baseline/` | Fixed-protocol history, performance, browser and comparison tools |
 | `benchmarks/baselines/v0.16.0/` | Preserved measurements and readable baseline reports |
 
-Scripts load in order: Earth data, simulation core, economy, government, warfare, colonies, atlas analysis, experiments, diagnostics, then interface. They use
+Scripts load in order: Earth data, simulation core, economy, government, warfare, cities,
+communities, colonies, atlas analysis, experiments, diagnostics, then interface. They use
 classic scripts with shared bindings; preserve that order. Edit the relevant
 file and reload the browser. Keep all these directories alongside `index.html`
 when serving or publishing the site. Relative asset URLs also support hosting
@@ -84,6 +88,8 @@ set `CHROMIUM_PATH` to its executable. The tests automatically use
   years, and finite, nonnegative population values.
 - `npm run validate:maritime` checks 300 years of prepared ocean ports, settlements,
   passenger minorities and integrity without forcing founding success.
+- `npm run validate:cities` checks two prepared 120-year urban worlds through
+  demographic shock, political collapse and successor recovery, with integrity checks.
 - `npm run validate:states` reports 6,500 years of early political development,
   including regional polity counts and the population shares held by states and
   tributary blocs. Use `npm run validate:states -- another-seed 6500` to compare seeds.

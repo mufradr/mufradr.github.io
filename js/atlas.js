@@ -54,9 +54,9 @@ function atlasScreenPoint(cell,view){
 }
 function selectAtlasCities(cities,view,optimize=true){
  const visible=[];
- for(const c of cities)if(S.pop[c.cell]>=60000){const p=atlasScreenPoint(c.cell,view);if(p)visible.push({city:c,point:p})}
+ for(const c of cities)if(cityPopulation(c)>=CITY_LABEL_POP){const p=atlasScreenPoint(c.cell,view);if(p)visible.push({city:c,point:p})}
  if(!optimize)return visible.map(v=>v.city);
- visible.sort((a,b)=>S.pop[b.city.cell]-S.pop[a.city.cell]||a.city.cell-b.city.cell);
+ visible.sort((a,b)=>cityPopulation(b.city)-cityPopulation(a.city)||a.city.cell-b.city.cell);
  const gap=view.zoom>=5?14:view.zoom>=2.6?30:48,gap2=gap*gap,bins=new Map(),out=[];
  for(const {city:c,point:p} of visible){const bx=Math.floor(p.x/gap),by=Math.floor(p.y/gap);let crowded=false;
   nearby:for(let x=bx-1;x<=bx+1;x++)for(let y=by-1;y<=by+1;y++)for(const q of bins.get(x+','+y)||[]){const dx=p.x-q.x,dy=p.y-q.y;if(dx*dx+dy*dy<gap2){crowded=true;break nearby}}

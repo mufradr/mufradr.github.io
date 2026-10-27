@@ -19,18 +19,9 @@ function addColonyMigrants(colony,amount,source=colony.source,maxShare=0.02){
   const s=S,i=source,j=colony.cell,old=s.pop[j];
   if(i===j||s.eth[i]<0)return 0;
   amount=Math.min(amount,s.pop[i]*maxShare);if(amount<=0)return 0;
-  const people=s.eth[i],minor=s.eth2[j]>=0?old*s.mix[j]:0;
-  if(s.eth[j]!==people&&s.eth2[j]>=0&&s.eth2[j]!==people&&s.mix[j]>=0.03)return 0;
-  const sourceMinor=s.pop[i]*s.mix[i];s.pop[i]-=amount;
-  if(s.eth2[i]>=0){s.mix[i]=sourceMinor/s.pop[i];if(s.mix[i]>0.5){const a=s.eth[i];s.eth[i]=s.eth2[i];s.eth2[i]=a;s.mix[i]=1-s.mix[i]}}
-  s.pop[j]+=amount;if(people===colony.people||colonyDescendant(people,colony.founderPeople??colony.people))colony.settlers+=amount;
-  if(old<1||s.eth[j]<0){s.eth[j]=people;s.eth2[j]=-1;s.mix[j]=0;s.rel[j]=s.rel[i];s.adapt[j]=s.adapt[i]}
-  else if(s.eth[j]===people){s.mix[j]=minor/s.pop[j]}
-  else{
-    const existing=s.eth2[j]===people?minor:0;
-    s.eth2[j]=people;s.mix[j]=(existing+amount)/s.pop[j];
-    if(s.mix[j]>0.5){const local=s.eth[j];s.eth[j]=people;s.eth2[j]=local;s.mix[j]=1-s.mix[j]}
-  }
+  const people=s.eth[i];amount=transferCommunity(i,j,amount);if(amount<=0)return 0;
+  if(people===colony.people||colonyDescendant(people,colony.founderPeople??colony.people))colony.settlers+=amount;
+  if(old<1)s.adapt[j]=s.adapt[i];
   for(const field of s.tk)field[j]=Math.max(field[j],field[i]*0.85);
   s.s[j]=Math.max(s.s[j],0.4);colony.settlers=Math.min(colony.settlers,s.pop[j]);colony.lastPopulation=s.pop[j];
   const origin=s.colonies.get(i);if(origin&&origin!==colony){origin.settlers=Math.min(Math.max(0,origin.settlers-(origin.people===people?amount:0)),s.pop[i]);origin.lastPopulation=s.pop[i]}
