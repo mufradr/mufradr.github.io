@@ -1,5 +1,25 @@
 # Release history
 
+## 0.17.0-dev.3 — Campaign sustainability (local development)
+
+- Add bounded, gradual mobilization and demobilization with one annual service
+  capacity shared across fronts, offensives, defense and dependency reinforcements.
+- Make deployed manpower compete with civilian harvest labor. Conserve additional
+  campaign provisions in the food ledger without charging human rations twice.
+- Replace the flat wartime treasury levy with actual manpower/equipment/operating
+  requirements inside the shared government budget; use the same costs for tribute.
+- Connect sustainable operations to food, distance, terrain, control, maintained
+  roads, known maritime corridors, port throughput, funding and exhaustion.
+- Resolve engagements using committed forces. Apply regular military losses to
+  recruitment homes once, including defeated states; record militia and civilian
+  losses separately. Remove blanket population-loss multipliers on capture/civil war.
+- Let direct vassals/protectors contribute reachable defensive reinforcements from
+  their own pools. Record withheld service, failed protection and pressure for peace.
+- Add prolonged-war exhaustion, field attrition, postwar recovery, saved military
+  accounting, inspectors and validated migration of previous development saves.
+- Document rules, simplifications, focused tests and prepared stress measurements.
+  This is implementation chunk 4; final historical calibration and publication follow.
+
 ## 0.17.0-dev.2 — Government and dependencies (local development)
 
 - Track provincial control, loyalty and negotiated autonomy separately from cultural

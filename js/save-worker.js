@@ -1,5 +1,5 @@
 "use strict";
-importScripts('save-codec.js?v=0.17.0-dev.2');
+importScripts('save-codec.js?v=0.17.0-dev.3');
 self.onmessage=async({data})=>{
  try{const transfer=[];const result=data.action==='encode'?await encodeWorldFile(data.payload):await decodeWorldFile(data.bytes,transfer);
   if(data.action==='encode')transfer.push(result.buffer);

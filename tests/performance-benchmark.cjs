@@ -3,7 +3,7 @@
 const fs=require('node:fs'),path=require('node:path'),{inflateSync}=require('node:zlib'),{createHash}=require('node:crypto');
 const root=path.resolve(__dirname,'..');
 function loadBenchmarkCore(corePath=path.join(root,'js/core.js'),historyPath,coloniesPath,assetsPath){
- const files=['assets/earth.js','js/core.js', 'js/economy.js','js/government.js','js/colonies.js','js/atlas.js','js/history.js','js/experiments.js','js/diagnostics.js','js/save-codec.js','js/saves.js'];
+ const files=['assets/earth.js','js/core.js', 'js/economy.js','js/government.js','js/warfare.js','js/colonies.js','js/atlas.js','js/history.js','js/experiments.js','js/diagnostics.js','js/save-codec.js','js/saves.js'];
  const source=files.map(f=>fs.readFileSync(f==='assets/earth.js'&&assetsPath?assetsPath:f==='js/core.js'?corePath:f==='js/history.js'&&historyPath?historyPath:f==='js/colonies.js'&&coloniesPath?coloniesPath:path.join(root,f),'utf8')).join('\n');
  return Function('inflateSync',source+`\nreturn {inspect(code){return eval(code)},step,slices:stepG,save:captureWorldSave,get state(){return S}}`)(inflateSync);
 }

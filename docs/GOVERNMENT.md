@@ -1,5 +1,8 @@
 # Government and dependencies — 0.17.0-dev.2
 
+The subsequent [campaign checkpoint](WARFARE.md) replaces the flat wartime charge
+and adds mobilization, exhaustion, reachable reinforcements and withheld service.
+
 Chunk 3 builds on the [economic foundation](ECONOMY.md). This is a local
 checkpoint, not the final v0.17.0 release. Campaign supply, mobilization, cities
 and full historical calibration remain later chunks.

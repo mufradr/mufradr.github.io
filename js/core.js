@@ -1,7 +1,7 @@
 
 "use strict";
 /* ================= SIMULATION CORE (no DOM) ================= */
-const ENGINE_VERSION='0.17.0-dev.2';
+const ENGINE_VERSION='0.17.0-dev.3';
 const calendarPhase=(year,period)=>((year%period)+period)%period;
 const W=400,H=200,N=W*H,SC=4,HW=W*SC,HH=H*SC,AGW=40,AGH=20;
 const PDEF=[
@@ -586,6 +586,7 @@ function newHistory(hseed){
   const w=WD,r=mulberry32(hashStr('hist:'+hseed+':'+w.seed));
   const tk=TECH.map(()=>new Float32Array(N));
   S={r,initialRules:{...P},seed:hseed,year:P.startYear,start:P.startYear,famN:0,tk,
+    warfareVersion:1,militaryYear:null,
     governmentVersion:1,control:new Float32Array(N),loyalty:new Float32Array(N),autonomy:new Float32Array(N),governor:new Int32Array(N),governmentYear:null,tributeLedger:null,
     economyVersion:1,foodStock:new Float64Array(N),works:new Float32Array(N).fill(1),worksYear:null,foodLedger:null,
     settled:new Uint16Array(N),pop:new Float32Array(N),K:new Float32Array(N),eth:new Int32Array(N).fill(-1),eth2:new Int32Array(N).fill(-1),mix:new Float32Array(N),mixT:new Uint8Array(N),
@@ -743,7 +744,8 @@ function moveFood(a,b,capacity,loss){
 }
 function transportEconomy(){
   const s=S,w=WD,n=networkEconomy;n.state=s;n.year=s.year;n.states.clear();n.income.fill(0);
-  const ledger=s.foodLedger={year:s.year,openingStock:0,production:0,demand:0,consumption:0,spoilage:0,shippingLoss:0,waste:0,closingStock:0,unmet:0};
+  resetMilitaryFood();
+  const ledger=s.foodLedger={campaignUse:0,year:s.year,openingStock:0,production:0,demand:0,consumption:0,spoilage:0,shippingLoss:0,waste:0,closingStock:0,unmet:0};
   let fullEconomy=!!(s.alive.length||s.routes.length||s.seaRoutes.size);
   for(const i of w.landIdx){n.local[i]=s.K[i];if(beginFoodYear(i,ledger)||s.pol[i])fullEconomy=true}
   // With no farming, herding, stores, states or routes there are no possible
@@ -774,7 +776,7 @@ function transportEconomy(){
     o.population+=p;o.shortfall+=Math.max(0,p-n.food[i]);o.trade+=Math.min(p*0.08,n.income[i]);o.production+=n.production[i];o.consumption+=Math.min(p,n.food[i]);o.stored+=s.foodStock[i];o.quality+=p*q;
     o.maintenance+=p*0.025*(s.roads[i]+0.8*s.irrig[i]+0.4*s.admin[i]*s.farm[i])*(1+2*(1-q));
   }
-  ledger.consumption=ledger.demand-ledger.unmet;
+  ledger.consumption=ledger.demand-ledger.unmet;finishMilitaryFood();
 }
 function tradeContact(a,b,rate){
   const s=S;
@@ -1127,6 +1129,7 @@ function newPolity(c,from,opt){
     h:P.reach,gate:1,aggrM:1,psi:0,why:null,hist:[],tier:'Chiefdom',full:'',peak:'',from:from?from.id:0,lastBy:0,fK:0,fE:0,lx:0,ly:0,crises:0,
     rel:s.rel[c],allies:[],enemies:new Map(),truce:new Map(),nb:new Map(),over:0,tribs:0,spc:0,era:0,rulers:[],warsF:[],kids:[],
     origin:opt.origin||(from?{type:'rebellion',from:from.id}:s.colonies.has(c)&&s.colonies.get(c).status==='active'&&colonyDescendant(e,s.colonies.get(c).founderPeople)?{type:'colony',people:s.colonies.get(c).founderPeople,settlement:s.colonies.get(c).name,year:s.colonies.get(c).founded}:{type:'emerged',people:e}),loot:0,cult:0.2,works:[],golds:[],goldStart:0,sample:[],succ:null,fortN:0,cityPop:0,island:false,assimT:0,conqDyn:!!opt.conqDyn,settledY:0,restores:opt.restores||0};
+  o.military=newMilitaryState();if(from?.military)o.military.exhaustion=from.military.exhaustion;
   o.ruler=newRuler(L,o);o.founderR=o.ruler;o.tier=tierOf(o);o.full=fullName(o);o.peak=o.full;
   o.civ=from?(from.civ||from.base):o.base;if(from)from.kids.push(id);
   if(from&&from.cplx!=null){o.cplx=from.cplx*0.55;o.ineq=from.ineq*0.85;o.treas=from.treas??0;o.warC=0;o.fiscalStress=from.fiscalStress||0}
@@ -1181,7 +1184,7 @@ function civilWar(o,breakup){
   const sOK=seeds.filter(c=>lab[c]===-2);if(!sOK.length){for(const i of cells)lab[i]=0;return}
   const ids=sOK.map(c=>{const nid=newPolity(c,o,{kind:o.kind,origin:{type:'rebellion',from:id,why}});lab[c]=nid;q[t++]=c;return nid});
   while(h<t){const i=q[h++],l=lab[i];for(let d=0;d<4;d++){const j=w.nb[i*4+d];if(j>=0&&lab[j]===-2){lab[j]=l;q[t++]=j}}}
-  for(const i of cells){const l=lab[i];if(l>0&&l!==id){s.pol[i]=l;s.s[i]=Math.min(1,s.s[i]+0.12)}s.pop[i]*=0.94;lab[i]=0}
+  for(const i of cells){const l=lab[i];if(l>0&&l!==id){s.pol[i]=l;s.s[i]=Math.min(1,s.s[i]+0.12)}lab[i]=0}
   {let kept=0;for(const i of cells)if(s.pol[i]===id)kept++;
    if(cells.length>=10&&(breakup||kept<0.55*cells.length)){const o0=o,nid=newPolity(o.capital,o,{kind:o.kind,origin:{type:'successor',from:id}});for(const i of cells)if(s.pol[i]===id)s.pol[i]=nid;
     const n2=s.pols[nid];n2.born=s.year+1;n2.civ=o0.civ||o0.base;n2.rel=o0.rel;if(o0.cplx!=null){n2.cplx=o0.cplx*0.7;n2.ineq=o0.ineq*0.8}o=n2}}
@@ -1251,10 +1254,11 @@ function defense(j){const s=S,w=WD,q=s.pol[j];let Ud;
 function displace(j,frac,byPol){const s=S;const p=s.pop[j]*frac;if(p<1)return 0;s.pop[j]-=p;pushPressure(s.eth[j],p,j,byPol,null);return p}
 function attack(o,i,j,sea){
   const s=S,w=WD,q=s.pol[j];
-  const di=dd(i);
-  let Ua=Math.pow(strength(o)+1,P.scaleExp)*(0.5*o.S+0.5*s.s[i])*milAt(i)*Math.exp(-di/o.h);if(sea){const dq=s.pol[j]?s.pols[s.pol[j]]:null;const nv=x=>x?(0.3+s.nav[x.capital]+0.5*s.ocean[x.capital])*Math.min(1,0.2+2*x.coastN/Math.max(1,x.cells)):0;Ua*=clamp(0.35+0.5*(nv(o)-0.7*nv(dq)),0.15,0.9)}
+  const plan=commitCampaign(o,i,j,sea);if(!plan)return;
+  let Ua=Math.pow(plan.committed+1,P.scaleExp)*(0.5*o.S+0.5*s.s[i])*milAt(i);if(sea){const dq=s.pol[j]?s.pols[s.pol[j]]:null;const nv=x=>x?(0.3+s.nav[x.capital]+0.5*s.ocean[x.capital])*Math.min(1,0.2+2*x.coastN/Math.max(1,x.cells)):0;Ua*=clamp(0.35+0.5*(nv(o)-0.7*nv(dq)),0.15,0.9)}
   if(!q&&s.pop[j]<1){if(!sea&&s.r()<(o.kind==='horde'?0.15:dd(i)<0.45*o.h||s.fort[i]>0.3?0.05:0.005)&&(o.kind!=='horde'||w.nomad[j]||w.desert[j])){s.pol[j]=o.id;s.taken[j]=s.year;s.dist[j]=Math.min(65534,s.dist[i]+(w.tcost[j]||2))}return}
-  let Ud=defense(j);
+  Ua*=plan.access*militaryReadiness(o);
+  let Ud=campaignDefense(j,plan);
   // stateless peoples melt into forest and hills and fight on; with no capital to take there is no single victory. Only gunpowder changes the odds.
   if(!q&&o.kind==='state')Ud*=(2.2+2*s.forest[j]+2*w.rough[j])/(1+3*s.gun[i]);
   if(w.nomad[j]&&o.kind!=='horde'&&o.nomF<0.4)Ud*=2.5/(1+2*s.gun[i]);
@@ -1269,10 +1273,11 @@ function attack(o,i,j,sea){
   const tro=WD.trop[j]>0.5&&WD.trop[o.capital]<0.3?0.45:1;
   const pw2=tro*ub*(kin&&dpol.rel===o.rel?Math.min(0.9,pw*1.15+0.01):pw)*(o.kind==='state'?0.1+0.9*Math.pow(cerealEff(j),1.5):1);
   const eA=ecoD(j,o),pw3=pw2*Math.exp(-P.eco*(o.kind==='horde'?0.4:1.2)*Math.pow(Math.max(0,eA-0.4),1.3));
-  if(s.r()<pw3){
+  const won=s.r()<pw3,wid=q?o.enemies.get(q):null,war=wid!=null?s.wars[wid]:null;resolveCampaign(o,dpol,plan,won,war);
+  if(won){
     const ej=s.eth[j];
     s.integ[j]=(ej>=0&&s.eths[ej]&&s.eths[o.core]&&s.eths[ej].fam===s.eths[o.core].fam?0.35:0.08)+(s.rel[j]===o.rel&&o.rel>=0?0.15:0);
-    s.pol[j]=o.id;s.taken[j]=s.year;s.pop[j]*=0.93;s.s[j]=Math.max(s.s[j]*0.8,0.05);s.dist[j]=Math.min(65534,s.dist[i]+(sea?6:(w.tcost[j]||2)));
+    s.pol[j]=o.id;s.taken[j]=s.year;campaignCivilianLoss(j,0.003,war);s.s[j]=Math.max(s.s[j]*0.8,0.05);s.dist[j]=Math.min(65534,s.dist[i]+(sea?6:(w.tcost[j]||2)));
     if(o.kind==='horde'&&ej>=0&&ej!==o.core)displace(j,0.2,o.id);
     o.conq++;o.ruler.conq++;
     if(q){const d=s.pols[q];d.lastBy=o.id;d.shock+=0.004;d.mandate=Math.max(0,(d.mandate||1)-0.01);const wid=o.enemies.get(q);if(wid!=null){const war=s.wars[wid];recordWarCapture(wid,j);if(war.aSet.has(o.id))war.gA++;else war.gD++;war.lastGain=s.year;
@@ -1280,12 +1285,12 @@ function attack(o,i,j,sea){
   }
 }
 function raid(o,i,j){
-  const s=S,q=s.pol[j],t=s.pols[q];if(!t||t.over===o.id)return;
-  const Ua=Math.pow(o.pop+1,0.75)*(0.5*o.S+0.5*s.s[i])*milAt(i),Ud=defense(j);
-  if(s.r()<clamp((Ua-Ud*0.6)/(Ua+Ud),0.05,0.9)){
-    const taken=s.pop[j]*0.03;s.pop[j]-=taken;o.loot+=taken*0.5;t.shock+=0.012;t.raided=(t.raided||0)+1;
-    displace(j,0.04,o.id);
-  }
+  const s=S,q=s.pol[j],t=s.pols[q];if(t?.over===o.id)return;
+  const plan=commitCampaign(o,i,j,false);if(!plan)return;
+  const Ua=Math.pow(plan.committed+1,P.scaleExp)*(0.5*o.S+0.5*s.s[i])*milAt(i)*plan.access*militaryReadiness(o),Ud=campaignDefense(j,plan);
+  const won=s.r()<clamp((Ua-Ud*0.6)/(Ua+Ud),0.05,0.9),wid=q?o.enemies.get(q):null,war=wid!=null?s.wars[wid]:null;
+  resolveCampaign(o,t,plan,won,war);
+  if(won){campaignCivilianLoss(j,0.001,war);o.loot+=s.pop[j]*0.015;if(t){t.shock+=0.012;t.raided=(t.raided||0)+1}displace(j,0.02,o.id)}
 }
 function decisive(o,d,war){
   const s=S,r=s.r;const kin=s.eths[d.core]&&s.eths[o.core]&&s.eths[d.core].fam===s.eths[o.core].fam;
@@ -1325,7 +1330,7 @@ function declareWar(As,Ds,name,notable,civil,holy){
     for(const al of D.allies){const p=s.pols[al];if(p&&p.alive&&!war.a.includes(al)&&!war.d.includes(al)&&r()<0.75)war.d.push(al)}
     if(holy){for(const [q] of D.nb){const p=s.pols[q];if(p&&p.alive&&p.kind==='state'&&p.rel===A.rel&&!war.a.includes(q)&&!war.d.includes(q)&&!p.enemies.has(D.id)&&r()<0.3*P.zeal)war.a.push(q)}}
   }
-  if(!civil)addDependencyProtection(war);
+  if(!civil){addDependencyProtection(war);addVassalMilitaryService(war)}
   for(const id of war.a.concat(war.d)){const o=s.pols[id];if(o.over&&(war.a.includes(id)?war.d:war.a).includes(o.over))endDependency(o,'the two governments are now at war')}
   war.populationAtStart=[...new Set(war.a.concat(war.d))].reduce((n,k)=>n+(s.pols[k]?.pop||0),0);war.finished=false;
   war.aSet=new Set(war.a);
@@ -1335,7 +1340,7 @@ function declareWar(As,Ds,name,notable,civil,holy){
   return war;
 }
 function endWar(war){
-  const s=S;war.end=s.year;war.finished=true;
+  const s=S;if(war.finished)return;war.end=s.year;war.finished=true;
   for(const a of war.a)for(const d of war.d){const pa=s.pols[a],pd=s.pols[d];
     if(pa.enemies.get(d)===war.id){pa.enemies.delete(d);pd.enemies.delete(a)}
     pa.truce.set(d,s.year+25);pd.truce.set(a,s.year+25)}
@@ -1581,7 +1586,7 @@ function culture(o){
 // Keep phase inputs fixed and visit cells/RNG draws in their original order.
 function aggregatePoliticalCells(phase,from,to){
   const {s,w,r,pols,L,pol,pop,sampleNow}=phase;
-  for(let k=from;k<to;k++){const i=L[k],p=pol[i];if(!p)continue;const o=pols[p],pp=pop[i],collection=provincialGovernment(i,o,phase.governmentAdvance??false);
+  for(let k=from;k<to;k++){const i=L[k],p=pol[i];if(!p)continue;const o=pols[p],pp=pop[i];linkMilitaryHome(i,o);const collection=provincialGovernment(i,o,phase.governmentAdvance??false);
     o.pop+=pp;o.K+=s.K[i];o.cells++;o.area+=w.area[i];o.sS+=s.s[i];const di=dd(i);o.dS+=di;let eD=0;if(pp>=1){o.n0+=pp*w.nT[i];o.n1+=pp*w.nM[i];o.n2+=pp*w.nN[i];o.n3+=pp*w.nD[i];o.nw+=pp;if(o.ni){eD=ecoD(i,o);if(eD>0.8)o.forP+=pp}}o.ad+=s.admin[i];o.ig+=s.integ[i];const pl=s.ard[i]>0.5&&!w.tsetse[i];o.tax+=pp>=1?pp*s.farm[i]*cerealEff(i)*Math.exp(-di/(o.h||6))*(0.5+0.5*s.integ[i])*(0.6+0.4*s.circE[i])*(pl?1.1:0.8)/(1+0.3*P.eco*eD)*collection:0;if(pl)o.plN++;if(w.heavy[i]>0.4)o.hvN++;if(isWaste(i,o.kind==="horde"))o.wasteN++;if(s.car[i]>0.3){const tl=1500*s.car[i];o.tax+=tl;o.trade+=tl}
     if(w.nomad[i])o.nom++;if(w.coast[i])o.coastN++;if(s.farm[i]>0.5&&w.sF[i]>0.25&&pp/w.area[i]>2)o.farmN++;if(s.fort[i]>0.5)o.fortN++;
     o.cx+=w.cosLon[i];o.cy+=w.sinLon[i];o.yy+=w.cyA[i];if(pp>o.mp){o.mp=pp;o.mc=i}
@@ -1615,7 +1620,7 @@ function updatePoliticalBorders(phase,from,to){
       s.s[i]=clamp(sv,0.02,1);
       if(s.integ[i]<1){const fam=ei>=0&&s.eths[ei]&&s.eths[o.core]&&s.eths[ei].fam===s.eths[o.core].fam;s.integ[i]=Math.min(1,s.integ[i]+0.0011*s.control[i]*(1-0.5*s.autonomy[i])/(1+0.8*P.eco*ecoD(i,o))*(0.5+s.admin[i]+s.roads[i]+0.5*s.law[i])*(fam?1.5:0.6)*(ri>=0&&ri===o.rel?1.2:0.8)*(s.uni[i]>0.3&&s.eths[o.core]&&s.uniFam[i]===s.eths[o.core].fam?1.6:1))}
       if(cand>=0&&s.taken[i]!==y){const q=pol[cand];
-        if(horde&&!q&&!w.nomad[cand]&&!w.desert[cand]&&pop[cand]>=1){if(r()<P.raid*0.02*o.aggrM*o.gate){const t0=pop[cand]*0.03;pop[cand]-=t0;o.loot+=t0*0.5;displace(cand,0.02,o.id)}}
+        if(horde&&!q&&!w.nomad[cand]&&!w.desert[cand]&&pop[cand]>=1){if(r()<P.raid*0.02*o.aggrM*o.gate){raid(o,i,cand)}}
         else{const rate=q?wr*2*(1+3*s.circE[cand]):wr*(horde?1:Math.min(1,Math.max(0.1,pop[i]/w.area[i]/6))*(0.3+0.7*Math.min(1,o.press))*(1+2*s.gun[i]));if(r()<rate*o.aggrM*o.gate*expansionReadiness(o))attack(o,i,cand,candSea)}}
       if(horde&&rcand>=0&&r()<P.raid*0.025*o.aggrM*o.gate*(1-0.8*s.fort[rcand]))raid(o,i,rcand);
       const c=o.core;
@@ -1642,10 +1647,10 @@ function updatePoliticalBorders(phase,from,to){
   }
 
 }
-function politics(){for(const _ of politicsG());}
+function politics(){for(const _ of politicsG());finishMilitaryYear();}
 function* politicsG(){
   const s=S,w=WD,r=s.r,y=s.year,pols=s.pols,L=w.landIdx,pol=s.pol,pop=s.pop;
-  const sampleNow=y%10===0,governmentAdvance=beginGovernmentYear();
+  const sampleNow=y%10===0,governmentAdvance=beginGovernmentYear();beginMilitaryPolitics();
   for(const id of s.alive){const o=pols[id];o.pop=0;o.K=0;o.cells=0;o.area=0;o.sS=0;o.dS=0;o.ad=0;o.nom=0;o.cx=0;o.cy=0;o.yy=0;o.mp=-1;o.mc=-1;o.coastN=0;o.farmN=0;o.fortN=0;o.lmN=0;o.tax=0;o.ig=0;o.wasteN=0;o.plN=0;o.hvN=0;o.trade=0;o.n0=0;o.n1=0;o.n2=0;o.n3=0;o.nw=0;o.forP=0;if(sampleNow)o.sample=[]}
   const phase={s,w,r,y,pols,L,pol,pop,sampleNow,governmentAdvance};
   for(let from=0;from<L.length;from+=2048){if(from)yield;aggregatePoliticalCells(phase,from,Math.min(from+2048,L.length))}
@@ -1666,6 +1671,7 @@ function* politicsG(){
       continue}
     next.push(id);
     if(o.nw>0){const k=1/o.nw,nv=[o.n0*k,o.n1*k,o.n2*k,o.n3*k];o.ni=o.ni?o.ni.map((v,q)=>v*0.8+nv[q]*0.2):nv}o.forS=o.pop>0?o.forP/o.pop:0;
+    clampMilitaryManpower(militaryState(o),o.pop);
     o.control=o.pop?o.controlTotal/o.pop:0;o.loyalty=o.pop?o.loyaltyTotal/o.pop:0;o.autonomy=o.pop?o.autonomyTotal/o.pop:0;
     o.S=o.sS/o.cells;o.integ=o.ig/o.cells;if(o.mandate==null)o.mandate=1;o.press=o.K>0?o.pop/o.K:1;o.md=o.dS/o.cells;o.adm=o.ad/o.cells;o.nomF=o.nom/o.cells;
     if(pol[o.capital]!==id&&o.mc>=0){o.capitalLostYear=y;o.capital=o.mc;if(s.eth[o.mc]>=0&&!o.conqDyn)o.core=s.eth[o.mc]}
@@ -1756,7 +1762,7 @@ function* politicsG(){
     // nomads on the move
     if(o.kind==='horde'&&o.cells>=6&&o.pop>50000&&s.activeMigs.length<10&&((o.wet<-0.4&&o.press>0.75&&r()<0.02*P.wander)||(o.S>0.55&&Rn.aggr>0.7&&r()<0.006*P.wander))){hordeMigration(o)}
     // war
-    if(o.cells>=2&&o.enemies.size<3&&r()<P.warRate*0.02*o.aggrM*o.gate){
+    if(o.cells>=2&&o.enemies.size<3&&militaryPeacePressure(o)<0.55&&r()<P.warRate*0.02*o.aggrM*o.gate){
       let best=0,bw=0,holy=false;const po=power(o),Rl=o.rel>=0?s.rels[o.rel]:null,hp=Rl?pol[Rl.holy]:0;
       for(const [q,b] of o.nb){const t=pols[q];if(!t||!t.alive||o.enemies.has(q)||o.allies.includes(q)||o.over===q||t.over===id||(o.truce.get(q)||-1e9)>y)continue;
         let wt=b*Math.pow(po/(power(t)+1),1.5);
@@ -1775,7 +1781,7 @@ function* politicsG(){
   for(const wid of s.activeWars){const war=s.wars[wid];
     const aAlive=war.a.some(k=>pols[k].alive),dAlive=war.d.some(k=>pols[k].alive),yrs=y-war.start;
     const fresh=y-(war.lastGain||war.start);
-    if(!aAlive||!dAlive||r()<0.02+(fresh>8?0.08:0)+(yrs>40?0.1:0)){endWar(war);continue}
+    if(!aAlive||!dAlive||r()<campaignPeaceChance(war)){if(Math.max(...war.a.concat(war.d).map(k=>militaryPeacePressure(pols[k])))>0.5)war.peaceReason='exhaustion and supply costs';endWar(war);continue}
     still.push(wid)}
   s.activeWars=still;
   if(y%5===0)diplomacy();
@@ -1900,7 +1906,7 @@ function step(){for(const _ of stepG());}
 // one simulated year, split into slices so the page can stay responsive between them
 function* stepG(){
   const s=S;s.year++;
-  climateStep();weather();hearthCheck();
+  climateStep();weather();hearthCheck();prepareMilitaryYear();
   if(s.dTt>0){s.dTt--;if(!s.dTt)s.dT=0}
   else if(s.r()<0.0012*P.volcano)volcano();
   computeK();yield;transportEconomy();yield;growth();yield;migrate();seaHop();caravanContact();
@@ -1909,7 +1915,7 @@ function* stepG(){
   yield* politicsG();
   if(s.year%20===0){yield;ethPass(true);yield;relPass()}
   if(s.year%10===0){yield;recordStats();cityPass();yield;regionPass();yield;mixPass()}
-  colonyStep();
+  finishMilitaryYear();colonyStep();
 }
 
 /* ================= v0.5: land, ecology, disease, contact, inequality ================= */

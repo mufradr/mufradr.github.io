@@ -1,4 +1,4 @@
-# Saved worlds — 0.17.0-dev.2
+# Saved worlds — 0.17.0-dev.3
 
 Open **Saves** on a phone, tablet or desktop. Three manual slots hold independent
 histories. Give a slot a name and choose **Save here**. A save finishes any pending
@@ -139,3 +139,13 @@ tribute. Partial new schemas, nonfinite/out-of-range values and dependency cycle
 are rejected. `0.17.0-dev.1` remains accepted; old clients reject dev.2 saves.
 Preserve both development versions in the final release's compatibility allowlist.
 See [GOVERNMENT.md](GOVERNMENT.md) for units, accounting and migration limits.
+
+### Campaign checkpoint (0.17.0-dev.3)
+
+Warfare version 1 saves an annual clock and small state-level service, supply,
+funding, exhaustion and casualty records. No new military map grids are saved.
+Completed saves reject unsettled regular military deaths, invalid service pools
+and broken manpower/food/fiscal identities. Legacy worlds and dev.1/dev.2 saves
+start military bookkeeping without fabricated past armies or casualty histories.
+The final release must keep all development versions in its compatibility list.
+See [WARFARE.md](WARFARE.md) for accounting, scheduling and model limits.

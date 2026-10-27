@@ -1,0 +1,10 @@
+{
+  "beforeVersion": "0.17.0-dev.2",
+  "afterVersion": "0.17.0-dev.3",
+  "loadedYear": 1440,
+  "initialArmies": 0,
+  "continuedYear": 1480,
+  "states": 251,
+  "issues": [],
+  "runtimeSHA256": "96a3c9a0e830585400ca6ed3118309680a8dee1882eaaa573f3edd8fdb99f10c"
+}

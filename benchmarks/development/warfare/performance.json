@@ -1,0 +1,759 @@
+{
+  "protocol": "economic-foundation-paired-process-v2",
+  "environment": {
+    "node": "v24.19.0",
+    "cpu": "AMD EPYC 9V74 80-Core Processor"
+  },
+  "models": {
+    "before": {
+      "early": {
+        "trials": [
+          {
+            "source": {
+              "commit": "98a9ee61c19035c160992ec5c53d81c007ff382a",
+              "runtimeSHA256": "fa5d542af606de78c5705ade29fea44fbb264937fa94ae2aa0fdd89e5a760b79",
+              "files": {
+                "index.html": "714b685ae5cb57c340da6792277c7d475337533459aba2cc600befc4903b7166",
+                "assets/earth.js": "d9aabf45fa947490a75542987d792156b807e0d04deb898ec5261ea53f598c83",
+                "js/core.js": "94a61376840b5366ea02a9ffb0e1046f4d12bcb69a8c02c7485f3e2193e347d0",
+                "js/economy.js": "8c49d9b199c92e6be3fbfea32f625e9e0dc21fea8a0c714fa633db082b41a82a",
+                "js/government.js": "041df7a777ffa4a81dd927cd756be23f9786e6a5d3dc382264768b58afc39e41",
+                "js/colonies.js": "291e6d5b273ca541cafa7dae13540bb3253019b855ea1e4c4f6c9cd30fb132d0",
+                "js/atlas.js": "75757811a78fc0d7622e54eb8bd73e933135d7e9e757cb7c94da898a2ec4ce97",
+                "js/history.js": "6323c41afbf54f423eeb6a6d21a543a4df89fabdfe9ede5f5b1aa234bdc08c4d",
+                "js/experiments.js": "eae05399b8c60577b02064b22eedadecee966e9aac0d706477bfe91241a34d5a",
+                "js/diagnostics.js": "db381971dd9adfc3bed43d74aee16d249d9869c28b61d0903292c8a3dca844e7",
+                "js/save-codec.js": "b5ecec26a2f1cf8160115cfead4e7eb8d73bac3741ac2b02c0271ca08be799f5",
+                "js/saves.js": "b126321d18aa2d11c7fa998bdb99d34388ab3d83fd45ad665cdbe4a7a4efd8fe",
+                "js/ui.js": "33b088d71884365ed6f69b07c446b11be90bf59236aba29f8a5502e807dc2fd5",
+                "js/history-ui.js": "7034b508a99669305782db2c552f8ef41687231c76dcf1e6c9bf6d36ff1ddcc6",
+                "js/save-ui.js": "fa212c8cc641762d9c4e980f4d61016eb310152596d41f70e7e0e2e18ff56288",
+                "js/save-store.js": "7d153a175f2c2c7bd54a1f70caf604a00c2fd698eba9d4add30bea8258d620ef",
+                "js/save-worker.js": "de72d6991eba0e631fd9e0540110b5a684e610fb8b3a4b85f9ff466ae5077b27",
+                "styles/base.css": "a4a477526673b7cbb466775e39698516d7867f308f9c94fd1f243e5ffe190c75",
+                "styles/app.css": "8be08ad21030d1b0d4bd7e1022fb1574acc4ef2d16c796ab62a1b208706bcd29"
+              }
+            },
+            "version": "0.17.0-dev.2",
+            "scenario": "early",
+            "years": 120,
+            "warmup": 20,
+            "kernelMs": 1931.2341810000041,
+            "yearMs": {
+              "count": 120,
+              "min": 9.519795000000613,
+              "median": 13.734398000002784,
+              "p95": 31.894101999999293,
+              "p99": 53.57256899999925,
+              "max": 54.4931710000003
+            },
+            "sliceMs": {
+              "count": 5796,
+              "min": 0.0009709999999358843,
+              "median": 0.08628900000007889,
+              "p95": 1.6244579999997768,
+              "p99": 5.100541000000021,
+              "max": 14.424230999999963
+            },
+            "valueDigest": "55ac8cc8a0bab2da0f592f69eaee8757597084cf74a37f258a00d9025230cf90",
+            "checkpointSHA256": "8ec930829cb5684f66d85a6745a7e613f3820bf078af39801e14f558bad3636d",
+            "rawSaveBytes": 44700071,
+            "gzipSaveBytes": 7563821,
+            "worldBufferBytes": 61218379,
+            "states": 0,
+            "year": -8860,
+            "issues": []
+          },
+          {
+            "source": {
+              "commit": "98a9ee61c19035c160992ec5c53d81c007ff382a",
+              "runtimeSHA256": "fa5d542af606de78c5705ade29fea44fbb264937fa94ae2aa0fdd89e5a760b79",
+              "files": {
+                "index.html": "714b685ae5cb57c340da6792277c7d475337533459aba2cc600befc4903b7166",
+                "assets/earth.js": "d9aabf45fa947490a75542987d792156b807e0d04deb898ec5261ea53f598c83",
+                "js/core.js": "94a61376840b5366ea02a9ffb0e1046f4d12bcb69a8c02c7485f3e2193e347d0",
+                "js/economy.js": "8c49d9b199c92e6be3fbfea32f625e9e0dc21fea8a0c714fa633db082b41a82a",
+                "js/government.js": "041df7a777ffa4a81dd927cd756be23f9786e6a5d3dc382264768b58afc39e41",
+                "js/colonies.js": "291e6d5b273ca541cafa7dae13540bb3253019b855ea1e4c4f6c9cd30fb132d0",
+                "js/atlas.js": "75757811a78fc0d7622e54eb8bd73e933135d7e9e757cb7c94da898a2ec4ce97",
+                "js/history.js": "6323c41afbf54f423eeb6a6d21a543a4df89fabdfe9ede5f5b1aa234bdc08c4d",
+                "js/experiments.js": "eae05399b8c60577b02064b22eedadecee966e9aac0d706477bfe91241a34d5a",
+                "js/diagnostics.js": "db381971dd9adfc3bed43d74aee16d249d9869c28b61d0903292c8a3dca844e7",
+                "js/save-codec.js": "b5ecec26a2f1cf8160115cfead4e7eb8d73bac3741ac2b02c0271ca08be799f5",
+                "js/saves.js": "b126321d18aa2d11c7fa998bdb99d34388ab3d83fd45ad665cdbe4a7a4efd8fe",
+                "js/ui.js": "33b088d71884365ed6f69b07c446b11be90bf59236aba29f8a5502e807dc2fd5",
+                "js/history-ui.js": "7034b508a99669305782db2c552f8ef41687231c76dcf1e6c9bf6d36ff1ddcc6",
+                "js/save-ui.js": "fa212c8cc641762d9c4e980f4d61016eb310152596d41f70e7e0e2e18ff56288",
+                "js/save-store.js": "7d153a175f2c2c7bd54a1f70caf604a00c2fd698eba9d4add30bea8258d620ef",
+                "js/save-worker.js": "de72d6991eba0e631fd9e0540110b5a684e610fb8b3a4b85f9ff466ae5077b27",
+                "styles/base.css": "a4a477526673b7cbb466775e39698516d7867f308f9c94fd1f243e5ffe190c75",
+                "styles/app.css": "8be08ad21030d1b0d4bd7e1022fb1574acc4ef2d16c796ab62a1b208706bcd29"
+              }
+            },
+            "version": "0.17.0-dev.2",
+            "scenario": "early",
+            "years": 120,
+            "warmup": 20,
+            "kernelMs": 1917.6792600000113,
+            "yearMs": {
+              "count": 120,
+              "min": 9.62395999999967,
+              "median": 13.940682000000606,
+              "p95": 30.902392999999392,
+              "p99": 52.97571999999991,
+              "max": 53.95515199999977
+            },
+            "sliceMs": {
+              "count": 5796,
+              "min": 0.0008310000000619766,
+              "median": 0.08472699999992983,
+              "p95": 1.6256790000002184,
+              "p99": 5.235074000000168,
+              "max": 20.999994000000243
+            },
+            "valueDigest": "55ac8cc8a0bab2da0f592f69eaee8757597084cf74a37f258a00d9025230cf90",
+            "checkpointSHA256": "8ec930829cb5684f66d85a6745a7e613f3820bf078af39801e14f558bad3636d",
+            "rawSaveBytes": 44700071,
+            "gzipSaveBytes": 7563821,
+            "worldBufferBytes": 61218379,
+            "states": 0,
+            "year": -8860,
+            "issues": []
+          },
+          {
+            "source": {
+              "commit": "98a9ee61c19035c160992ec5c53d81c007ff382a",
+              "runtimeSHA256": "fa5d542af606de78c5705ade29fea44fbb264937fa94ae2aa0fdd89e5a760b79",
+              "files": {
+                "index.html": "714b685ae5cb57c340da6792277c7d475337533459aba2cc600befc4903b7166",
+                "assets/earth.js": "d9aabf45fa947490a75542987d792156b807e0d04deb898ec5261ea53f598c83",
+                "js/core.js": "94a61376840b5366ea02a9ffb0e1046f4d12bcb69a8c02c7485f3e2193e347d0",
+                "js/economy.js": "8c49d9b199c92e6be3fbfea32f625e9e0dc21fea8a0c714fa633db082b41a82a",
+                "js/government.js": "041df7a777ffa4a81dd927cd756be23f9786e6a5d3dc382264768b58afc39e41",
+                "js/colonies.js": "291e6d5b273ca541cafa7dae13540bb3253019b855ea1e4c4f6c9cd30fb132d0",
+                "js/atlas.js": "75757811a78fc0d7622e54eb8bd73e933135d7e9e757cb7c94da898a2ec4ce97",
+                "js/history.js": "6323c41afbf54f423eeb6a6d21a543a4df89fabdfe9ede5f5b1aa234bdc08c4d",
+                "js/experiments.js": "eae05399b8c60577b02064b22eedadecee966e9aac0d706477bfe91241a34d5a",
+                "js/diagnostics.js": "db381971dd9adfc3bed43d74aee16d249d9869c28b61d0903292c8a3dca844e7",
+                "js/save-codec.js": "b5ecec26a2f1cf8160115cfead4e7eb8d73bac3741ac2b02c0271ca08be799f5",
+                "js/saves.js": "b126321d18aa2d11c7fa998bdb99d34388ab3d83fd45ad665cdbe4a7a4efd8fe",
+                "js/ui.js": "33b088d71884365ed6f69b07c446b11be90bf59236aba29f8a5502e807dc2fd5",
+                "js/history-ui.js": "7034b508a99669305782db2c552f8ef41687231c76dcf1e6c9bf6d36ff1ddcc6",
+                "js/save-ui.js": "fa212c8cc641762d9c4e980f4d61016eb310152596d41f70e7e0e2e18ff56288",
+                "js/save-store.js": "7d153a175f2c2c7bd54a1f70caf604a00c2fd698eba9d4add30bea8258d620ef",
+                "js/save-worker.js": "de72d6991eba0e631fd9e0540110b5a684e610fb8b3a4b85f9ff466ae5077b27",
+                "styles/base.css": "a4a477526673b7cbb466775e39698516d7867f308f9c94fd1f243e5ffe190c75",
+                "styles/app.css": "8be08ad21030d1b0d4bd7e1022fb1574acc4ef2d16c796ab62a1b208706bcd29"
+              }
+            },
+            "version": "0.17.0-dev.2",
+            "scenario": "early",
+            "years": 120,
+            "warmup": 20,
+            "kernelMs": 1888.6121480000002,
+            "yearMs": {
+              "count": 120,
+              "min": 9.487827999999581,
+              "median": 13.328839999999218,
+              "p95": 30.73100600000089,
+              "p99": 56.83792900000026,
+              "max": 60.527546000001166
+            },
+            "sliceMs": {
+              "count": 5796,
+              "min": 0.0008109999998850981,
+              "median": 0.08265400000004774,
+              "p95": 1.7192079999999805,
+              "p99": 4.985746999999719,
+              "max": 15.732754000000114
+            },
+            "valueDigest": "55ac8cc8a0bab2da0f592f69eaee8757597084cf74a37f258a00d9025230cf90",
+            "checkpointSHA256": "8ec930829cb5684f66d85a6745a7e613f3820bf078af39801e14f558bad3636d",
+            "rawSaveBytes": 44700071,
+            "gzipSaveBytes": 7563821,
+            "worldBufferBytes": 61218379,
+            "states": 0,
+            "year": -8860,
+            "issues": []
+          }
+        ],
+        "kernelMs": {
+          "count": 3,
+          "min": 1888.6121480000002,
+          "median": 1917.6792600000113,
+          "p95": 1931.2341810000041,
+          "p99": 1931.2341810000041,
+          "max": 1931.2341810000041
+        },
+        "exactCheckpointRepetition": true
+      },
+      "developed": {
+        "trials": [
+          {
+            "source": {
+              "commit": "98a9ee61c19035c160992ec5c53d81c007ff382a",
+              "runtimeSHA256": "fa5d542af606de78c5705ade29fea44fbb264937fa94ae2aa0fdd89e5a760b79",
+              "files": {
+                "index.html": "714b685ae5cb57c340da6792277c7d475337533459aba2cc600befc4903b7166",
+                "assets/earth.js": "d9aabf45fa947490a75542987d792156b807e0d04deb898ec5261ea53f598c83",
+                "js/core.js": "94a61376840b5366ea02a9ffb0e1046f4d12bcb69a8c02c7485f3e2193e347d0",
+                "js/economy.js": "8c49d9b199c92e6be3fbfea32f625e9e0dc21fea8a0c714fa633db082b41a82a",
+                "js/government.js": "041df7a777ffa4a81dd927cd756be23f9786e6a5d3dc382264768b58afc39e41",
+                "js/colonies.js": "291e6d5b273ca541cafa7dae13540bb3253019b855ea1e4c4f6c9cd30fb132d0",
+                "js/atlas.js": "75757811a78fc0d7622e54eb8bd73e933135d7e9e757cb7c94da898a2ec4ce97",
+                "js/history.js": "6323c41afbf54f423eeb6a6d21a543a4df89fabdfe9ede5f5b1aa234bdc08c4d",
+                "js/experiments.js": "eae05399b8c60577b02064b22eedadecee966e9aac0d706477bfe91241a34d5a",
+                "js/diagnostics.js": "db381971dd9adfc3bed43d74aee16d249d9869c28b61d0903292c8a3dca844e7",
+                "js/save-codec.js": "b5ecec26a2f1cf8160115cfead4e7eb8d73bac3741ac2b02c0271ca08be799f5",
+                "js/saves.js": "b126321d18aa2d11c7fa998bdb99d34388ab3d83fd45ad665cdbe4a7a4efd8fe",
+                "js/ui.js": "33b088d71884365ed6f69b07c446b11be90bf59236aba29f8a5502e807dc2fd5",
+                "js/history-ui.js": "7034b508a99669305782db2c552f8ef41687231c76dcf1e6c9bf6d36ff1ddcc6",
+                "js/save-ui.js": "fa212c8cc641762d9c4e980f4d61016eb310152596d41f70e7e0e2e18ff56288",
+                "js/save-store.js": "7d153a175f2c2c7bd54a1f70caf604a00c2fd698eba9d4add30bea8258d620ef",
+                "js/save-worker.js": "de72d6991eba0e631fd9e0540110b5a684e610fb8b3a4b85f9ff466ae5077b27",
+                "styles/base.css": "a4a477526673b7cbb466775e39698516d7867f308f9c94fd1f243e5ffe190c75",
+                "styles/app.css": "8be08ad21030d1b0d4bd7e1022fb1574acc4ef2d16c796ab62a1b208706bcd29"
+              }
+            },
+            "version": "0.17.0-dev.2",
+            "scenario": "developed",
+            "years": 120,
+            "warmup": 20,
+            "kernelMs": 8189.512168999927,
+            "yearMs": {
+              "count": 120,
+              "min": 40.57440900000529,
+              "median": 59.303005000001576,
+              "p95": 108.63420200000564,
+              "p99": 128.7676869999991,
+              "max": 213.14189799999986
+            },
+            "sliceMs": {
+              "count": 5796,
+              "min": 0.004356999999799882,
+              "median": 0.5804210000005696,
+              "p95": 5.0672320000012405,
+              "p99": 15.783698999999615,
+              "max": 54.712743000000046
+            },
+            "valueDigest": "c0ab87722bb846302d049c397f3d4e059674c074db71d32315ef7f7e18d50db0",
+            "checkpointSHA256": "057deb15fea85cf471bd87946abc609e92963e5b8dd3c3824f037a300bf8eda8",
+            "rawSaveBytes": 63988893,
+            "gzipSaveBytes": 10308756,
+            "worldBufferBytes": 61489523,
+            "states": 236,
+            "year": 1540,
+            "issues": []
+          },
+          {
+            "source": {
+              "commit": "98a9ee61c19035c160992ec5c53d81c007ff382a",
+              "runtimeSHA256": "fa5d542af606de78c5705ade29fea44fbb264937fa94ae2aa0fdd89e5a760b79",
+              "files": {
+                "index.html": "714b685ae5cb57c340da6792277c7d475337533459aba2cc600befc4903b7166",
+                "assets/earth.js": "d9aabf45fa947490a75542987d792156b807e0d04deb898ec5261ea53f598c83",
+                "js/core.js": "94a61376840b5366ea02a9ffb0e1046f4d12bcb69a8c02c7485f3e2193e347d0",
+                "js/economy.js": "8c49d9b199c92e6be3fbfea32f625e9e0dc21fea8a0c714fa633db082b41a82a",
+                "js/government.js": "041df7a777ffa4a81dd927cd756be23f9786e6a5d3dc382264768b58afc39e41",
+                "js/colonies.js": "291e6d5b273ca541cafa7dae13540bb3253019b855ea1e4c4f6c9cd30fb132d0",
+                "js/atlas.js": "75757811a78fc0d7622e54eb8bd73e933135d7e9e757cb7c94da898a2ec4ce97",
+                "js/history.js": "6323c41afbf54f423eeb6a6d21a543a4df89fabdfe9ede5f5b1aa234bdc08c4d",
+                "js/experiments.js": "eae05399b8c60577b02064b22eedadecee966e9aac0d706477bfe91241a34d5a",
+                "js/diagnostics.js": "db381971dd9adfc3bed43d74aee16d249d9869c28b61d0903292c8a3dca844e7",
+                "js/save-codec.js": "b5ecec26a2f1cf8160115cfead4e7eb8d73bac3741ac2b02c0271ca08be799f5",
+                "js/saves.js": "b126321d18aa2d11c7fa998bdb99d34388ab3d83fd45ad665cdbe4a7a4efd8fe",
+                "js/ui.js": "33b088d71884365ed6f69b07c446b11be90bf59236aba29f8a5502e807dc2fd5",
+                "js/history-ui.js": "7034b508a99669305782db2c552f8ef41687231c76dcf1e6c9bf6d36ff1ddcc6",
+                "js/save-ui.js": "fa212c8cc641762d9c4e980f4d61016eb310152596d41f70e7e0e2e18ff56288",
+                "js/save-store.js": "7d153a175f2c2c7bd54a1f70caf604a00c2fd698eba9d4add30bea8258d620ef",
+                "js/save-worker.js": "de72d6991eba0e631fd9e0540110b5a684e610fb8b3a4b85f9ff466ae5077b27",
+                "styles/base.css": "a4a477526673b7cbb466775e39698516d7867f308f9c94fd1f243e5ffe190c75",
+                "styles/app.css": "8be08ad21030d1b0d4bd7e1022fb1574acc4ef2d16c796ab62a1b208706bcd29"
+              }
+            },
+            "version": "0.17.0-dev.2",
+            "scenario": "developed",
+            "years": 120,
+            "warmup": 20,
+            "kernelMs": 8085.37593500003,
+            "yearMs": {
+              "count": 120,
+              "min": 41.26678100000299,
+              "median": 56.930999000001975,
+              "p95": 105.04855600000519,
+              "p99": 134.94078300000092,
+              "max": 158.25534699999935
+            },
+            "sliceMs": {
+              "count": 5796,
+              "min": 0.004417000000103144,
+              "median": 0.569405000000188,
+              "p95": 5.1963660000001255,
+              "p99": 15.330439999999726,
+              "max": 33.87217799999962
+            },
+            "valueDigest": "c0ab87722bb846302d049c397f3d4e059674c074db71d32315ef7f7e18d50db0",
+            "checkpointSHA256": "057deb15fea85cf471bd87946abc609e92963e5b8dd3c3824f037a300bf8eda8",
+            "rawSaveBytes": 63988893,
+            "gzipSaveBytes": 10308756,
+            "worldBufferBytes": 61489523,
+            "states": 236,
+            "year": 1540,
+            "issues": []
+          },
+          {
+            "source": {
+              "commit": "98a9ee61c19035c160992ec5c53d81c007ff382a",
+              "runtimeSHA256": "fa5d542af606de78c5705ade29fea44fbb264937fa94ae2aa0fdd89e5a760b79",
+              "files": {
+                "index.html": "714b685ae5cb57c340da6792277c7d475337533459aba2cc600befc4903b7166",
+                "assets/earth.js": "d9aabf45fa947490a75542987d792156b807e0d04deb898ec5261ea53f598c83",
+                "js/core.js": "94a61376840b5366ea02a9ffb0e1046f4d12bcb69a8c02c7485f3e2193e347d0",
+                "js/economy.js": "8c49d9b199c92e6be3fbfea32f625e9e0dc21fea8a0c714fa633db082b41a82a",
+                "js/government.js": "041df7a777ffa4a81dd927cd756be23f9786e6a5d3dc382264768b58afc39e41",
+                "js/colonies.js": "291e6d5b273ca541cafa7dae13540bb3253019b855ea1e4c4f6c9cd30fb132d0",
+                "js/atlas.js": "75757811a78fc0d7622e54eb8bd73e933135d7e9e757cb7c94da898a2ec4ce97",
+                "js/history.js": "6323c41afbf54f423eeb6a6d21a543a4df89fabdfe9ede5f5b1aa234bdc08c4d",
+                "js/experiments.js": "eae05399b8c60577b02064b22eedadecee966e9aac0d706477bfe91241a34d5a",
+                "js/diagnostics.js": "db381971dd9adfc3bed43d74aee16d249d9869c28b61d0903292c8a3dca844e7",
+                "js/save-codec.js": "b5ecec26a2f1cf8160115cfead4e7eb8d73bac3741ac2b02c0271ca08be799f5",
+                "js/saves.js": "b126321d18aa2d11c7fa998bdb99d34388ab3d83fd45ad665cdbe4a7a4efd8fe",
+                "js/ui.js": "33b088d71884365ed6f69b07c446b11be90bf59236aba29f8a5502e807dc2fd5",
+                "js/history-ui.js": "7034b508a99669305782db2c552f8ef41687231c76dcf1e6c9bf6d36ff1ddcc6",
+                "js/save-ui.js": "fa212c8cc641762d9c4e980f4d61016eb310152596d41f70e7e0e2e18ff56288",
+                "js/save-store.js": "7d153a175f2c2c7bd54a1f70caf604a00c2fd698eba9d4add30bea8258d620ef",
+                "js/save-worker.js": "de72d6991eba0e631fd9e0540110b5a684e610fb8b3a4b85f9ff466ae5077b27",
+                "styles/base.css": "a4a477526673b7cbb466775e39698516d7867f308f9c94fd1f243e5ffe190c75",
+                "styles/app.css": "8be08ad21030d1b0d4bd7e1022fb1574acc4ef2d16c796ab62a1b208706bcd29"
+              }
+            },
+            "version": "0.17.0-dev.2",
+            "scenario": "developed",
+            "years": 120,
+            "warmup": 20,
+            "kernelMs": 7844.895704000012,
+            "yearMs": {
+              "count": 120,
+              "min": 39.919512000002214,
+              "median": 55.101851000000806,
+              "p95": 108.64637899999525,
+              "p99": 128.52098200000182,
+              "max": 133.14116599999943
+            },
+            "sliceMs": {
+              "count": 5796,
+              "min": 0.004477000000406406,
+              "median": 0.5449980000003052,
+              "p95": 4.937917999999627,
+              "p99": 15.558611999999812,
+              "max": 36.695104000000356
+            },
+            "valueDigest": "c0ab87722bb846302d049c397f3d4e059674c074db71d32315ef7f7e18d50db0",
+            "checkpointSHA256": "057deb15fea85cf471bd87946abc609e92963e5b8dd3c3824f037a300bf8eda8",
+            "rawSaveBytes": 63988893,
+            "gzipSaveBytes": 10308756,
+            "worldBufferBytes": 61489523,
+            "states": 236,
+            "year": 1540,
+            "issues": []
+          }
+        ],
+        "kernelMs": {
+          "count": 3,
+          "min": 7844.895704000012,
+          "median": 8085.37593500003,
+          "p95": 8189.512168999927,
+          "p99": 8189.512168999927,
+          "max": 8189.512168999927
+        },
+        "exactCheckpointRepetition": true
+      }
+    },
+    "after": {
+      "early": {
+        "trials": [
+          {
+            "source": {
+              "commit": "98a9ee61c19035c160992ec5c53d81c007ff382a",
+              "runtimeSHA256": "96a3c9a0e830585400ca6ed3118309680a8dee1882eaaa573f3edd8fdb99f10c",
+              "files": {
+                "index.html": "613abc372fddcc660e787ad21427f71cbef87ee06da9b28bbeea8377394649f0",
+                "assets/earth.js": "d9aabf45fa947490a75542987d792156b807e0d04deb898ec5261ea53f598c83",
+                "js/core.js": "43c5b012e4a03cbb8d04fd042f0cacfa5d8ca6b29fc6f49bb7b54a20ed685737",
+                "js/economy.js": "757ba3954e696b1e29f3be182bbe0a7bcd2de838b63bdcec188a9e519a26230b",
+                "js/government.js": "4218e7346ba0007d01259490fbe155b97ad96fe8bdfae96ee3d702f99afdc0f1",
+                "js/warfare.js": "e0860566edbf2cf65a5a893aec0981e2e6a0020cca8c93c9a8104d2a73202361",
+                "js/colonies.js": "291e6d5b273ca541cafa7dae13540bb3253019b855ea1e4c4f6c9cd30fb132d0",
+                "js/atlas.js": "75757811a78fc0d7622e54eb8bd73e933135d7e9e757cb7c94da898a2ec4ce97",
+                "js/history.js": "6323c41afbf54f423eeb6a6d21a543a4df89fabdfe9ede5f5b1aa234bdc08c4d",
+                "js/experiments.js": "eae05399b8c60577b02064b22eedadecee966e9aac0d706477bfe91241a34d5a",
+                "js/diagnostics.js": "d28e176c2ff0edbb8507b8adec759c588941f7a24e906ac65130e3dcb6cdb4d6",
+                "js/save-codec.js": "b5ecec26a2f1cf8160115cfead4e7eb8d73bac3741ac2b02c0271ca08be799f5",
+                "js/saves.js": "7818126a3117fa1cf62c75a57f77170e26d80c1a3c57eb5aa891ba18cabadab0",
+                "js/ui.js": "9cfa3f8c273cb44218a77698edf844d069e541b4fa98ed5c92796af6281a963c",
+                "js/history-ui.js": "7034b508a99669305782db2c552f8ef41687231c76dcf1e6c9bf6d36ff1ddcc6",
+                "js/save-ui.js": "fef3e8dd9a2eddd65d98f106e98273c90b06963062b00664a374797bef8e8e8c",
+                "js/save-store.js": "7d153a175f2c2c7bd54a1f70caf604a00c2fd698eba9d4add30bea8258d620ef",
+                "js/save-worker.js": "ed0a353fc8a4b71c8e6992511b3826387618ec4102e14e89a0bc7499c8f4ce3a",
+                "styles/base.css": "a4a477526673b7cbb466775e39698516d7867f308f9c94fd1f243e5ffe190c75",
+                "styles/app.css": "8be08ad21030d1b0d4bd7e1022fb1574acc4ef2d16c796ab62a1b208706bcd29"
+              }
+            },
+            "version": "0.17.0-dev.3",
+            "scenario": "early",
+            "years": 120,
+            "warmup": 20,
+            "kernelMs": 2003.4290499999906,
+            "yearMs": {
+              "count": 120,
+              "min": 9.63158799999951,
+              "median": 14.223171999999977,
+              "p95": 33.80235799999991,
+              "p99": 56.675889999998844,
+              "max": 59.58796200000006
+            },
+            "sliceMs": {
+              "count": 5796,
+              "min": 0.0010119999997186824,
+              "median": 0.0836859999999433,
+              "p95": 1.8553940000001603,
+              "p99": 5.44495999999981,
+              "max": 19.323031999999785
+            },
+            "valueDigest": "f92ccf1c8dff237f175e457f46f0a1b584a307dcf4634cf557bbf2d3554bfd1a",
+            "checkpointSHA256": "451eecf283385e37e1e25e5fa855188dfffe1a8891c95f1afd7df654c1e49094",
+            "rawSaveBytes": 44700127,
+            "gzipSaveBytes": 7563845,
+            "worldBufferBytes": 61218379,
+            "states": 0,
+            "year": -8860,
+            "issues": []
+          },
+          {
+            "source": {
+              "commit": "98a9ee61c19035c160992ec5c53d81c007ff382a",
+              "runtimeSHA256": "96a3c9a0e830585400ca6ed3118309680a8dee1882eaaa573f3edd8fdb99f10c",
+              "files": {
+                "index.html": "613abc372fddcc660e787ad21427f71cbef87ee06da9b28bbeea8377394649f0",
+                "assets/earth.js": "d9aabf45fa947490a75542987d792156b807e0d04deb898ec5261ea53f598c83",
+                "js/core.js": "43c5b012e4a03cbb8d04fd042f0cacfa5d8ca6b29fc6f49bb7b54a20ed685737",
+                "js/economy.js": "757ba3954e696b1e29f3be182bbe0a7bcd2de838b63bdcec188a9e519a26230b",
+                "js/government.js": "4218e7346ba0007d01259490fbe155b97ad96fe8bdfae96ee3d702f99afdc0f1",
+                "js/warfare.js": "e0860566edbf2cf65a5a893aec0981e2e6a0020cca8c93c9a8104d2a73202361",
+                "js/colonies.js": "291e6d5b273ca541cafa7dae13540bb3253019b855ea1e4c4f6c9cd30fb132d0",
+                "js/atlas.js": "75757811a78fc0d7622e54eb8bd73e933135d7e9e757cb7c94da898a2ec4ce97",
+                "js/history.js": "6323c41afbf54f423eeb6a6d21a543a4df89fabdfe9ede5f5b1aa234bdc08c4d",
+                "js/experiments.js": "eae05399b8c60577b02064b22eedadecee966e9aac0d706477bfe91241a34d5a",
+                "js/diagnostics.js": "d28e176c2ff0edbb8507b8adec759c588941f7a24e906ac65130e3dcb6cdb4d6",
+                "js/save-codec.js": "b5ecec26a2f1cf8160115cfead4e7eb8d73bac3741ac2b02c0271ca08be799f5",
+                "js/saves.js": "7818126a3117fa1cf62c75a57f77170e26d80c1a3c57eb5aa891ba18cabadab0",
+                "js/ui.js": "9cfa3f8c273cb44218a77698edf844d069e541b4fa98ed5c92796af6281a963c",
+                "js/history-ui.js": "7034b508a99669305782db2c552f8ef41687231c76dcf1e6c9bf6d36ff1ddcc6",
+                "js/save-ui.js": "fef3e8dd9a2eddd65d98f106e98273c90b06963062b00664a374797bef8e8e8c",
+                "js/save-store.js": "7d153a175f2c2c7bd54a1f70caf604a00c2fd698eba9d4add30bea8258d620ef",
+                "js/save-worker.js": "ed0a353fc8a4b71c8e6992511b3826387618ec4102e14e89a0bc7499c8f4ce3a",
+                "styles/base.css": "a4a477526673b7cbb466775e39698516d7867f308f9c94fd1f243e5ffe190c75",
+                "styles/app.css": "8be08ad21030d1b0d4bd7e1022fb1574acc4ef2d16c796ab62a1b208706bcd29"
+              }
+            },
+            "version": "0.17.0-dev.3",
+            "scenario": "early",
+            "years": 120,
+            "warmup": 20,
+            "kernelMs": 1916.0980099999836,
+            "yearMs": {
+              "count": 120,
+              "min": 9.797755999999481,
+              "median": 13.581439999999247,
+              "p95": 32.403158000000985,
+              "p99": 57.34412899999916,
+              "max": 60.15148799999906
+            },
+            "sliceMs": {
+              "count": 5796,
+              "min": 0.001011999999946056,
+              "median": 0.08685000000014043,
+              "p95": 1.7308469999998124,
+              "p99": 4.9684440000000905,
+              "max": 20.23781199999985
+            },
+            "valueDigest": "f92ccf1c8dff237f175e457f46f0a1b584a307dcf4634cf557bbf2d3554bfd1a",
+            "checkpointSHA256": "451eecf283385e37e1e25e5fa855188dfffe1a8891c95f1afd7df654c1e49094",
+            "rawSaveBytes": 44700127,
+            "gzipSaveBytes": 7563845,
+            "worldBufferBytes": 61218379,
+            "states": 0,
+            "year": -8860,
+            "issues": []
+          },
+          {
+            "source": {
+              "commit": "98a9ee61c19035c160992ec5c53d81c007ff382a",
+              "runtimeSHA256": "96a3c9a0e830585400ca6ed3118309680a8dee1882eaaa573f3edd8fdb99f10c",
+              "files": {
+                "index.html": "613abc372fddcc660e787ad21427f71cbef87ee06da9b28bbeea8377394649f0",
+                "assets/earth.js": "d9aabf45fa947490a75542987d792156b807e0d04deb898ec5261ea53f598c83",
+                "js/core.js": "43c5b012e4a03cbb8d04fd042f0cacfa5d8ca6b29fc6f49bb7b54a20ed685737",
+                "js/economy.js": "757ba3954e696b1e29f3be182bbe0a7bcd2de838b63bdcec188a9e519a26230b",
+                "js/government.js": "4218e7346ba0007d01259490fbe155b97ad96fe8bdfae96ee3d702f99afdc0f1",
+                "js/warfare.js": "e0860566edbf2cf65a5a893aec0981e2e6a0020cca8c93c9a8104d2a73202361",
+                "js/colonies.js": "291e6d5b273ca541cafa7dae13540bb3253019b855ea1e4c4f6c9cd30fb132d0",
+                "js/atlas.js": "75757811a78fc0d7622e54eb8bd73e933135d7e9e757cb7c94da898a2ec4ce97",
+                "js/history.js": "6323c41afbf54f423eeb6a6d21a543a4df89fabdfe9ede5f5b1aa234bdc08c4d",
+                "js/experiments.js": "eae05399b8c60577b02064b22eedadecee966e9aac0d706477bfe91241a34d5a",
+                "js/diagnostics.js": "d28e176c2ff0edbb8507b8adec759c588941f7a24e906ac65130e3dcb6cdb4d6",
+                "js/save-codec.js": "b5ecec26a2f1cf8160115cfead4e7eb8d73bac3741ac2b02c0271ca08be799f5",
+                "js/saves.js": "7818126a3117fa1cf62c75a57f77170e26d80c1a3c57eb5aa891ba18cabadab0",
+                "js/ui.js": "9cfa3f8c273cb44218a77698edf844d069e541b4fa98ed5c92796af6281a963c",
+                "js/history-ui.js": "7034b508a99669305782db2c552f8ef41687231c76dcf1e6c9bf6d36ff1ddcc6",
+                "js/save-ui.js": "fef3e8dd9a2eddd65d98f106e98273c90b06963062b00664a374797bef8e8e8c",
+                "js/save-store.js": "7d153a175f2c2c7bd54a1f70caf604a00c2fd698eba9d4add30bea8258d620ef",
+                "js/save-worker.js": "ed0a353fc8a4b71c8e6992511b3826387618ec4102e14e89a0bc7499c8f4ce3a",
+                "styles/base.css": "a4a477526673b7cbb466775e39698516d7867f308f9c94fd1f243e5ffe190c75",
+                "styles/app.css": "8be08ad21030d1b0d4bd7e1022fb1574acc4ef2d16c796ab62a1b208706bcd29"
+              }
+            },
+            "version": "0.17.0-dev.3",
+            "scenario": "early",
+            "years": 120,
+            "warmup": 20,
+            "kernelMs": 1822.323115999998,
+            "yearMs": {
+              "count": 120,
+              "min": 9.131283000000622,
+              "median": 12.833472999999913,
+              "p95": 30.349732000000586,
+              "p99": 50.94136800000001,
+              "max": 53.209563999999546
+            },
+            "sliceMs": {
+              "count": 5796,
+              "min": 0.0008210000000872242,
+              "median": 0.08185299999991003,
+              "p95": 1.5314969999999448,
+              "p99": 4.928404999999884,
+              "max": 13.964561000000003
+            },
+            "valueDigest": "f92ccf1c8dff237f175e457f46f0a1b584a307dcf4634cf557bbf2d3554bfd1a",
+            "checkpointSHA256": "451eecf283385e37e1e25e5fa855188dfffe1a8891c95f1afd7df654c1e49094",
+            "rawSaveBytes": 44700127,
+            "gzipSaveBytes": 7563845,
+            "worldBufferBytes": 61218379,
+            "states": 0,
+            "year": -8860,
+            "issues": []
+          }
+        ],
+        "kernelMs": {
+          "count": 3,
+          "min": 1822.323115999998,
+          "median": 1916.0980099999836,
+          "p95": 2003.4290499999906,
+          "p99": 2003.4290499999906,
+          "max": 2003.4290499999906
+        },
+        "exactCheckpointRepetition": true
+      },
+      "developed": {
+        "trials": [
+          {
+            "source": {
+              "commit": "98a9ee61c19035c160992ec5c53d81c007ff382a",
+              "runtimeSHA256": "96a3c9a0e830585400ca6ed3118309680a8dee1882eaaa573f3edd8fdb99f10c",
+              "files": {
+                "index.html": "613abc372fddcc660e787ad21427f71cbef87ee06da9b28bbeea8377394649f0",
+                "assets/earth.js": "d9aabf45fa947490a75542987d792156b807e0d04deb898ec5261ea53f598c83",
+                "js/core.js": "43c5b012e4a03cbb8d04fd042f0cacfa5d8ca6b29fc6f49bb7b54a20ed685737",
+                "js/economy.js": "757ba3954e696b1e29f3be182bbe0a7bcd2de838b63bdcec188a9e519a26230b",
+                "js/government.js": "4218e7346ba0007d01259490fbe155b97ad96fe8bdfae96ee3d702f99afdc0f1",
+                "js/warfare.js": "e0860566edbf2cf65a5a893aec0981e2e6a0020cca8c93c9a8104d2a73202361",
+                "js/colonies.js": "291e6d5b273ca541cafa7dae13540bb3253019b855ea1e4c4f6c9cd30fb132d0",
+                "js/atlas.js": "75757811a78fc0d7622e54eb8bd73e933135d7e9e757cb7c94da898a2ec4ce97",
+                "js/history.js": "6323c41afbf54f423eeb6a6d21a543a4df89fabdfe9ede5f5b1aa234bdc08c4d",
+                "js/experiments.js": "eae05399b8c60577b02064b22eedadecee966e9aac0d706477bfe91241a34d5a",
+                "js/diagnostics.js": "d28e176c2ff0edbb8507b8adec759c588941f7a24e906ac65130e3dcb6cdb4d6",
+                "js/save-codec.js": "b5ecec26a2f1cf8160115cfead4e7eb8d73bac3741ac2b02c0271ca08be799f5",
+                "js/saves.js": "7818126a3117fa1cf62c75a57f77170e26d80c1a3c57eb5aa891ba18cabadab0",
+                "js/ui.js": "9cfa3f8c273cb44218a77698edf844d069e541b4fa98ed5c92796af6281a963c",
+                "js/history-ui.js": "7034b508a99669305782db2c552f8ef41687231c76dcf1e6c9bf6d36ff1ddcc6",
+                "js/save-ui.js": "fef3e8dd9a2eddd65d98f106e98273c90b06963062b00664a374797bef8e8e8c",
+                "js/save-store.js": "7d153a175f2c2c7bd54a1f70caf604a00c2fd698eba9d4add30bea8258d620ef",
+                "js/save-worker.js": "ed0a353fc8a4b71c8e6992511b3826387618ec4102e14e89a0bc7499c8f4ce3a",
+                "styles/base.css": "a4a477526673b7cbb466775e39698516d7867f308f9c94fd1f243e5ffe190c75",
+                "styles/app.css": "8be08ad21030d1b0d4bd7e1022fb1574acc4ef2d16c796ab62a1b208706bcd29"
+              }
+            },
+            "version": "0.17.0-dev.3",
+            "scenario": "developed",
+            "years": 120,
+            "warmup": 20,
+            "kernelMs": 8530.59729100003,
+            "yearMs": {
+              "count": 120,
+              "min": 43.70644800000173,
+              "median": 64.79021499999908,
+              "p95": 122.30725600000096,
+              "p99": 145.6161370000009,
+              "max": 152.3223499999949
+            },
+            "sliceMs": {
+              "count": 5796,
+              "min": 0.0043769999992946396,
+              "median": 0.5795189999998911,
+              "p95": 5.8418949999995675,
+              "p99": 15.286485000000539,
+              "max": 25.501561000000038
+            },
+            "valueDigest": "abbe3343930cac3a43a1319626de8e8d4dd561afcdeaa18f590ff2649be6e4e1",
+            "checkpointSHA256": "11f23c0a880e8f7d7519d0158e6e6a23f6a86e33d60f1f9b7d8deda4f2746b24",
+            "rawSaveBytes": 64107375,
+            "gzipSaveBytes": 10284990,
+            "worldBufferBytes": 61475475,
+            "states": 281,
+            "year": 1540,
+            "issues": []
+          },
+          {
+            "source": {
+              "commit": "98a9ee61c19035c160992ec5c53d81c007ff382a",
+              "runtimeSHA256": "96a3c9a0e830585400ca6ed3118309680a8dee1882eaaa573f3edd8fdb99f10c",
+              "files": {
+                "index.html": "613abc372fddcc660e787ad21427f71cbef87ee06da9b28bbeea8377394649f0",
+                "assets/earth.js": "d9aabf45fa947490a75542987d792156b807e0d04deb898ec5261ea53f598c83",
+                "js/core.js": "43c5b012e4a03cbb8d04fd042f0cacfa5d8ca6b29fc6f49bb7b54a20ed685737",
+                "js/economy.js": "757ba3954e696b1e29f3be182bbe0a7bcd2de838b63bdcec188a9e519a26230b",
+                "js/government.js": "4218e7346ba0007d01259490fbe155b97ad96fe8bdfae96ee3d702f99afdc0f1",
+                "js/warfare.js": "e0860566edbf2cf65a5a893aec0981e2e6a0020cca8c93c9a8104d2a73202361",
+                "js/colonies.js": "291e6d5b273ca541cafa7dae13540bb3253019b855ea1e4c4f6c9cd30fb132d0",
+                "js/atlas.js": "75757811a78fc0d7622e54eb8bd73e933135d7e9e757cb7c94da898a2ec4ce97",
+                "js/history.js": "6323c41afbf54f423eeb6a6d21a543a4df89fabdfe9ede5f5b1aa234bdc08c4d",
+                "js/experiments.js": "eae05399b8c60577b02064b22eedadecee966e9aac0d706477bfe91241a34d5a",
+                "js/diagnostics.js": "d28e176c2ff0edbb8507b8adec759c588941f7a24e906ac65130e3dcb6cdb4d6",
+                "js/save-codec.js": "b5ecec26a2f1cf8160115cfead4e7eb8d73bac3741ac2b02c0271ca08be799f5",
+                "js/saves.js": "7818126a3117fa1cf62c75a57f77170e26d80c1a3c57eb5aa891ba18cabadab0",
+                "js/ui.js": "9cfa3f8c273cb44218a77698edf844d069e541b4fa98ed5c92796af6281a963c",
+                "js/history-ui.js": "7034b508a99669305782db2c552f8ef41687231c76dcf1e6c9bf6d36ff1ddcc6",
+                "js/save-ui.js": "fef3e8dd9a2eddd65d98f106e98273c90b06963062b00664a374797bef8e8e8c",
+                "js/save-store.js": "7d153a175f2c2c7bd54a1f70caf604a00c2fd698eba9d4add30bea8258d620ef",
+                "js/save-worker.js": "ed0a353fc8a4b71c8e6992511b3826387618ec4102e14e89a0bc7499c8f4ce3a",
+                "styles/base.css": "a4a477526673b7cbb466775e39698516d7867f308f9c94fd1f243e5ffe190c75",
+                "styles/app.css": "8be08ad21030d1b0d4bd7e1022fb1574acc4ef2d16c796ab62a1b208706bcd29"
+              }
+            },
+            "version": "0.17.0-dev.3",
+            "scenario": "developed",
+            "years": 120,
+            "warmup": 20,
+            "kernelMs": 8182.635887000065,
+            "yearMs": {
+              "count": 120,
+              "min": 42.04614899999615,
+              "median": 60.80767099999957,
+              "p95": 113.76644800000076,
+              "p99": 124.04167699999971,
+              "max": 132.5306460000029
+            },
+            "sliceMs": {
+              "count": 5796,
+              "min": 0.004386000000522472,
+              "median": 0.5651880000004894,
+              "p95": 5.4511380000003555,
+              "p99": 15.185352000000421,
+              "max": 30.68815100000029
+            },
+            "valueDigest": "abbe3343930cac3a43a1319626de8e8d4dd561afcdeaa18f590ff2649be6e4e1",
+            "checkpointSHA256": "11f23c0a880e8f7d7519d0158e6e6a23f6a86e33d60f1f9b7d8deda4f2746b24",
+            "rawSaveBytes": 64107375,
+            "gzipSaveBytes": 10284990,
+            "worldBufferBytes": 61475475,
+            "states": 281,
+            "year": 1540,
+            "issues": []
+          },
+          {
+            "source": {
+              "commit": "98a9ee61c19035c160992ec5c53d81c007ff382a",
+              "runtimeSHA256": "96a3c9a0e830585400ca6ed3118309680a8dee1882eaaa573f3edd8fdb99f10c",
+              "files": {
+                "index.html": "613abc372fddcc660e787ad21427f71cbef87ee06da9b28bbeea8377394649f0",
+                "assets/earth.js": "d9aabf45fa947490a75542987d792156b807e0d04deb898ec5261ea53f598c83",
+                "js/core.js": "43c5b012e4a03cbb8d04fd042f0cacfa5d8ca6b29fc6f49bb7b54a20ed685737",
+                "js/economy.js": "757ba3954e696b1e29f3be182bbe0a7bcd2de838b63bdcec188a9e519a26230b",
+                "js/government.js": "4218e7346ba0007d01259490fbe155b97ad96fe8bdfae96ee3d702f99afdc0f1",
+                "js/warfare.js": "e0860566edbf2cf65a5a893aec0981e2e6a0020cca8c93c9a8104d2a73202361",
+                "js/colonies.js": "291e6d5b273ca541cafa7dae13540bb3253019b855ea1e4c4f6c9cd30fb132d0",
+                "js/atlas.js": "75757811a78fc0d7622e54eb8bd73e933135d7e9e757cb7c94da898a2ec4ce97",
+                "js/history.js": "6323c41afbf54f423eeb6a6d21a543a4df89fabdfe9ede5f5b1aa234bdc08c4d",
+                "js/experiments.js": "eae05399b8c60577b02064b22eedadecee966e9aac0d706477bfe91241a34d5a",
+                "js/diagnostics.js": "d28e176c2ff0edbb8507b8adec759c588941f7a24e906ac65130e3dcb6cdb4d6",
+                "js/save-codec.js": "b5ecec26a2f1cf8160115cfead4e7eb8d73bac3741ac2b02c0271ca08be799f5",
+                "js/saves.js": "7818126a3117fa1cf62c75a57f77170e26d80c1a3c57eb5aa891ba18cabadab0",
+                "js/ui.js": "9cfa3f8c273cb44218a77698edf844d069e541b4fa98ed5c92796af6281a963c",
+                "js/history-ui.js": "7034b508a99669305782db2c552f8ef41687231c76dcf1e6c9bf6d36ff1ddcc6",
+                "js/save-ui.js": "fef3e8dd9a2eddd65d98f106e98273c90b06963062b00664a374797bef8e8e8c",
+                "js/save-store.js": "7d153a175f2c2c7bd54a1f70caf604a00c2fd698eba9d4add30bea8258d620ef",
+                "js/save-worker.js": "ed0a353fc8a4b71c8e6992511b3826387618ec4102e14e89a0bc7499c8f4ce3a",
+                "styles/base.css": "a4a477526673b7cbb466775e39698516d7867f308f9c94fd1f243e5ffe190c75",
+                "styles/app.css": "8be08ad21030d1b0d4bd7e1022fb1574acc4ef2d16c796ab62a1b208706bcd29"
+              }
+            },
+            "version": "0.17.0-dev.3",
+            "scenario": "developed",
+            "years": 120,
+            "warmup": 20,
+            "kernelMs": 7990.503496999989,
+            "yearMs": {
+              "count": 120,
+              "min": 41.23151200000393,
+              "median": 60.88449099999798,
+              "p95": 117.71535099999528,
+              "p99": 131.12459200000058,
+              "max": 145.00015900000017
+            },
+            "sliceMs": {
+              "count": 5796,
+              "min": 0.004376000000775093,
+              "median": 0.5380270000005112,
+              "p95": 5.234062000000449,
+              "p99": 15.105082000000039,
+              "max": 30.996553999999378
+            },
+            "valueDigest": "abbe3343930cac3a43a1319626de8e8d4dd561afcdeaa18f590ff2649be6e4e1",
+            "checkpointSHA256": "11f23c0a880e8f7d7519d0158e6e6a23f6a86e33d60f1f9b7d8deda4f2746b24",
+            "rawSaveBytes": 64107375,
+            "gzipSaveBytes": 10284990,
+            "worldBufferBytes": 61475475,
+            "states": 281,
+            "year": 1540,
+            "issues": []
+          }
+        ],
+        "kernelMs": {
+          "count": 3,
+          "min": 7990.503496999989,
+          "median": 8182.635887000065,
+          "p95": 8530.59729100003,
+          "p99": 8530.59729100003,
+          "max": 8530.59729100003
+        },
+        "exactCheckpointRepetition": true
+      }
+    }
+  },
+  "comparison": {
+    "early": {
+      "kernelRatio": 0.9991754356252319,
+      "worldBufferDelta": 0,
+      "saveRatio": 1.0000031729994667,
+      "beforeStates": 0,
+      "afterStates": 0
+    },
+    "developed": {
+      "kernelRatio": 1.0120291193361852,
+      "worldBufferDelta": -14048,
+      "saveRatio": 0.9976945811890396,
+      "beforeStates": 236,
+      "afterStates": 281
+    }
+  }
+}

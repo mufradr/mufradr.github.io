@@ -1,0 +1,9 @@
+{
+  "tests/warfare-scenario.cjs": "2399be96688272f862ff9e19f9ac8ac7cf1b9e5e4b991c7fb25250e9effa4d5f",
+  "tests/network-scenario.cjs": "41e763f81bd99c657d3eab565157f77373fa5cfe9307a700b417a0ac75a2b0d9",
+  "tests/maritime-scenario.cjs": "81631f95ede6ba18e6ea00c6ef65873e1d1fe7ae1a1a3b4cfcc08a0f3e9ac5e9",
+  "tests/warfare.test.cjs": "795f619198c54d9bbc32ddbc25aed88f1f7f21ad18453391c8784a0a88666393",
+  "tools/economy-performance.cjs": "0a6d17918335e4089d49e6bfa8ab1347738391b7ba2665075d4cf5656d58668b",
+  "tools/baseline/browser.cjs": "dce8c1f4488cbf753d3a87c3accc29b372c4ead8790e52476e1aa6c2a32577c7",
+  "tools/baseline/protocol.json": "f995edd280c113986c83addcfddf6ac11f121751132192d37c86426a731acfe9"
+}

@@ -72,12 +72,12 @@ function governmentRevenueStep(advance=true){
   if(!o.dependency||o.dependency.parent!==parent.id){const original=o.overY;setDependency(o,parent);if(original!=null)o.dependency.since=original}
   const d=o.dependency;
   if(advance){
-   let threats=0,covered=0;for(const [enemy] of o.enemies)if(enemy!==parent.id){threats++;if(parent.enemies.has(enemy))covered++}
+   let threats=0,covered=0;for(const [enemy] of o.enemies)if(enemy!==parent.id){threats++;if(parent.enemies.has(enemy)&&militaryProtectionReady(parent)&&dependencySupportAccess(parent,o,o.capital).access>0.05)covered++}
    d.protection=clamp(d.protection+(threats?(covered===threats?0.03:-0.04):0.005),0,1);
    const relative=clamp(power(o)/Math.max(1,power(parent)),0,2),isolation=clamp(6371*angDist(o.capital,parent.capital)/12000,0,1);
    const target=governmentLoyaltyTarget(parent.mandate??1,o.integ??0.5,parent.fiscalStress||0,isolation,0.6,d.protection);
    d.loyalty=clamp(d.loyalty+0.025*(target-d.loyalty),0,1);
-   const pressure=clamp(0.45*(1-d.loyalty)+0.45*(1-d.protection)+0.3*(parent.fiscalStress||0)+0.35*Math.max(0,relative-0.5)+0.25*d.withheld,0,1);
+   const pressure=clamp(0.45*(1-d.loyalty)+0.45*(1-d.protection)+0.3*(parent.fiscalStress||0)+0.35*Math.max(0,relative-0.5)+0.25*d.withheld+0.1*(d.serviceWithheld||0),0,1);
    d.pressure=clamp(d.pressure+0.025*(pressure-d.pressure),0,1);
   }
   if(advance&&s.year-d.since>=15&&d.pressure>0.78&&d.loyalty<0.4){
@@ -87,7 +87,7 @@ function governmentRevenueStep(advance=true){
    continue;
   }
   const revenue=o.domesticRevenue,administration=o.kind==='state'?0.28*Math.pow(o.cplx??0.2,S.tk[27][o.capital]>0.5?1.6:1.8)*o.pop:0;
-  const due=revenue*0.12,capacity=Math.max(0,revenue-administration-(o.enemies.size?revenue*0.5:0));
+  const due=revenue*0.12,capacity=Math.max(0,revenue-administration-militaryBudgetNeed(o));
   const willing=clamp((d.loyalty-0.15)/0.55,0,1)*(1-0.75*d.pressure)*d.protection;
   const paid=Math.min(due,capacity)*willing;d.due=due;d.paid=paid;d.withheld=due?1-paid/due:0;d.year=s.year;
   o.tributeOut=paid;parent.tributeIn+=paid;
@@ -97,7 +97,7 @@ function governmentRevenueStep(advance=true){
  // No onward transfer of incoming tribute: every payer is capped by domestic receipts.
 }
 function canProtectDependency(parent,child){
- return parent.alive&&(parent.fiscalStress||0)<0.8&&(parent.treas??0)>-1.8&&(parent.mandate??1)>0.2&&!parent.enemies.has(child.id);
+ return parent.alive&&militaryProtectionReady(parent)&&(parent.fiscalStress||0)<0.8&&(parent.treas??0)>-1.8&&(parent.mandate??1)>0.2&&!parent.enemies.has(child.id);
 }
 function addDependencyProtection(war){
  // Join only defensive wars; a vassal cannot conscript its protector into aggression.

@@ -1,6 +1,6 @@
 {
   "name": "world-engine",
-  "version": "0.17.0-dev.2",
+  "version": "0.17.0-dev.3",
   "private": true,
   "scripts": {
     "test": "node --test tests/*.test.cjs",
@@ -15,6 +15,7 @@
     "validate:states": "node tests/state-balance-scenario.cjs",
     "validate:maritime": "node tests/maritime-scenario.cjs",
     "validate:networks": "node tests/network-scenario.cjs",
+    "validate:warfare": "node tests/warfare-scenario.cjs",
     "baseline:run": "node tools/baseline/run.cjs",
     "baseline:browser": "node tools/baseline/browser.cjs",
     "baseline:compare": "node tools/baseline/compare.cjs",

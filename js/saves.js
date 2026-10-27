@@ -12,7 +12,7 @@ function captureWorldSave(name='',view=null){
 function validateWorldSave(data){
  const fail=m=>{throw new Error('Invalid world save: '+m)};
  if(!data||data.format!==WORLD_SAVE_FORMAT||data.schemaVersion!==WORLD_SAVE_SCHEMA)throw new Error('Unsupported world save format. Setup files are not world saves.');
- if(!['0.13.0','0.14.0','0.14.1','0.15.0','0.16.0','0.17.0-dev.1',ENGINE_VERSION].includes(data.engineVersion))throw new Error('This save needs World Engine '+String(data.engineVersion).slice(0,30)+'; this engine is '+ENGINE_VERSION+'. Your current world has not been replaced.');
+ if(!['0.13.0','0.14.0','0.14.1','0.15.0','0.16.0','0.17.0-dev.1','0.17.0-dev.2',ENGINE_VERSION].includes(data.engineVersion))throw new Error('This save needs World Engine '+String(data.engineVersion).slice(0,30)+'; this engine is '+ENGINE_VERSION+'. Your current world has not been replaced.');
  if(data.width!==W||data.height!==H)fail('map dimensions');
  if(typeof data.name!=='string'||data.name.length>40||typeof data.savedAt!=='string'||!Number.isFinite(Date.parse(data.savedAt)))fail('save details');
  if(!Number.isInteger(data.rngState)||data.rngState<0||data.rngState>0xffffffff)fail('random state');
@@ -30,6 +30,11 @@ function validateWorldSave(data){
   data={...data,state:{...s,governmentVersion:1,control,loyalty,autonomy,governor,governmentYear:null,tributeLedger:null}};
  }
  if(data.state.governmentVersion!==1)fail('government schema');
+ if(data.state.warfareVersion===undefined){
+  if(data.engineVersion===ENGINE_VERSION)fail('warfare schema');
+  data={...data,state:{...data.state,warfareVersion:1,militaryYear:null}};
+ }
+ if(data.state.warfareVersion!==1)fail('warfare schema');
  const w=data.world,s=data.state;if(!w||!s||!Number.isInteger(s.year)||!Number.isInteger(s.start)||s.year<s.start||typeof s.seed!=='string'||typeof w.seed!=='string'||!Number.isInteger(w.lmCount)||w.lmCount<0||w.lmCount>N)fail('world or date');
  for(const [key,o]of [['world',w],['state',s]])for(const [field,[type,size]]of Object.entries(SAVE_ARRAY_SCHEMA[key])){
   const a=o[field],length=size==='N'?N:size==='HI'?HW*HH:size==='AG'?AGW*AGH:size==='LM'?w.lmCount:typeof size==='number'?size:null;
@@ -96,6 +101,7 @@ function applyWorldSave(input){
 // The load UI validates its detached candidate before confirmation and recovery.
 // Installation is shared so that path does not rescan every array a second time.
 function applyValidatedWorldSave(data){
+ militaryScratch.state=null;militaryScratch.year=null;militaryScratch.heads.clear();militaryScratch.neighbors.clear();militaryScratch.portUsed.clear();militaryScratch.overseas=null;
  governmentScratch.state=null;governmentScratch.candidates.clear();
  networkEconomy.state=null;networkEconomy.states.clear();
  data.state.r=mulberry32(data.rngState);WD=data.world;S=data.state;Object.assign(P,data.rules);Object.assign(CL,data.climate);return data;

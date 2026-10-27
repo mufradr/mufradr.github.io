@@ -37,9 +37,9 @@ test('food reserves and maintained infrastructure share a conserved economic fou
   prepare();const q=a.inspect(`(()=>{const {i}=economicSite;S.pol[i]=0;S.pop[i]=0;S.roads[i]=1;S.works[i]=.5;maintainWorks(i,1);return S.works[i]})()`);assert.ok(q<.5);
  });
  await t.test('funded spending, wartime costs and treasury caps balance explicitly',()=>{
-  prepare();const r=a.inspect(`(()=>{const o=S.pols[economicSite.id];o.treas=.5;let b=governmentBudget(o,economicSite.i,20,100,10);const peace={...b};o.enemies.set(999,0);o.treas=.5;b=governmentBudget(o,economicSite.i,20,100,10);const war={...b};o.enemies.clear();o.treas=1;b=governmentBudget(o,economicSite.i,20,100,10);return {peace,war,capped:{...b}}})()`);
+  prepare();const r=a.inspect(`(()=>{const o=S.pols[economicSite.id];o.military.year=S.year;o.military.populationBasis=1000;o.military.mobilized=o.military.opening=50;o.treas=.5;let b=governmentBudget(o,economicSite.i,20,100,10);const peace={...b};o.enemies.set(999,0);o.treas=.5;b=governmentBudget(o,economicSite.i,20,100,10);const war={...b};o.enemies.clear();o.treas=1;b=governmentBudget(o,economicSite.i,20,100,10);return {peace,war,capped:{...b}}})()`);
   for(const b of Object.values(r)){assert.equal(b.spending,b.administration+b.military+b.infrastructure);assert.equal(b.balance,b.revenue-b.spending);assert.ok(Math.abs(b.closingTreasury-b.openingTreasury-.04*(b.balance-b.surplusDiscarded)/b.revenue)<1e-12)}
-  assert.equal(r.war.military,50);assert.equal(r.war.spending-r.peace.spending,50);assert.ok(r.capped.surplusDiscarded>0);
+  assert.equal(r.peace.military,9);assert.equal(r.war.military,20);assert.equal(r.war.spending-r.peace.spending,11);assert.ok(r.capped.surplusDiscarded>0);
  });
  await t.test('a government at its credit limit exposes unpaid costs instead of inventing funding',()=>{
   prepare();const b=a.inspect(`(()=>{const o=S.pols[economicSite.id];o.treas=-2;governmentBudget(o,economicSite.i,500,10,30);return o.budget})()`);

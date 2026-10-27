@@ -20,7 +20,7 @@ function foodStorageCapacity(i,efficiency=cerealEff(i),quality=worksQuality(i)){
 function beginFoodYear(i,ledger){
  const s=S,n=networkEconomy,p=s.pop[i],opening=s.foodStock[i];
  if(!p&&!opening){n.production[i]=n.food[i]=n.available[i]=0;return false}
- const production=Math.min(s.K[i],p*(1.04+0.26*s.farm[i]+0.05*s.herd[i]));
+ const production=Math.min(s.K[i],p*(1-militaryLabor(i))*(1.04+0.26*s.farm[i]+0.05*s.herd[i]));
  if(!s.farm[i]&&!opening){
   n.production[i]=n.food[i]=production;n.available[i]=s.herd[i]>=0.5?Math.max(0,production-p)*0.15:0;
   ledger.production+=production;ledger.demand+=p;ledger.unmet+=Math.max(0,p-production);return s.herd[i]>0;
@@ -36,7 +36,8 @@ function beginFoodYear(i,ledger){
  return true;
 }
 function finishFoodYear(i,ledger){
- const s=S,n=networkEconomy,p=s.pop[i],food=n.food[i],surplus=Math.max(0,food-p);
+ const s=S,n=networkEconomy,p=s.pop[i],food=n.food[i];let surplus=Math.max(0,food-p);
+ surplus-=campaignFood(i,surplus,ledger);
  if(!p&&!s.foodStock[i])return;
  if(!s.farm[i]&&!s.foodStock[i]){ledger.waste+=surplus;if(food<p)s.K[i]=Math.min(s.K[i],food);return}
  const deposited=Math.min(surplus,Math.max(0,n.storageCapacity[i]-s.foodStock[i]));
@@ -47,7 +48,7 @@ function finishFoodYear(i,ledger){
 }
 function governmentBudget(o,c,administration,domesticRevenue,maintenance){
  const tributeIn=o.tributeIn||0,tributeOut=o.tributeOut||0,revenue=domesticRevenue+tributeIn;
- const opening=o.treas,military=o.enemies.size?revenue*0.5:0;
+ const opening=o.treas,military=militaryBudgetNeed(o);
  const reserveDraw=Math.min(Math.max(0,opening)*revenue/0.04,revenue*0.2);
  const infrastructure=Math.min(maintenance,Math.max(0,revenue+reserveDraw-tributeOut-administration-military));
  // Mandatory costs may borrow against the existing bounded credit line. At its
@@ -57,7 +58,8 @@ function governmentBudget(o,c,administration,domesticRevenue,maintenance){
  const administrationPaid=administration*paid,militaryPaid=military*paid;
  const spending=administrationPaid+militaryPaid+infrastructure+tributeOut,balance=revenue-spending;
  const closing=clamp(opening+0.04*balance/revenue,-2,1),retained=(closing-opening)*revenue/0.04;
- o.treas=closing;o.infrastructureFunding=maintenance?infrastructure/maintenance:1;
+ o.treas=closing;if(o.military?.year===S.year)o.military.funding=military?militaryPaid/military:1;
+ o.infrastructureFunding=maintenance?infrastructure/maintenance:1;
  o.burden=(administration+military+maintenance+tributeOut)/revenue;
  o.budget={year:S.year,revenue,domesticRevenue,tributeIn,tributeOut,administrationRequired:administration,militaryRequired:military,administration:administrationPaid,military:militaryPaid,infrastructure,maintenanceRequired:maintenance,spending,balance,
   unpaid:mandatory*(1-paid),openingTreasury:opening,closingTreasury:closing,surplusDiscarded:Math.max(0,balance-retained),debtRelief:0};
