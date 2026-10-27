@@ -1,4 +1,4 @@
-# Saved worlds — 0.17.0-dev.4
+# Saved worlds — 0.20.0
 
 Open **Saves** on a phone, tablet or desktop. Three manual slots hold independent
 histories. Give a slot a name and choose **Save here**. A save finishes any pending
@@ -44,7 +44,7 @@ links only recreate starting conditions; they are not progress saves.
 
 Damaged, unsupported or structurally invalid imports are rejected before the
 running world is replaced. Loading a valid file requires confirmation. This first
-save schema accepts v0.13.0–v0.16.0, v0.17.0-dev.1–dev.3 and this engine version; future releases need explicit
+save schema accepts v0.13.0–v0.16.0, v0.17.0-dev.1–dev.4 and this engine version; future releases need explicit
 compatibility handling or migrations. Older local records are never deleted just
 because their engine version differs; they remain exportable.
 
@@ -150,7 +150,7 @@ start military bookkeeping without fabricated past armies or casualty histories.
 The final release must keep all development versions in its compatibility list.
 See [WARFARE.md](WARFARE.md) for accounting, scheduling and model limits.
 
-### Cities checkpoint (0.17.0-dev.4)
+### Cities checkpoint (0.20.0)
 
 Urban version 1 saves real urban residents, local institutions, optional bounded
 technique archives, an annual clock and three fixed faith shares per province.
@@ -161,3 +161,11 @@ are rejected. dev.3 and all earlier supported checkpoints remain readable.
 Population rankings now include represented minorities, while map footprints
 remain dominant identities. Previous recorded peaks retain their older meaning.
 See [CITIES.md](CITIES.md) for migration details and storage limits.
+
+### Integrated release (0.20.0)
+
+The compatibility list includes every development checkpoint. Frontier exposure
+uses an optional per-state scalar, initialized by the next political census.
+Older urban-schema migrations clear orphaned cultural shares without inventing
+a minority identity or mutating the caller’s array. Genuine old-engine files and
+current-format continuation are covered in the release validation report.

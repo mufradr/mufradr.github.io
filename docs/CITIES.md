@@ -2,8 +2,8 @@
 
 Chunk 5 connects urban life to the [economy](ECONOMY.md),
 [government](GOVERNMENT.md), [campaigns](WARFARE.md) and
-[overseas communities](COLONIES.md). This is a local development checkpoint;
-full historical calibration and publication as v0.17.0 follow at integration.
+[overseas communities](COLONIES.md). This checkpoint is included in v0.20.0;
+the [release guide](RELEASE_v0.20.0.md) records subsequent corrections and validation.
 
 ## Residents, food and work
 

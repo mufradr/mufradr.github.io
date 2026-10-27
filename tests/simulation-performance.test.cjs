@@ -11,8 +11,8 @@ for(const scenario of ['early','developed'])test(`CPU optimizations preserve eve
   .replace('t*=1-loss*(f===0?0.3:1);','t*=1-loss*(f===0?0.3:1)*(1-0.9*preservation);');
  const faithStart=tech.indexOf('    const ri=s.rel[i];');tech=tech.slice(0,faithStart)+'    religiousContact(i,ls0,ls1);'+tech.slice(tech.lastIndexOf('\n  }'));
  b.inspect(`techStep=(${tech});exitPass=(${previous.exitPass});`);
- setup(a,scenario);setup(b,scenario);
- for(let year=0;year<40;year++){a.step();b.step()}
+ setup(a,scenario);setup(b,scenario);assert.equal(digest(a),digest(b),'Setup: '+explainDifference(a.save('Compare'),b.save('Compare')));
+ for(let year=0;year<40;year++){a.step();b.step();assert.equal(a.inspect('S.r.state()'),b.inspect('S.r.state()'),'RNG at year '+year+': '+explainDifference(a.save('Compare'),b.save('Compare')));for(const k of Object.keys(a.state)){const x=a.state[k],y=b.state[k];if(ArrayBuffer.isView(x)&&ArrayBuffer.isView(y)){const same=Buffer.from(x.buffer,x.byteOffset,x.byteLength).equals(Buffer.from(y.buffer,y.byteOffset,y.byteLength));if(!same){const i=x.findIndex((v,i)=>!Object.is(v,y[i]));assert.fail('Array '+k+' at year '+year+', index '+i+': '+x[i]+' versus '+y[i])}}}}
  const da=digest(a),db=digest(b);assert.equal(da,db,da===db?undefined:explainDifference(a.save('Compare'),b.save('Compare')));
  if(scenario==='developed'){assert.ok(a.state.alive.length>200);assert.ok(a.state.wars.length>0)}
 });

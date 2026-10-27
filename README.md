@@ -3,17 +3,18 @@
 An interactive browser simulation of populations, states, cultures, and climate,
 hosted on GitHub Pages at https://mufradr.github.io/.
 
-The app identifies itself as version 0.17.0-dev.4. It is a static site: no package
+The app identifies itself as version 0.20.0. It is a static site: no package
 installation or build step is required to run or publish it. `.nojekyll` enables
 direct static serving on GitHub Pages.
 
-The local development build completes the economic foundation, government, warfare and cities
-chunks of the civilization-development plan: conserved food reserves, maintained
-infrastructure, gradual provincial decline/recovery, autonomy, actual tribute, sustainable campaigns,
-food-supported urban populations, local institutions and gradual cultural/religious change.
-See [economic rules](docs/ECONOMY.md), [government rules](docs/GOVERNMENT.md)
-and [warfare rules](docs/WARFARE.md), plus [cities and communities](docs/CITIES.md).
-Publication as v0.17.0 follows final integration and historical calibration.
+Version 0.20.0 connects conserved food, maintained infrastructure, government
+budgets, gradual provincial decline/recovery, autonomy, actual tribute, sustainable
+campaigns, urban populations, local institutions and cultural/religious change.
+See the [release guide](docs/RELEASE_v0.20.0.md), [economic rules](docs/ECONOMY.md),
+[government rules](docs/GOVERNMENT.md), [warfare rules](docs/WARFARE.md) and
+[cities and communities](docs/CITIES.md). The
+[release validation report](benchmarks/releases/v0.20.0/README.md) separates
+historical outcomes from performance and documents remaining limitations.
 
 ## Run locally
 

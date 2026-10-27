@@ -1,0 +1,119 @@
+{
+  "resources": [
+    {
+      "file": "index.html",
+      "bytes": 14559,
+      "gzipBytes": 4017
+    },
+    {
+      "file": "styles/base.css",
+      "bytes": 372,
+      "gzipBytes": 253
+    },
+    {
+      "file": "styles/app.css",
+      "bytes": 20317,
+      "gzipBytes": 5052
+    },
+    {
+      "file": "assets/earth.js",
+      "bytes": 1123686,
+      "gzipBytes": 845927
+    },
+    {
+      "file": "js/core.js",
+      "bytes": 173623,
+      "gzipBytes": 65437
+    },
+    {
+      "file": "js/economy.js",
+      "bytes": 4709,
+      "gzipBytes": 1798
+    },
+    {
+      "file": "js/government.js",
+      "bytes": 10372,
+      "gzipBytes": 3897
+    },
+    {
+      "file": "js/warfare.js",
+      "bytes": 13223,
+      "gzipBytes": 4486
+    },
+    {
+      "file": "js/cities.js",
+      "bytes": 5653,
+      "gzipBytes": 2282
+    },
+    {
+      "file": "js/communities.js",
+      "bytes": 6533,
+      "gzipBytes": 2069
+    },
+    {
+      "file": "js/colonies.js",
+      "bytes": 19432,
+      "gzipBytes": 6577
+    },
+    {
+      "file": "js/atlas.js",
+      "bytes": 5583,
+      "gzipBytes": 2274
+    },
+    {
+      "file": "js/history.js",
+      "bytes": 5921,
+      "gzipBytes": 2205
+    },
+    {
+      "file": "js/experiments.js",
+      "bytes": 6403,
+      "gzipBytes": 2224
+    },
+    {
+      "file": "js/diagnostics.js",
+      "bytes": 13777,
+      "gzipBytes": 4129
+    },
+    {
+      "file": "js/history-ui.js",
+      "bytes": 4817,
+      "gzipBytes": 2105
+    },
+    {
+      "file": "js/save-codec.js",
+      "bytes": 10391,
+      "gzipBytes": 3702
+    },
+    {
+      "file": "js/saves.js",
+      "bytes": 14520,
+      "gzipBytes": 4716
+    },
+    {
+      "file": "js/save-store.js",
+      "bytes": 2533,
+      "gzipBytes": 1001
+    },
+    {
+      "file": "js/ui.js",
+      "bytes": 113604,
+      "gzipBytes": 39070
+    },
+    {
+      "file": "js/save-ui.js",
+      "bytes": 12049,
+      "gzipBytes": 4617
+    }
+  ],
+  "totalBytes": 1582077,
+  "totalGzipBytes": 1007838,
+  "initialSave": {
+    "current": {
+      "rawBytes": 40507016,
+      "gzipBytes": 7103121,
+      "encodeMs": 222.78280999999993,
+      "gzipMs": 594.274617
+    }
+  }
+}

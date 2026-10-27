@@ -1,5 +1,25 @@
 # Release history
 
+## 0.20.0 — Connected civilization development
+
+- Connect conserved harvests, reserves, transport and maintained infrastructure to
+  fiscal budgets, provincial control, loyalty, autonomy and actual tribute.
+- Support gradual decline, recovery and negotiated separation while retaining
+  exceptional collapse; share protection and independence rules across dependencies.
+- Bound mobilization, annual campaign capacity, supply, exhaustion, spending and
+  casualties. Plan forces for populated neutral frontiers and permit concentration
+  of the existing offensive pool, correcting the defense lock found in integration.
+- Separate urban and rural residents; support civic and scholarly institutions,
+  innovation and locally preserved knowledge across changes of government.
+- Preserve bounded cultural/religious communities through migration and gradual
+  change. Weight maritime religious contact by actual source followers, preserve
+  fractional communities and repair orphaned legacy cultural shares on migration.
+- Cache stable cell arrays in hot loops without changing their calculations or RNG
+  order. Retain responsive scheduling, map detail controls and complete histories.
+- Migrate published and development checkpoints; update inspectors, cache versions
+  and release documentation. Preserve reproducible historical, prepared, save and
+  browser validation with explicit performance and calibration limitations.
+
 ## 0.17.0-dev.4 — Cities, learning and communities (local development)
 
 - Track actual urban residents as a subset of province population. Connect town

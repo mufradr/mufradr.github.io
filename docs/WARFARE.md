@@ -2,8 +2,9 @@
 
 This is chunk 4 of the civilization-development update. It builds on
 [economic accounting](ECONOMY.md) and [government/dependencies](GOVERNMENT.md).
-The checkpoint remains local; cities/knowledge and full historical calibration
-are later chunks. There are no individual soldier or ship agents.
+This checkpoint is included in v0.20.0 with cities/knowledge. Integrated
+corrections appear below and in the [release guide](RELEASE_v0.20.0.md).
+There are no individual soldier or ship agents.
 
 ## One service population and one annual deployment budget
 
@@ -179,3 +180,13 @@ years without integrity issues. The developed paired CPU sample adds 1.20% time
 relative to the government checkpoint; it is not a cumulative v0.16.0 comparison.
 Short browser samples still show occasional long frames. Full results, reproducible
 harnesses, source hashes and limitations are in the [checkpoint report](../benchmarks/development/warfare/README.md).
+
+## v0.20 integration
+
+The operational formulas above describe the dev.3 checkpoint. The integrated
+release raises a campaign’s concentration cap from 12% to the existing 65%
+offensive pool, capped by 8% of destination population (and real remaining
+capacity/port throughput). Populated neutral frontiers inform bounded, paid
+next-year mobilization; one largest-neighbor scalar prevents duplicated demand
+from counting the same village along multiple borders. See the
+[release guide](RELEASE_v0.20.0.md) and preserved outcome/performance comparisons.

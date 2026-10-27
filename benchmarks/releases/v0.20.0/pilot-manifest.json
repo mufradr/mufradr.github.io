@@ -1,0 +1,195 @@
+{
+  "createdAt": "2026-10-27T12:17:00.230Z",
+  "identity": {
+    "protocol": {
+      "schemaVersion": 1,
+      "protocol": "civilization-development-v1",
+      "baselineCommit": "7649533c839bfdc3b01be56be262eba970f026ad",
+      "rollbackTag": "baseline/v0.16.0-before-civilization-development",
+      "endYear": 1800,
+      "snapshotEvery": 250,
+      "integrityEvery": 250,
+      "majorDecline": {
+        "minimumPeakCells": 40,
+        "minimumPeakPopulation": 1000000,
+        "retainedAreaFraction": 0.5,
+        "healthyAreaFraction": 0.8,
+        "suddenWithinYears": 5
+      },
+      "historicalSeeds": [
+        "development-01",
+        "development-02",
+        "development-03",
+        "development-04",
+        "development-05",
+        "development-06",
+        "development-07",
+        "development-08",
+        "development-09",
+        "development-10"
+      ],
+      "initialRuns": [
+        "earth-development-01",
+        "earth-development-02",
+        "earth-development-03",
+        "generated-development-01",
+        "stress-early",
+        "stress-developed",
+        "stress-maritime"
+      ],
+      "stress": {
+        "warmupYears": 20,
+        "measuredYears": 120,
+        "repeats": 3,
+        "maritimeYears": 300
+      },
+      "browser": {
+        "durationMs": 8000,
+        "viewports": [
+          {
+            "width": 1280,
+            "height": 900
+          },
+          {
+            "width": 820,
+            "height": 1180
+          },
+          {
+            "width": 390,
+            "height": 844
+          }
+        ]
+      },
+      "regions": [
+        {
+          "name": "Fertile Crescent",
+          "box": [
+            29,
+            38,
+            34,
+            49
+          ]
+        },
+        {
+          "name": "Europe",
+          "box": [
+            36,
+            60,
+            -10,
+            30
+          ]
+        },
+        {
+          "name": "India",
+          "box": [
+            8,
+            34,
+            68,
+            90
+          ]
+        },
+        {
+          "name": "China",
+          "box": [
+            20,
+            42,
+            100,
+            123
+          ]
+        },
+        {
+          "name": "Mesoamerica",
+          "box": [
+            14,
+            23,
+            -105,
+            -86
+          ]
+        },
+        {
+          "name": "Andes",
+          "box": [
+            -20,
+            -4,
+            -82,
+            -68
+          ]
+        },
+        {
+          "name": "West Africa",
+          "box": [
+            4,
+            16,
+            -18,
+            16
+          ]
+        },
+        {
+          "name": "Congo basin",
+          "box": [
+            -8,
+            5,
+            12,
+            31
+          ]
+        },
+        {
+          "name": "East Africa",
+          "box": [
+            -12,
+            15,
+            31,
+            48
+          ]
+        },
+        {
+          "name": "Australia",
+          "box": [
+            -44,
+            -10,
+            112,
+            154
+          ]
+        }
+      ]
+    },
+    "source": {
+      "commit": "f6a60c7cb508b6c38fcf2a46f1453ee70fc7fd37",
+      "runtimeSHA256": "6d097fc384c19f6ccd6a5c371464e4b2635fd87fd154e0919f55a635013d89f4",
+      "files": {
+        "index.html": "484fbfecb45f1df6202d3987262a4b3657093f1fddbfac4abc47ca6f903be7e5",
+        "assets/earth.js": "d9aabf45fa947490a75542987d792156b807e0d04deb898ec5261ea53f598c83",
+        "js/core.js": "0cc8930433edab5166ea755f837a51ba465dce3c0c88742c74fd12bdc2082ca4",
+        "js/economy.js": "bdbd05a15b1d2b3e9298a1f3f1ab87023616d47b3f057d1bb4f0a104bb4c285d",
+        "js/government.js": "4218e7346ba0007d01259490fbe155b97ad96fe8bdfae96ee3d702f99afdc0f1",
+        "js/warfare.js": "e0860566edbf2cf65a5a893aec0981e2e6a0020cca8c93c9a8104d2a73202361",
+        "js/cities.js": "45f475c45c1b8f887e4f575461d155239a0d0a3d21272be586c5e2797c3eb07d",
+        "js/communities.js": "065083646291e9b53b1e8e207abd49bcecbe3e848c03ef4a051785354c4236cd",
+        "js/colonies.js": "773d28a06ad9551d8f90bde8ed4d521211c082bcf87dcc07d1eb5191d1ef01ef",
+        "js/atlas.js": "3cf7c9ae0023b13bb5a66704a57fbf6bd247e26206165a8c8d8c80865879abe8",
+        "js/history.js": "291ba4cb5c6157ddd25e49b4194642d6747011d6bd427cbf4653f7a44d1509fd",
+        "js/experiments.js": "eae05399b8c60577b02064b22eedadecee966e9aac0d706477bfe91241a34d5a",
+        "js/diagnostics.js": "f504758ab9efca84f6a8df42d7455ac9dd98a332c709aa1f76e42f9aea5e77fc",
+        "js/save-codec.js": "b5ecec26a2f1cf8160115cfead4e7eb8d73bac3741ac2b02c0271ca08be799f5",
+        "js/saves.js": "53b3caeb7cc1ce53c2965b1c76d0019a1352a2228e7a85fb8696ff3588cf814c",
+        "js/ui.js": "8d19b5ff9cd7cc3855279aa2a2cd6d9f7a47cc1bf5ff2cee33890111ab7c69f5",
+        "js/history-ui.js": "7034b508a99669305782db2c552f8ef41687231c76dcf1e6c9bf6d36ff1ddcc6",
+        "js/save-ui.js": "6907d98f9f66c19f610c761ddf3c8e94bc8b98a99bcbc5566da9a694f8eb8644",
+        "js/save-store.js": "7d153a175f2c2c7bd54a1f70caf604a00c2fd698eba9d4add30bea8258d620ef",
+        "js/save-worker.js": "46951987885a81cf979dea36e5df3b067b9130aa7e1657852ed8132781ea2c6b",
+        "styles/base.css": "a4a477526673b7cbb466775e39698516d7867f308f9c94fd1f243e5ffe190c75",
+        "styles/app.css": "8be08ad21030d1b0d4bd7e1022fb1574acc4ef2d16c796ab62a1b208706bcd29"
+      }
+    },
+    "runnerSHA256": "abac20d0ec6a6dabf3324b69199adbc17ed3e6afeebbc08aa829075e6a4eb480",
+    "requestedEndYear": null
+  },
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "linux",
+    "arch": "x64",
+    "cpu": "AMD EPYC 9V74 80-Core Processor",
+    "logicalCPUs": 5,
+    "totalMemoryBytes": 35743760384
+  }
+}

@@ -1,0 +1,1156 @@
+{
+  "protocol": "civilization-development-v1",
+  "missingBefore": [],
+  "missingAfter": [
+    "stress-developed",
+    "stress-early",
+    "stress-maritime"
+  ],
+  "runs": [
+    {
+      "id": "earth-development-01",
+      "category": "historical-earth",
+      "kernelTimeRatio": null,
+      "sliceP95Ratio": null,
+      "finalSaveRatio": 1.0617959240754895,
+      "worldBufferRatio": 1.0620437527963034,
+      "before": {
+        "first": {
+          "chiefdom": -6512,
+          "kingdom": -5477,
+          "empire": -2082,
+          "oceanKnowledge": 809,
+          "colony": 840,
+          "colonialIndependence": 1095
+        },
+        "longevity": {
+          "total": 320,
+          "ended": 223,
+          "rightCensored": 97,
+          "completedStateLifetimes": {
+            "count": 223,
+            "min": 3,
+            "median": 1001,
+            "p95": 2310,
+            "p99": 3088,
+            "max": 4207
+          },
+          "completedYearsSinceFirstEmpire": {
+            "count": 223,
+            "min": 2,
+            "median": 580,
+            "p95": 1731,
+            "p99": 2132,
+            "max": 2869
+          },
+          "ongoingObservedYears": {
+            "count": 97,
+            "min": 17,
+            "median": 767,
+            "p95": 2936,
+            "p99": 4301,
+            "max": 4301
+          }
+        },
+        "decline": {
+          "eligible": 203,
+          "observed": 126,
+          "sudden": 105,
+          "gradual": 21,
+          "notYetObserved": 77
+        },
+        "final": {
+          "year": 1800,
+          "population": 646332786.8700428,
+          "polities": 477,
+          "states": 385,
+          "empires": 84,
+          "largestStateArea": 2707852.9912109375,
+          "regions": [
+            {
+              "name": "Fertile Crescent",
+              "population": 6777200.182128906,
+              "polities": 8,
+              "governedShare": 0.9988856901197989,
+              "largestStateShare": 0.3493145472916712,
+              "largestBlocShare": 0.3493145472916712
+            },
+            {
+              "name": "Europe",
+              "population": 54216706.94433594,
+              "polities": 12,
+              "governedShare": 1,
+              "largestStateShare": 0.2610407509453099,
+              "largestBlocShare": 0.28102213411051025
+            },
+            {
+              "name": "India",
+              "population": 31663772.064159274,
+              "polities": 13,
+              "governedShare": 0.9792086243644494,
+              "largestStateShare": 0.325767478327803,
+              "largestBlocShare": 0.325767478327803
+            },
+            {
+              "name": "China",
+              "population": 46738797.50109863,
+              "polities": 20,
+              "governedShare": 0.9981061458142333,
+              "largestStateShare": 0.642208863706306,
+              "largestBlocShare": 0.642208863706306
+            },
+            {
+              "name": "Mesoamerica",
+              "population": 5344350.6630859375,
+              "polities": 4,
+              "governedShare": 0.9017162683222582,
+              "largestStateShare": 0.803501726875244,
+              "largestBlocShare": 0.803501726875244
+            },
+            {
+              "name": "Andes",
+              "population": 6336749.207168579,
+              "polities": 27,
+              "governedShare": 0.4466040198208492,
+              "largestStateShare": 0.08815644473005868,
+              "largestBlocShare": 0.08815644473005868
+            },
+            {
+              "name": "West Africa",
+              "population": 32876095.6640625,
+              "polities": 25,
+              "governedShare": 0.9466721625386323,
+              "largestStateShare": 0.47827909235353916,
+              "largestBlocShare": 0.47827909235353916
+            },
+            {
+              "name": "Congo basin",
+              "population": 32343011.09375,
+              "polities": 39,
+              "governedShare": 0.8010734410992897,
+              "largestStateShare": 0.3712823337881956,
+              "largestBlocShare": 0.3712823337881956
+            },
+            {
+              "name": "East Africa",
+              "population": 48421085.24560547,
+              "polities": 35,
+              "governedShare": 0.9931378366914771,
+              "largestStateShare": 0.2622910465674176,
+              "largestBlocShare": 0.26769285829077705
+            },
+            {
+              "name": "Australia",
+              "population": 2790584.1715393066,
+              "polities": 5,
+              "governedShare": 0.12661385415752313,
+              "largestStateShare": 0.09644100067836925,
+              "largestBlocShare": 0.09644100067836925
+            }
+          ],
+          "overseas": {
+            "routes": 128,
+            "totalFoundings": 82,
+            "active": 77,
+            "dependent": 32,
+            "independentRegions": 14,
+            "diasporas": 256,
+            "communityPopulation": 1149065.8569752283
+          },
+          "wars": 17580,
+          "outbreaks": 1323,
+          "plagueDeaths": 5353632533.717997,
+          "cities": 3874,
+          "peoples": 3375
+        }
+      },
+      "after": {
+        "first": {
+          "chiefdom": -6785,
+          "kingdom": -5962,
+          "empire": -1677,
+          "oceanKnowledge": 803,
+          "colony": 930,
+          "colonialIndependence": 1155
+        },
+        "longevity": {
+          "total": 158,
+          "ended": 37,
+          "rightCensored": 121,
+          "completedStateLifetimes": {
+            "count": 37,
+            "min": 132,
+            "median": 2043,
+            "p95": 4478,
+            "p99": 4836,
+            "max": 4836
+          },
+          "completedYearsSinceFirstEmpire": {
+            "count": 37,
+            "min": 13,
+            "median": 464,
+            "p95": 2337,
+            "p99": 2488,
+            "max": 2488
+          },
+          "ongoingObservedYears": {
+            "count": 121,
+            "min": 170,
+            "median": 3742,
+            "p95": 5968,
+            "p99": 6971,
+            "max": 7055
+          }
+        },
+        "decline": {
+          "eligible": 83,
+          "observed": 6,
+          "sudden": 1,
+          "gradual": 5,
+          "notYetObserved": 77
+        },
+        "final": {
+          "year": 1800,
+          "population": 993051315.3112693,
+          "polities": 1000,
+          "states": 969,
+          "empires": 109,
+          "largestStateArea": 1342896.521484375,
+          "regions": [
+            {
+              "name": "Fertile Crescent",
+              "population": 10096783.378295898,
+              "polities": 13,
+              "governedShare": 0.9930133078482064,
+              "largestStateShare": 0.33527285280859215,
+              "largestBlocShare": 0.33527285280859215
+            },
+            {
+              "name": "Europe",
+              "population": 96836825.78588867,
+              "polities": 18,
+              "governedShare": 0.9989172305102084,
+              "largestStateShare": 0.1651305889515119,
+              "largestBlocShare": 0.1651305889515119
+            },
+            {
+              "name": "India",
+              "population": 47747860.00756663,
+              "polities": 15,
+              "governedShare": 0.9926891324917333,
+              "largestStateShare": 0.4462621069100306,
+              "largestBlocShare": 0.4462621069100306
+            },
+            {
+              "name": "China",
+              "population": 64930152.52478027,
+              "polities": 18,
+              "governedShare": 0.9940901495241151,
+              "largestStateShare": 0.22461472869918156,
+              "largestBlocShare": 0.22461472869918156
+            },
+            {
+              "name": "Mesoamerica",
+              "population": 8646523.037353516,
+              "polities": 44,
+              "governedShare": 0.7642111649185598,
+              "largestStateShare": 0.2372316774269915,
+              "largestBlocShare": 0.2372316774269915
+            },
+            {
+              "name": "Andes",
+              "population": 6214060.213401794,
+              "polities": 28,
+              "governedShare": 0.40224716655571296,
+              "largestStateShare": 0.053185254672496116,
+              "largestBlocShare": 0.053185254672496116
+            },
+            {
+              "name": "West Africa",
+              "population": 47767758.056884766,
+              "polities": 187,
+              "governedShare": 0.956140787332275,
+              "largestStateShare": 0.16348357512901035,
+              "largestBlocShare": 0.16348357512901035
+            },
+            {
+              "name": "Congo basin",
+              "population": 41378197.71484375,
+              "polities": 151,
+              "governedShare": 0.9351171354877391,
+              "largestStateShare": 0.16770541067175632,
+              "largestBlocShare": 0.16770541067175632
+            },
+            {
+              "name": "East Africa",
+              "population": 56320117.006103516,
+              "polities": 43,
+              "governedShare": 1,
+              "largestStateShare": 0.161947822368676,
+              "largestBlocShare": 0.161947822368676
+            },
+            {
+              "name": "Australia",
+              "population": 22773610.80015564,
+              "polities": 15,
+              "governedShare": 0.7818672075727371,
+              "largestStateShare": 0.22183743986363794,
+              "largestBlocShare": 0.22183743986363794
+            }
+          ],
+          "overseas": {
+            "routes": 128,
+            "totalFoundings": 50,
+            "active": 50,
+            "dependent": 27,
+            "independentRegions": 10,
+            "diasporas": 195,
+            "communityPopulation": 1656019.5092891478
+          },
+          "wars": 21844,
+          "outbreaks": 666,
+          "plagueDeaths": 5281189608.2672205,
+          "cities": 9656,
+          "peoples": 2696
+        }
+      },
+      "withinProvisionalCPUAllowance": null
+    },
+    {
+      "id": "earth-development-02",
+      "category": "historical-earth",
+      "kernelTimeRatio": null,
+      "sliceP95Ratio": null,
+      "finalSaveRatio": 0.9678028582101136,
+      "worldBufferRatio": 1.0336888992941093,
+      "before": {
+        "first": {
+          "chiefdom": -7255,
+          "kingdom": -5645,
+          "empire": -2378,
+          "oceanKnowledge": 822,
+          "colony": 835,
+          "colonialIndependence": 1130
+        },
+        "longevity": {
+          "total": 343,
+          "ended": 251,
+          "rightCensored": 92,
+          "completedStateLifetimes": {
+            "count": 251,
+            "min": 5,
+            "median": 888,
+            "p95": 2650,
+            "p99": 3371,
+            "max": 3740
+          },
+          "completedYearsSinceFirstEmpire": {
+            "count": 251,
+            "min": 4,
+            "median": 632,
+            "p95": 1623,
+            "p99": 2325,
+            "max": 2634
+          },
+          "ongoingObservedYears": {
+            "count": 92,
+            "min": 60,
+            "median": 684,
+            "p95": 2028,
+            "p99": 2703,
+            "max": 2703
+          }
+        },
+        "decline": {
+          "eligible": 201,
+          "observed": 134,
+          "sudden": 116,
+          "gradual": 18,
+          "notYetObserved": 67
+        },
+        "final": {
+          "year": 1800,
+          "population": 844977222.0519996,
+          "polities": 545,
+          "states": 445,
+          "empires": 85,
+          "largestStateArea": 2414146.92578125,
+          "regions": [
+            {
+              "name": "Fertile Crescent",
+              "population": 9175621.343017578,
+              "polities": 9,
+              "governedShare": 1,
+              "largestStateShare": 0.31504989572865194,
+              "largestBlocShare": 0.31504989572865194
+            },
+            {
+              "name": "Europe",
+              "population": 103138477.61425781,
+              "polities": 15,
+              "governedShare": 1,
+              "largestStateShare": 0.21275209881536306,
+              "largestBlocShare": 0.21275209881536306
+            },
+            {
+              "name": "India",
+              "population": 40525560.49922931,
+              "polities": 14,
+              "governedShare": 0.9773224337743214,
+              "largestStateShare": 0.3238473660970661,
+              "largestBlocShare": 0.3238473660970661
+            },
+            {
+              "name": "China",
+              "population": 47981254.333618164,
+              "polities": 22,
+              "governedShare": 0.9977276637466983,
+              "largestStateShare": 0.380901249749721,
+              "largestBlocShare": 0.380901249749721
+            },
+            {
+              "name": "Mesoamerica",
+              "population": 5116583.736572266,
+              "polities": 22,
+              "governedShare": 0.9268730182670453,
+              "largestStateShare": 0.22099348550594267,
+              "largestBlocShare": 0.22099348550594267
+            },
+            {
+              "name": "Andes",
+              "population": 4180289.0769958496,
+              "polities": 28,
+              "governedShare": 0.3703054660832175,
+              "largestStateShare": 0.0936518016588865,
+              "largestBlocShare": 0.0936518016588865
+            },
+            {
+              "name": "West Africa",
+              "population": 53812645.95581055,
+              "polities": 29,
+              "governedShare": 0.9594539615764776,
+              "largestStateShare": 0.32667611797502455,
+              "largestBlocShare": 0.32667611797502455
+            },
+            {
+              "name": "Congo basin",
+              "population": 45223043.625,
+              "polities": 41,
+              "governedShare": 0.8353257663396738,
+              "largestStateShare": 0.34930764264141784,
+              "largestBlocShare": 0.34930764264141784
+            },
+            {
+              "name": "East Africa",
+              "population": 61578149.31689453,
+              "polities": 28,
+              "governedShare": 0.9900288093248483,
+              "largestStateShare": 0.3029811590232119,
+              "largestBlocShare": 0.34534826104424043
+            },
+            {
+              "name": "Australia",
+              "population": 13556839.222808838,
+              "polities": 11,
+              "governedShare": 0.8199855539785101,
+              "largestStateShare": 0.2978373217882405,
+              "largestBlocShare": 0.2978373217882405
+            }
+          ],
+          "overseas": {
+            "routes": 128,
+            "totalFoundings": 75,
+            "active": 65,
+            "dependent": 22,
+            "independentRegions": 9,
+            "diasporas": 256,
+            "communityPopulation": 1310243.6621099762
+          },
+          "wars": 19839,
+          "outbreaks": 1252,
+          "plagueDeaths": 5058280246.991941,
+          "cities": 3808,
+          "peoples": 3546
+        }
+      },
+      "after": {
+        "first": {
+          "chiefdom": -6704,
+          "kingdom": -6212,
+          "empire": -1186,
+          "oceanKnowledge": 836,
+          "colony": 1130,
+          "colonialIndependence": 1250
+        },
+        "longevity": {
+          "total": 118,
+          "ended": 25,
+          "rightCensored": 93,
+          "completedStateLifetimes": {
+            "count": 25,
+            "min": 951,
+            "median": 2708,
+            "p95": 3882,
+            "p99": 4933,
+            "max": 4933
+          },
+          "completedYearsSinceFirstEmpire": {
+            "count": 25,
+            "min": 108,
+            "median": 740,
+            "p95": 1481,
+            "p99": 1653,
+            "max": 1653
+          },
+          "ongoingObservedYears": {
+            "count": 93,
+            "min": 263,
+            "median": 3227,
+            "p95": 5807,
+            "p99": 6645,
+            "max": 6645
+          }
+        },
+        "decline": {
+          "eligible": 66,
+          "observed": 8,
+          "sudden": 0,
+          "gradual": 8,
+          "notYetObserved": 58
+        },
+        "final": {
+          "year": 1800,
+          "population": 861421990.9582906,
+          "polities": 1127,
+          "states": 1107,
+          "empires": 85,
+          "largestStateArea": 1278918.0263671875,
+          "regions": [
+            {
+              "name": "Fertile Crescent",
+              "population": 9517760.635009766,
+              "polities": 8,
+              "governedShare": 0.9758527687648351,
+              "largestStateShare": 0.47211035911419635,
+              "largestBlocShare": 0.47211035911419635
+            },
+            {
+              "name": "Europe",
+              "population": 79710574.72058105,
+              "polities": 45,
+              "governedShare": 0.9992027320818758,
+              "largestStateShare": 0.19333826595711107,
+              "largestBlocShare": 0.19333826595711107
+            },
+            {
+              "name": "India",
+              "population": 41847382.2839883,
+              "polities": 18,
+              "governedShare": 0.9727759071219511,
+              "largestStateShare": 0.36988188913837283,
+              "largestBlocShare": 0.36988188913837283
+            },
+            {
+              "name": "China",
+              "population": 44062695.003074646,
+              "polities": 31,
+              "governedShare": 0.9768701929074527,
+              "largestStateShare": 0.3237944382913811,
+              "largestBlocShare": 0.3237944382913811
+            },
+            {
+              "name": "Mesoamerica",
+              "population": 3510862.451904297,
+              "polities": 40,
+              "governedShare": 0.4760302279611694,
+              "largestStateShare": 0.02951496111555004,
+              "largestBlocShare": 0.050261438182529
+            },
+            {
+              "name": "Andes",
+              "population": 9287154.510498047,
+              "polities": 30,
+              "governedShare": 0.551905109208542,
+              "largestStateShare": 0.1328519829387396,
+              "largestBlocShare": 0.1478243932430415
+            },
+            {
+              "name": "West Africa",
+              "population": 38896752.55957031,
+              "polities": 135,
+              "governedShare": 0.9007364978807988,
+              "largestStateShare": 0.1819610958928417,
+              "largestBlocShare": 0.18449646781685944
+            },
+            {
+              "name": "Congo basin",
+              "population": 28091236.571289062,
+              "polities": 142,
+              "governedShare": 0.8767679015664427,
+              "largestStateShare": 0.1373689811440694,
+              "largestBlocShare": 0.14108777269174266
+            },
+            {
+              "name": "East Africa",
+              "population": 51222217.38745117,
+              "polities": 60,
+              "governedShare": 0.9945886062236967,
+              "largestStateShare": 0.15385119553108514,
+              "largestBlocShare": 0.15385119553108514
+            },
+            {
+              "name": "Australia",
+              "population": 18323876.754760742,
+              "polities": 41,
+              "governedShare": 0.6461346736240606,
+              "largestStateShare": 0.09926183595209677,
+              "largestBlocShare": 0.09926183595209677
+            }
+          ],
+          "overseas": {
+            "routes": 128,
+            "totalFoundings": 36,
+            "active": 36,
+            "dependent": 27,
+            "independentRegions": 5,
+            "diasporas": 204,
+            "communityPopulation": 1205996.1477041899
+          },
+          "wars": 18883,
+          "outbreaks": 616,
+          "plagueDeaths": 3611359927.351289,
+          "cities": 8301,
+          "peoples": 2632
+        }
+      },
+      "withinProvisionalCPUAllowance": null
+    },
+    {
+      "id": "earth-development-03",
+      "category": "historical-earth",
+      "kernelTimeRatio": null,
+      "sliceP95Ratio": null,
+      "finalSaveRatio": 0.9984782356551696,
+      "worldBufferRatio": 1.0564116932202818,
+      "before": {
+        "first": {
+          "chiefdom": -5719,
+          "kingdom": -5509,
+          "empire": -1879,
+          "oceanKnowledge": 811,
+          "colony": 915,
+          "colonialIndependence": 1155
+        },
+        "longevity": {
+          "total": 285,
+          "ended": 177,
+          "rightCensored": 108,
+          "completedStateLifetimes": {
+            "count": 177,
+            "min": 6,
+            "median": 1190,
+            "p95": 2741,
+            "p99": 3946,
+            "max": 3956
+          },
+          "completedYearsSinceFirstEmpire": {
+            "count": 177,
+            "min": 5,
+            "median": 581,
+            "p95": 1680,
+            "p99": 2346,
+            "max": 3003
+          },
+          "ongoingObservedYears": {
+            "count": 108,
+            "min": 70,
+            "median": 874,
+            "p95": 2570,
+            "p99": 3052,
+            "max": 3406
+          }
+        },
+        "decline": {
+          "eligible": 172,
+          "observed": 97,
+          "sudden": 79,
+          "gradual": 18,
+          "notYetObserved": 75
+        },
+        "final": {
+          "year": 1800,
+          "population": 811010873.1940591,
+          "polities": 540,
+          "states": 424,
+          "empires": 93,
+          "largestStateArea": 2144099.4716796875,
+          "regions": [
+            {
+              "name": "Fertile Crescent",
+              "population": 6465294.340332031,
+              "polities": 7,
+              "governedShare": 0.9995403824123298,
+              "largestStateShare": 0.48314088978388514,
+              "largestBlocShare": 0.48314088978388514
+            },
+            {
+              "name": "Europe",
+              "population": 75995373.70947266,
+              "polities": 18,
+              "governedShare": 0.9999440935720765,
+              "largestStateShare": 0.2826546671339393,
+              "largestBlocShare": 0.28418385181012457
+            },
+            {
+              "name": "India",
+              "population": 29449450.890605748,
+              "polities": 10,
+              "governedShare": 0.9742189985498574,
+              "largestStateShare": 0.3336536149084459,
+              "largestBlocShare": 0.3336536149084459
+            },
+            {
+              "name": "China",
+              "population": 38404096.96618652,
+              "polities": 15,
+              "governedShare": 0.9968780019270028,
+              "largestStateShare": 0.5530840906646377,
+              "largestBlocShare": 0.5530840906646377
+            },
+            {
+              "name": "Mesoamerica",
+              "population": 9370280.372070312,
+              "polities": 43,
+              "governedShare": 0.9024171502544841,
+              "largestStateShare": 0.1656894706747015,
+              "largestBlocShare": 0.18314854004125175
+            },
+            {
+              "name": "Andes",
+              "population": 5136601.420402527,
+              "polities": 22,
+              "governedShare": 0.25527285429761604,
+              "largestStateShare": 0.043869510023680475,
+              "largestBlocShare": 0.043869510023680475
+            },
+            {
+              "name": "West Africa",
+              "population": 54149332.900390625,
+              "polities": 23,
+              "governedShare": 0.956276820649003,
+              "largestStateShare": 0.19475178383416752,
+              "largestBlocShare": 0.19475178383416752
+            },
+            {
+              "name": "Congo basin",
+              "population": 51929516.767578125,
+              "polities": 31,
+              "governedShare": 0.7990423508081501,
+              "largestStateShare": 0.26223069275221933,
+              "largestBlocShare": 0.26223069275221933
+            },
+            {
+              "name": "East Africa",
+              "population": 51196211.478027344,
+              "polities": 14,
+              "governedShare": 0.9908766277859802,
+              "largestStateShare": 0.29614186300781153,
+              "largestBlocShare": 0.29614186300781153
+            },
+            {
+              "name": "Australia",
+              "population": 8554161.172988892,
+              "polities": 6,
+              "governedShare": 0.7294106452573498,
+              "largestStateShare": 0.28334971650570917,
+              "largestBlocShare": 0.28334971650570917
+            }
+          ],
+          "overseas": {
+            "routes": 128,
+            "totalFoundings": 73,
+            "active": 67,
+            "dependent": 21,
+            "independentRegions": 9,
+            "diasporas": 256,
+            "communityPopulation": 1352512.3835566966
+          },
+          "wars": 20043,
+          "outbreaks": 947,
+          "plagueDeaths": 4849243929.133945,
+          "cities": 3761,
+          "peoples": 3542
+        }
+      },
+      "after": {
+        "first": {
+          "chiefdom": -6905,
+          "kingdom": -5764,
+          "empire": -1677,
+          "oceanKnowledge": 804,
+          "colony": 825,
+          "colonialIndependence": 1405
+        },
+        "longevity": {
+          "total": 169,
+          "ended": 33,
+          "rightCensored": 136,
+          "completedStateLifetimes": {
+            "count": 33,
+            "min": 564,
+            "median": 2111,
+            "p95": 3670,
+            "p99": 3865,
+            "max": 3865
+          },
+          "completedYearsSinceFirstEmpire": {
+            "count": 33,
+            "min": 8,
+            "median": 437,
+            "p95": 1594,
+            "p99": 1741,
+            "max": 1741
+          },
+          "ongoingObservedYears": {
+            "count": 136,
+            "min": 190,
+            "median": 3204,
+            "p95": 6153,
+            "p99": 6648,
+            "max": 7300
+          }
+        },
+        "decline": {
+          "eligible": 78,
+          "observed": 12,
+          "sudden": 3,
+          "gradual": 9,
+          "notYetObserved": 66
+        },
+        "final": {
+          "year": 1800,
+          "population": 772251613.7318447,
+          "polities": 934,
+          "states": 910,
+          "empires": 110,
+          "largestStateArea": 1554954.2890625,
+          "regions": [
+            {
+              "name": "Fertile Crescent",
+              "population": 7509072.492431641,
+              "polities": 10,
+              "governedShare": 1,
+              "largestStateShare": 0.24976135689939186,
+              "largestBlocShare": 0.24976135689939186
+            },
+            {
+              "name": "Europe",
+              "population": 49356305.6418457,
+              "polities": 25,
+              "governedShare": 0.9973237634640646,
+              "largestStateShare": 0.22191678589460023,
+              "largestBlocShare": 0.22466444140155986
+            },
+            {
+              "name": "India",
+              "population": 41020327.16786063,
+              "polities": 35,
+              "governedShare": 0.99326064120888,
+              "largestStateShare": 0.25092901132903933,
+              "largestBlocShare": 0.25092901132903933
+            },
+            {
+              "name": "China",
+              "population": 52347877.009399414,
+              "polities": 17,
+              "governedShare": 0.9896994934381399,
+              "largestStateShare": 0.2678515215678155,
+              "largestBlocShare": 0.2678515215678155
+            },
+            {
+              "name": "Mesoamerica",
+              "population": 5758928.499511719,
+              "polities": 29,
+              "governedShare": 0.8810853378076428,
+              "largestStateShare": 0.13594960499229702,
+              "largestBlocShare": 0.13594960499229702
+            },
+            {
+              "name": "Andes",
+              "population": 4540299.914367676,
+              "polities": 38,
+              "governedShare": 0.420570452452974,
+              "largestStateShare": 0.08109229732177596,
+              "largestBlocShare": 0.08109229732177596
+            },
+            {
+              "name": "West Africa",
+              "population": 43608435.59716797,
+              "polities": 133,
+              "governedShare": 0.9138105132883049,
+              "largestStateShare": 0.19598353363638046,
+              "largestBlocShare": 0.19598353363638046
+            },
+            {
+              "name": "Congo basin",
+              "population": 34244006.86816406,
+              "polities": 136,
+              "governedShare": 0.9063737642815084,
+              "largestStateShare": 0.16542934130954745,
+              "largestBlocShare": 0.16542934130954745
+            },
+            {
+              "name": "East Africa",
+              "population": 56479403.8359375,
+              "polities": 64,
+              "governedShare": 0.9978662981059864,
+              "largestStateShare": 0.16396841238956006,
+              "largestBlocShare": 0.16638943708109538
+            },
+            {
+              "name": "Australia",
+              "population": 32610924.867279053,
+              "polities": 24,
+              "governedShare": 0.7830545853253529,
+              "largestStateShare": 0.3048369720348358,
+              "largestBlocShare": 0.3048369720348358
+            }
+          ],
+          "overseas": {
+            "routes": 128,
+            "totalFoundings": 42,
+            "active": 42,
+            "dependent": 25,
+            "independentRegions": 8,
+            "diasporas": 159,
+            "communityPopulation": 980496.2362786755
+          },
+          "wars": 20273,
+          "outbreaks": 1013,
+          "plagueDeaths": 4972104551.383241,
+          "cities": 9276,
+          "peoples": 2652
+        }
+      },
+      "withinProvisionalCPUAllowance": null
+    },
+    {
+      "id": "generated-development-01",
+      "category": "ordinary-generated",
+      "kernelTimeRatio": null,
+      "sliceP95Ratio": null,
+      "finalSaveRatio": 1.49865379175141,
+      "worldBufferRatio": 1.0885090389690002,
+      "before": {
+        "first": {
+          "chiefdom": -4873,
+          "kingdom": -4552,
+          "empire": -2001,
+          "oceanKnowledge": -607,
+          "colony": -565,
+          "colonialIndependence": -400
+        },
+        "longevity": {
+          "total": 251,
+          "ended": 129,
+          "rightCensored": 122,
+          "completedStateLifetimes": {
+            "count": 129,
+            "min": 8,
+            "median": 1087,
+            "p95": 3323,
+            "p99": 3754,
+            "max": 3773
+          },
+          "completedYearsSinceFirstEmpire": {
+            "count": 129,
+            "min": 7,
+            "median": 587,
+            "p95": 2011,
+            "p99": 2178,
+            "max": 2962
+          },
+          "ongoingObservedYears": {
+            "count": 122,
+            "min": 25,
+            "median": 646,
+            "p95": 1788,
+            "p99": 4150,
+            "max": 4346
+          }
+        },
+        "decline": {
+          "eligible": 149,
+          "observed": 68,
+          "sudden": 53,
+          "gradual": 15,
+          "notYetObserved": 81
+        },
+        "final": {
+          "year": 1800,
+          "population": 932105182.2258832,
+          "polities": 369,
+          "states": 335,
+          "empires": 112,
+          "largestStateArea": 2616332.0659179688,
+          "regions": [],
+          "overseas": {
+            "routes": 128,
+            "totalFoundings": 152,
+            "active": 95,
+            "dependent": 34,
+            "independentRegions": 34,
+            "diasporas": 256,
+            "communityPopulation": 5594334.650016747
+          },
+          "wars": 9171,
+          "outbreaks": 1699,
+          "plagueDeaths": 5043264876.686443,
+          "cities": 3912,
+          "peoples": 3512
+        }
+      },
+      "after": {
+        "first": {
+          "chiefdom": -5407,
+          "kingdom": -4578,
+          "empire": -1733,
+          "oceanKnowledge": -1146,
+          "colony": -1135,
+          "colonialIndependence": -755
+        },
+        "longevity": {
+          "total": 170,
+          "ended": 29,
+          "rightCensored": 141,
+          "completedStateLifetimes": {
+            "count": 29,
+            "min": 711,
+            "median": 1507,
+            "p95": 4362,
+            "p99": 5221,
+            "max": 5221
+          },
+          "completedYearsSinceFirstEmpire": {
+            "count": 29,
+            "min": 54,
+            "median": 532,
+            "p95": 2553,
+            "p99": 2712,
+            "max": 2712
+          },
+          "ongoingObservedYears": {
+            "count": 141,
+            "min": 103,
+            "median": 1447,
+            "p95": 4704,
+            "p99": 5975,
+            "max": 6057
+          }
+        },
+        "decline": {
+          "eligible": 77,
+          "observed": 9,
+          "sudden": 4,
+          "gradual": 5,
+          "notYetObserved": 68
+        },
+        "final": {
+          "year": 1800,
+          "population": 1693807494.983969,
+          "polities": 1217,
+          "states": 1201,
+          "empires": 128,
+          "largestStateArea": 1243522.484375,
+          "regions": [],
+          "overseas": {
+            "routes": 128,
+            "totalFoundings": 124,
+            "active": 123,
+            "dependent": 33,
+            "independentRegions": 55,
+            "diasporas": 256,
+            "communityPopulation": 10519681.500045523
+          },
+          "wars": 22425,
+          "outbreaks": 1348,
+          "plagueDeaths": 5570925952.03996,
+          "cities": 13605,
+          "peoples": 2873
+        }
+      },
+      "withinProvisionalCPUAllowance": null
+    }
+  ],
+  "timingPolicy": "Concurrent ordinary-history timings excluded. Prepared performance comes from separately isolated paired processes.",
+  "preparedCases": "Original stress rows are not pooled with these outcome files; performance.json remeasures both pinned engines using the unchanged paired-process harness. Prepared interactions are separate logs.",
+  "performance": {
+    "early": {
+      "kernelRatio": 0.7759949024391574,
+      "worldBufferDelta": 3520008,
+      "saveRatio": 1.0028033686537112,
+      "beforeStates": 0,
+      "afterStates": 0
+    },
+    "developed": {
+      "kernelRatio": 1.1296775717998324,
+      "worldBufferDelta": 4648680,
+      "saveRatio": 1.1802139150174422,
+      "beforeStates": 305,
+      "afterStates": 273
+    }
+  },
+  "source": {
+    "before": {
+      "commit": "7649533c839bfdc3b01be56be262eba970f026ad",
+      "runtimeSHA256": "7542b807576b9e4ce8c58ec84820fb90c28868979ce7f3b3c6d99344dfaaf44e",
+      "files": {
+        "index.html": "1db86e4ef52765219fe88a0f509f7f77d818d4ce3943f448a7e8d091d468411f",
+        "assets/earth.js": "d9aabf45fa947490a75542987d792156b807e0d04deb898ec5261ea53f598c83",
+        "js/core.js": "3e241a77b0f85520fd1c705dd1aac507870239017b78ab705c15d76b9fa0bfb2",
+        "js/colonies.js": "05d15eb4758c42106dc53a0cb70a5545c84b9c672857068a54d8446d403f6fbf",
+        "js/atlas.js": "75757811a78fc0d7622e54eb8bd73e933135d7e9e757cb7c94da898a2ec4ce97",
+        "js/history.js": "6323c41afbf54f423eeb6a6d21a543a4df89fabdfe9ede5f5b1aa234bdc08c4d",
+        "js/experiments.js": "eae05399b8c60577b02064b22eedadecee966e9aac0d706477bfe91241a34d5a",
+        "js/diagnostics.js": "97ad8b29ca56726e13c127ff675d5f53f150f69e333f8f1cb29bd184b2a7ef70",
+        "js/save-codec.js": "b5ecec26a2f1cf8160115cfead4e7eb8d73bac3741ac2b02c0271ca08be799f5",
+        "js/saves.js": "b5ac14cac7dfb57f54c49adcdef1a3a020ae6fc2d9fc4933c4574c16ef3cb3c4",
+        "js/ui.js": "c9a119c88353b5f7d226972b7c933e7d085bccfe29ae4a3ac2a7db378fee133e",
+        "js/history-ui.js": "7034b508a99669305782db2c552f8ef41687231c76dcf1e6c9bf6d36ff1ddcc6",
+        "js/save-ui.js": "ddedb4481f068fa10fb3e8546a01e2f87dc2deb72243bcec99864e94987d5a93",
+        "js/save-store.js": "7d153a175f2c2c7bd54a1f70caf604a00c2fd698eba9d4add30bea8258d620ef",
+        "js/save-worker.js": "9bbd97b19ffeab2eface06853b9e6edda347cf9f3116cc42bd79679d79597499",
+        "styles/base.css": "a4a477526673b7cbb466775e39698516d7867f308f9c94fd1f243e5ffe190c75",
+        "styles/app.css": "8be08ad21030d1b0d4bd7e1022fb1574acc4ef2d16c796ab62a1b208706bcd29"
+      }
+    },
+    "after": {
+      "commit": "f6a60c7cb508b6c38fcf2a46f1453ee70fc7fd37",
+      "runtimeSHA256": "a38acc537ec3b39055ace1186acda61ae7bd01d20cc63347c9780e10d8734529",
+      "files": {
+        "index.html": "ce51727012b8bc1e6848feb7735abb76fcbef6e7386ceddbcda2929c012c7a07",
+        "assets/earth.js": "d9aabf45fa947490a75542987d792156b807e0d04deb898ec5261ea53f598c83",
+        "js/core.js": "55d9ad7ef0135f589e22b07557931cd99a3bb6749c7365fd69e19cf5d9a9b7d9",
+        "js/economy.js": "bdbd05a15b1d2b3e9298a1f3f1ab87023616d47b3f057d1bb4f0a104bb4c285d",
+        "js/government.js": "4218e7346ba0007d01259490fbe155b97ad96fe8bdfae96ee3d702f99afdc0f1",
+        "js/warfare.js": "cd459425ba65fab0da9efeb119620e68c00873e82bcd095f0594b84308d2a8df",
+        "js/cities.js": "45f475c45c1b8f887e4f575461d155239a0d0a3d21272be586c5e2797c3eb07d",
+        "js/communities.js": "b329bc67732c8af2ce758ecfa34cee0cebddf916ed0b5ec79271e29caee67797",
+        "js/colonies.js": "773d28a06ad9551d8f90bde8ed4d521211c082bcf87dcc07d1eb5191d1ef01ef",
+        "js/atlas.js": "3cf7c9ae0023b13bb5a66704a57fbf6bd247e26206165a8c8d8c80865879abe8",
+        "js/history.js": "291ba4cb5c6157ddd25e49b4194642d6747011d6bd427cbf4653f7a44d1509fd",
+        "js/experiments.js": "eae05399b8c60577b02064b22eedadecee966e9aac0d706477bfe91241a34d5a",
+        "js/diagnostics.js": "23142abc6952dbfa31747d3f902f6f0580d0f812342b131cff636d32aa867909",
+        "js/save-codec.js": "b5ecec26a2f1cf8160115cfead4e7eb8d73bac3741ac2b02c0271ca08be799f5",
+        "js/saves.js": "28ec0dda920a93519973933bb07475b4ae69405ce08e4553e93481e546a2a15d",
+        "js/ui.js": "a03f3cc346e9a675141e2d55dbd565e2391506242da32adf5032c8371128a95c",
+        "js/history-ui.js": "7034b508a99669305782db2c552f8ef41687231c76dcf1e6c9bf6d36ff1ddcc6",
+        "js/save-ui.js": "3d14a36ce2f4f84f78f177eab36fc3f93e34b0a6b847e1c1fa3f3bc952a02871",
+        "js/save-store.js": "7d153a175f2c2c7bd54a1f70caf604a00c2fd698eba9d4add30bea8258d620ef",
+        "js/save-worker.js": "3e12c4319810ab2d67d4277e13810167fe49ae7522fa891c207228372d8c5ff1",
+        "styles/base.css": "a4a477526673b7cbb466775e39698516d7867f308f9c94fd1f243e5ffe190c75",
+        "styles/app.css": "8be08ad21030d1b0d4bd7e1022fb1574acc4ef2d16c796ab62a1b208706bcd29"
+      }
+    }
+  }
+}

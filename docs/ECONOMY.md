@@ -3,9 +3,9 @@
 This describes the completed economic checkpoint. The later government checkpoint
 adds control, autonomy and tribute accounting: see [GOVERNMENT.md](GOVERNMENT.md).
 
-This completes chunk 2 of the civilization-development plan. It is a local
-development version, not a published v0.17.0 release. Government/autonomy,
-campaign sustainability and cities/knowledge remain separate later chunks.
+This records chunk 2 of the civilization-development plan. It is included in
+v0.20.0 alongside government, campaigns and cities. See the
+[integrated release guide](RELEASE_v0.20.0.md) for corrections and final validation.
 
 ## Food is a flow and an inventory
 

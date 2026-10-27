@@ -1,7 +1,7 @@
 
 "use strict";
 /* ================= SIMULATION CORE (no DOM) ================= */
-const ENGINE_VERSION='0.17.0-dev.4';
+const ENGINE_VERSION='0.20.0';
 const calendarPhase=(year,period)=>((year%period)+period)%period;
 const W=400,H=200,N=W*H,SC=4,HW=W*SC,HH=H*SC,AGW=40,AGH=20;
 const PDEF=[
@@ -683,28 +683,30 @@ function weather(){
 function computeK(){
   const s=S,w=WD,L=w.landIdx,dT=s.dT+s.gT+epochTemp(),orb=s.orbM,maintain=s.worksYear!==s.year;
   if(maintain)s.worksYear=s.year;
+  // Stable array references avoid repeated object lookups in the cell loop.
+  const world_T=w.T,grid_roads=s.roads,grid_irrig=s.irrig,grid_admin=s.admin,grid_farm=s.farm,grid_K=s.K,grid_wm=s.wm,world_monZone=w.monZone,world_Pr=w.Pr,world_area=w.area,world_rv=w.rv,world_amp=w.amp,world_coast=w.coast,world_sH=w.sH,world_desert=w.desert,grid_camel=s.camel,grid_herd=s.herd,grid_horse=s.horse,grid_rp=s.rp,world_heavy=w.heavy,world_leach=w.leach,world_sF=w.sF,grid_fert=s.fert,grid_metal=s.metal,grid_iron=s.iron,grid_crops=s.crops,grid_ard=s.ard,grid_plough=s.plough,grid_manure=s.manure,grid_xcrops=s.xcrops,world_trop=w.trop,grid_forest=s.forest,world_rough=w.rough,grid_salt=s.salt,world_oncho=w.oncho,world_mal=w.mal,grid_adapt=s.adapt,grid_tk=s.tk;
   for(let k=0;k<L.length;k++){
-    const i=L[k],T=w.T[i]+dT;
-    if(maintain&&(s.roads[i]||s.irrig[i]||s.admin[i]*s.farm[i]))maintainWorks(i,1);
+    const i=L[k],T=world_T[i]+dT;
+    if(maintain&&(grid_roads[i]||grid_irrig[i]||grid_admin[i]*grid_farm[i]))maintainWorks(i,1);
     const irrigation=canalWorks(i);
-    if(T<-9){s.K[i]=1;continue}
-    const wm=s.wm[i],mz=w.monZone[i],Pn=w.Pr[i]*wm+orb*mz*420,ar=w.area[i],rv=w.rv[i];
-    const npp=Math.min(3000/(1+Math.exp(1.315-0.119*(T+w.amp[i]*0.15))),3000*(1-Math.exp(-0.000664*Pn)));
-    const Kf=ar*0.1*npp/1000*(1+0.5*w.coast[i]+0.4*rv);
+    if(T<-9){grid_K[i]=1;continue}
+    const wm=grid_wm[i],mz=world_monZone[i],Pn=world_Pr[i]*wm+orb*mz*420,ar=world_area[i],rv=world_rv[i];
+    const npp=Math.min(3000/(1+Math.exp(1.315-0.119*(T+world_amp[i]*0.15))),3000*(1-Math.exp(-0.000664*Pn)));
+    const Kf=ar*0.1*npp/1000*(1+0.5*world_coast[i]+0.4*rv);
     const dry=clamp(wm,0.3,1.6);
-    let sh=w.sH[i];if(mz>0)sh=Math.max(sh,orb*mz*0.7);if(w.desert[i])sh=Math.max(sh,0.25*s.camel[i]);
-    const Kh=ar*1.6*sh*s.herd[i]*Math.min(1.3,dry)*(1+0.2*s.horse[i])*(1-s.rp[i]);
+    let sh=world_sH[i];if(mz>0)sh=Math.max(sh,orb*mz*0.7);if(world_desert[i])sh=Math.max(sh,0.25*grid_camel[i]);
+    const Kh=ar*1.6*sh*grid_herd[i]*Math.min(1.3,dry)*(1+0.2*grid_horse[i])*(1-grid_rp[i]);
     const irr=irrigation*rv;
     const wf=1+(Math.min(dry,1.25)-1)*(1-0.75*irr);
-    const T_=s.tk,hv=w.heavy[i],lc=w.leach[i];
-    let Kfa=ar*3.5*Math.max(w.sF[i],0.7*w.rv[i]*irrigation)*s.farm[i]*s.fert[i]*wf*(1+0.8*s.metal[i]+0.9*s.iron[i]*(1-0.4*lc)+3.0*s.crops[i]+0.7*s.admin[i]+0.55*s.ard[i]*(1-0.6*hv)+0.7*s.plough[i]*hv+0.6*s.manure[i]+s.xcrops[i]*(0.25+0.8*lc+0.5*w.trop[i]+0.3*(1-w.sF[i]))+0.4*T_[26][i]*Math.max(lc,s.forest[i])+0.15*T_[28][i]*w.coast[i])*(1+rv*(0.25+2.2*irrigation));
+    const T_=s.tk,hv=world_heavy[i],lc=world_leach[i];
+    let Kfa=ar*3.5*Math.max(world_sF[i],0.7*world_rv[i]*irrigation)*grid_farm[i]*grid_fert[i]*wf*(1+0.8*grid_metal[i]+0.9*grid_iron[i]*(1-0.4*lc)+3.0*grid_crops[i]+0.7*grid_admin[i]+0.55*grid_ard[i]*(1-0.6*hv)+0.7*grid_plough[i]*hv+0.6*grid_manure[i]+grid_xcrops[i]*(0.25+0.8*lc+0.5*world_trop[i]+0.3*(1-world_sF[i]))+0.4*T_[26][i]*Math.max(lc,grid_forest[i])+0.15*T_[28][i]*world_coast[i])*(1+rv*(0.25+2.2*irrigation));
     // Terraces, canals and managed fertility recover some highland valley yield.
-    Kfa*=1+0.65*w.rough[i]*Math.max(irrigation,s.manure[i],s.admin[i]);
-    Kfa*=(0.45+0.55*(1-s.forest[i]))*(1-0.6*s.salt[i])*(1-0.5*w.oncho[i]);
-    if(w.T[i]<12)Kfa*=clamp(1+0.18*dT,0.4,1.35);
+    Kfa*=1+0.65*world_rough[i]*Math.max(irrigation,grid_manure[i],grid_admin[i]);
+    Kfa*=(0.45+0.55*(1-grid_forest[i]))*(1-0.6*grid_salt[i])*(1-0.5*world_oncho[i]);
+    if(world_T[i]<12)Kfa*=clamp(1+0.18*dT,0.4,1.35);
     // heavy, wet temperate forest soils: hard to clear and work until iron axes and ploughs
-    if(hv>0)Kfa*=1-0.7*hv*(1-Math.max(s.plough[i],0.4*s.iron[i]));
-    s.K[i]=Math.max(1,Kf,Kh+0.4*Kf,Kfa+0.3*Kh+0.2*Kf)*(1-0.5*w.mal[i]*(1-s.adapt[i])*(1-0.5*s.tk[29][i]));
+    if(hv>0)Kfa*=1-0.7*hv*(1-Math.max(grid_plough[i],0.4*grid_iron[i]));
+    grid_K[i]=Math.max(1,Kf,Kh+0.4*Kf,Kfa+0.3*Kh+0.2*Kf)*(1-0.5*world_mal[i]*(1-grid_adapt[i])*(1-0.5*grid_tk[29][i]));
   }
 }
 // Annual transport budgets are derived, reusable and deliberately outside saves.
@@ -786,7 +788,7 @@ function tradeContact(a,b,rate){
   const faith=(from,to,id)=>{const R=s.rels[id];if(!R||s.rel[to]===id||P.faith<=0)return;
     const e=s.eths[s.eth[to]];if(R.kind==='ethnic'&&(!e||e.fam!==R.fam))return;
     const host=s.pol[to]?s.pols[s.pol[to]]:null,accept=host?.rel===id?2:host&&host.rel>=0?0.25:1;
-    if(s.r()<rate*0.2*R.miss*P.faith*accept)changeFaith(to,id,0.08*(0.5+0.5*cityPreservation(from)));
+    if(s.r()<rate*0.2*R.miss*P.faith*accept*faithShare(from,id))changeFaith(to,id,0.08*(0.5+0.5*cityPreservation(from)));
   };
   faith(a,b,fa);faith(b,a,fb);exchangeTraditions(s.eth[a],s.eth[b],rate*0.05);
   if(s.faith2[a]>=0)faith(a,b,s.faith2[a]);if(s.faith2[b]>=0)faith(b,a,s.faith2[b]);
@@ -962,19 +964,21 @@ function firstTech(k,cell,o){
 }
 function techStep(a0,b0){if(a0==null){a0=0;b0=1}
   const s=S,w=WD,L=w.landIdx,T=s.tk,kd=0.12*P.techDiff,loss=0.006*P.techLoss,r=s.r,rels=s.rels,pols=s.pols;
+  // Stable array references avoid repeated object lookups in the cell loop.
+  const grid_firstTech=s.firstTech,grid_pop=s.pop,grid_pol=s.pol,world_nb=w.nb,world_rv=w.rv,grid_paper=s.paper,world_ls=w.ls,grid_sail=s.sail,grid_car=s.car,world_cosLat=w.cosLat,grid_farm=s.farm,grid_herd=s.herd,world_lt=w.lt,world_coast=w.coast,world_desert=w.desert,world_sH=w.sH,world_trop=w.trop,world_leach=w.leach,world_tsetse=w.tsetse,world_heavy=w.heavy,grid_manure=s.manure,world_sF=w.sF,grid_K=s.K,grid_irrig=s.irrig,world_Pr=w.Pr,world_area=w.area;
   const suit=[w.sF,w.sH,w.rv,null,w.sH];
-  const known=TECH.map((t,k)=>s.firstTech[k]||k===5?1:0);
+  const known=TECH.map((t,k)=>grid_firstTech[k]||k===5?1:0);
   const NT=T.length,pop=s.pop,pol=s.pol,INST=TECH.map((t,k)=>k===6||k===9||k===10||k===11||k===14);
   for(let kk=Math.floor(a0*L.length),ke=Math.floor(b0*L.length);kk<ke;kk++){
-    const i=L[kk];if(s.pop[i]<1)continue;
-    let conn=s.pop[i];const pi=s.pol[i],po=pi?pols[pi]:null;
-    for(let d=0;d<4;d++){const j=w.nb[i*4+d];if(j>=0)conn+=s.pop[j]}
-    const rvb=(1+0.5*w.rv[i])*(1+0.3*s.paper[i]+0.2*roadWorks(i))*(1+0.25*cityPreservation(i));
-    const ls0=w.ls[i],ls1=s.sail[i]>0.3?w.ls[i+1]:ls0;
+    const i=L[kk];if(grid_pop[i]<1)continue;
+    let conn=grid_pop[i];const pi=grid_pol[i],po=pi?pols[pi]:null;
+    for(let d=0;d<4;d++){const j=world_nb[i*4+d];if(j>=0)conn+=grid_pop[j]}
+    const rvb=(1+0.5*world_rv[i])*(1+0.3*grid_paper[i]+0.2*roadWorks(i))*(1+0.25*cityPreservation(i));
+    const ls0=world_ls[i],ls1=grid_sail[i]>0.3?world_ls[i+1]:ls0;
     const preservation=cityPreservation(i),dark=po?po.cult<0.1:true;
-    const ct=[1,1,1,1],pg=1+0.4*T[31][i];for(let d=0;d<4;d++){const j=w.nb[i*4+d];if(j<0)continue;ct[d]=Math.min(1,0.25+Math.sqrt(s.pop[i]*s.pop[j])/6000+s.car[i]+s.car[j])*pg}
-    let nj0=-1,nj1=-1,nj2=-1,nj3=-1;{const b=i*4;let j=w.nb[b];if(j>=0&&pop[j]>=1)nj0=j;j=w.nb[b+1];if(j>=0&&pop[j]>=1)nj1=j;j=w.nb[b+2];if(j>=0&&pop[j]>=1)nj2=j;j=w.nb[b+3];if(j>=0&&pop[j]>=1)nj3=j}
-    const clT=w.cosLat[i],lowC=conn<3000,noFarm=s.farm[i]<0.3&&s.herd[i]<0.3;
+    const ct=[1,1,1,1],pg=1+0.4*T[31][i];for(let d=0;d<4;d++){const j=world_nb[i*4+d];if(j<0)continue;ct[d]=Math.min(1,0.25+Math.sqrt(grid_pop[i]*grid_pop[j])/6000+grid_car[i]+grid_car[j])*pg}
+    let nj0=-1,nj1=-1,nj2=-1,nj3=-1;{const b=i*4;let j=world_nb[b];if(j>=0&&pop[j]>=1)nj0=j;j=world_nb[b+1];if(j>=0&&pop[j]>=1)nj1=j;j=world_nb[b+2];if(j>=0&&pop[j]>=1)nj2=j;j=world_nb[b+3];if(j>=0&&pop[j]>=1)nj3=j}
+    const clT=world_cosLat[i],lowC=conn<3000,noFarm=grid_farm[i]<0.3&&grid_herd[i]<0.3;
     for(let f=0;f<NT;f++){
       if(!known[f])continue;
       const A=T[f];let t=A[i];
@@ -984,8 +988,8 @@ function techStep(a0,b0){if(a0==null){a0=0;b0=1}
         if(nj1>=0&&(v=A[nj1])>m){m=v;same=pi&&pol[nj1]===pi;mc=ct[1]}
         if(nj2>=0&&(v=A[nj2])>m){m=v;same=pi&&pol[nj2]===pi;mc=ct[2]*clT}
         if(nj3>=0&&(v=A[nj3])>m){m=v;same=pi&&pol[nj3]===pi;mc=ct[3]*clT}
-        for(let q=ls0;q<ls1;q++){const j=w.lt[q];if(pop[j]<1)continue;v=A[j]*0.9;if(v>m){m=v;same=0;mc=0.7}}
-        if(m>t){let k=kd*rvb*(same?1:0.6)*Math.min(1,mc);if(f>=3&&f!==5&&f!==18&&noFarm)k*=0.02;const sf=suit[f];if(sf)k*=0.2+sf[i];if(f===5&&!w.coast[i])k*=0.3;if(f===18)k*=0.2+(w.desert[i]||w.sH[i]>0.3?1:0);if(f===19)k*=0.05+0.95*(1-w.trop[i])*(1-w.leach[i]);else if(f===20)k*=w.tsetse[i]?0.03:0.3+0.7*(1-w.heavy[i]);else if(f===21)k*=0.1+w.heavy[i];else if(f===23)k*=0.3*(s.farm[i]>0.5?1:0.2);else if(f>=SYNTH0)k*=0.5;t+=k*(m-t)}
+        for(let q=ls0;q<ls1;q++){const j=world_lt[q];if(pop[j]<1)continue;v=A[j]*0.9;if(v>m){m=v;same=0;mc=0.7}}
+        if(m>t){let k=kd*rvb*(same?1:0.6)*Math.min(1,mc);if(f>=3&&f!==5&&f!==18&&noFarm)k*=0.02;const sf=suit[f];if(sf)k*=0.2+sf[i];if(f===5&&!world_coast[i])k*=0.3;if(f===18)k*=0.2+(world_desert[i]||world_sH[i]>0.3?1:0);if(f===19)k*=0.05+0.95*(1-world_trop[i])*(1-world_leach[i]);else if(f===20)k*=world_tsetse[i]?0.03:0.3+0.7*(1-world_heavy[i]);else if(f===21)k*=0.1+world_heavy[i];else if(f===23)k*=0.3*(grid_farm[i]>0.5?1:0.2);else if(f>=SYNTH0)k*=0.5;t+=k*(m-t)}
         if(INST[f]&&dark&&m<0.5)t*=1-(pi?0.006:0.015)*(1-0.9*preservation);
       }else if(INST[f]&&dark){// saturated cell: only decays if no neighbour still knows it
         let m=0;if(nj0>=0)m=Math.max(m,T[f][nj0]);if(nj1>=0)m=Math.max(m,T[f][nj1]);if(nj2>=0)m=Math.max(m,T[f][nj2]);if(nj3>=0)m=Math.max(m,T[f][nj3]);if(m<0.5)t*=1-(pi?0.006:0.015)*(1-0.9*preservation)}
@@ -994,10 +998,10 @@ function techStep(a0,b0){if(a0==null){a0=0;b0=1}
     }
     // Village-scale soil management predates states and draft animals. Without
     // this path highland farmers cannot grow the surplus needed to form a state.
-    if(s.farm[i]>0.75&&s.manure[i]<0.5&&w.sF[i]>0.2&&conn>12000&&s.pop[i]/Math.max(1,s.K[i])>0.75&&r()<0.001*P.invent){
+    if(grid_farm[i]>0.75&&grid_manure[i]<0.5&&world_sF[i]>0.2&&conn>12000&&grid_pop[i]/Math.max(1,grid_K[i])>0.75&&r()<0.001*P.invent){
       seedTech(s.manure,i,1,1);firstTech(22,i,po);
     }
-    if(!s.firstTech[2]||s.irrig[i]<0.5){if(s.farm[i]>0.8&&w.rv[i]>0.25&&w.Pr[i]<1000&&s.pop[i]/w.area[i]>4&&r()<0.0008*P.invent){seedTech(s.irrig,i,1,1);firstTech(2,i,po)}}
+    if(!grid_firstTech[2]||grid_irrig[i]<0.5){if(grid_farm[i]>0.8&&world_rv[i]>0.25&&world_Pr[i]<1000&&grid_pop[i]/world_area[i]>4&&r()<0.0008*P.invent){seedTech(s.irrig,i,1,1);firstTech(2,i,po)}}
     religiousContact(i,ls0,ls1);
   }
 }
@@ -1125,7 +1129,7 @@ function newPolity(c,from,opt){
     E:0.02,shock:0,S:0.5,press:0.5,md:0,adm:0,nomF:0,cells:1,pop:s.pop[c],K:1,maxCells:1,maxPop:0,area:WD.area[c],peakArea:0,conq:0,alive:true,wet:0,p5:0,famY:-1e9,
     h:P.reach,gate:1,aggrM:1,psi:0,why:null,hist:[],tier:'Chiefdom',full:'',peak:'',from:from?from.id:0,lastBy:0,fK:0,fE:0,lx:0,ly:0,crises:0,
     rel:s.rel[c],allies:[],enemies:new Map(),truce:new Map(),nb:new Map(),over:0,tribs:0,spc:0,era:0,rulers:[],warsF:[],kids:[],
-    origin:opt.origin||(from?{type:'rebellion',from:from.id}:s.colonies.has(c)&&s.colonies.get(c).status==='active'&&colonyDescendant(e,s.colonies.get(c).founderPeople)?{type:'colony',people:s.colonies.get(c).founderPeople,settlement:s.colonies.get(c).name,year:s.colonies.get(c).founded}:{type:'emerged',people:e}),loot:0,cult:0.2,works:[],golds:[],goldStart:0,sample:[],succ:null,fortN:0,cityPop:0,island:false,assimT:0,conqDyn:!!opt.conqDyn,settledY:0,restores:opt.restores||0};
+    origin:opt.origin||(from?{type:'rebellion',from:from.id}:s.colonies.has(c)&&s.colonies.get(c).status==='active'&&colonyDescendant(e,s.colonies.get(c).founderPeople)?{type:'colony',people:s.colonies.get(c).founderPeople,settlement:s.colonies.get(c).name,year:s.colonies.get(c).founded}:{type:'emerged',people:e}),loot:0,cult:0.2,works:[],golds:[],goldStart:0,sample:[],succ:null,fortN:0,cityPop:0,frontierPopulation:0,island:false,assimT:0,conqDyn:!!opt.conqDyn,settledY:0,restores:opt.restores||0};
   o.military=newMilitaryState();if(from?.military)o.military.exhaustion=from.military.exhaustion;
   o.ruler=newRuler(L,o);o.founderR=o.ruler;o.tier=tierOf(o);o.full=fullName(o);o.peak=o.full;
   o.civ=from?(from.civ||from.base):o.base;if(from)from.kids.push(id);
@@ -1387,7 +1391,7 @@ function diplomacy(){
 /* ---------- faith ---------- */
 function foundReligion(o){
   const s=S,r=s.r,cells=polCells(o.id);if(!cells.length)return;
-  const c=pick(r,cells),L=langAt(c),e=s.eth[c]>=0?s.eths[s.eth[c]]:null;
+  const c=pick(r,cells);if(s.faith2[c]!==-2&&s.faith3[c]!==-2)return;const L=langAt(c),e=s.eth[c]>=0?s.eths[s.eth[c]]:null;
   const Rp=newRuler(L,null);Rp.epithet='';Rp.birth=s.year-(25+((r()*15)|0));Rp.death=Rp.birth+55+((r()*25)|0);
   const f=figFor(null,Rp,'prophet');f.pol=o.id;f.eth=s.eth[c];f.title=`Prophet of the ${e?e.name:'people'}`;f.died=Rp.death;
   const G=cap(L.lex.god),F=Rp.base;
@@ -1403,6 +1407,7 @@ function foundReligion(o){
   spot(`The prophet ${f.name} begins to preach ${name}`,c,[RF(f),RR(R)]);
 }
 function foundFolk(c){
+  if(S.faith2[c]!==-2&&S.faith3[c]!==-2)return;
   const s=S,r=s.r,L=langAt(c),e=s.eths[s.eth[c]];
   const Rp=newRuler(L,null);Rp.epithet='';Rp.birth=s.year-(25+((r()*15)|0));Rp.death=Rp.birth+55+((r()*25)|0);
   const f=figFor(null,Rp,'prophet');f.eth=s.eth[c];f.title=`Seer of the ${e.name}`;f.died=Rp.death;
@@ -1588,62 +1593,66 @@ function culture(o){
 // Keep phase inputs fixed and visit cells/RNG draws in their original order.
 function aggregatePoliticalCells(phase,from,to){
   const {s,w,r,pols,L,pol,pop,sampleNow}=phase;
+  // Stable array references avoid repeated object lookups in the cell loop.
+  const grid_K=s.K,world_area=w.area,grid_s=s.s,world_nT=w.nT,world_nM=w.nM,world_nN=w.nN,world_nD=w.nD,grid_admin=s.admin,grid_integ=s.integ,grid_ard=s.ard,world_tsetse=w.tsetse,grid_farm=s.farm,grid_circE=s.circE,world_heavy=w.heavy,grid_car=s.car,world_nomad=w.nomad,world_coast=w.coast,world_sF=w.sF,grid_fort=s.fort,world_cosLon=w.cosLon,world_sinLon=w.sinLon,world_cyA=w.cyA;
   for(let k=from;k<to;k++){const i=L[k],p=pol[i];if(!p)continue;const o=pols[p],pp=pop[i];linkMilitaryHome(i,o);const collection=provincialGovernment(i,o,phase.governmentAdvance??false);
-    o.pop+=pp;o.K+=s.K[i];o.cells++;o.area+=w.area[i];o.sS+=s.s[i];const di=dd(i);o.dS+=di;let eD=0;if(pp>=1){o.n0+=pp*w.nT[i];o.n1+=pp*w.nM[i];o.n2+=pp*w.nN[i];o.n3+=pp*w.nD[i];o.nw+=pp;if(o.ni){eD=ecoD(i,o);if(eD>0.8)o.forP+=pp}}o.ad+=s.admin[i];o.ig+=s.integ[i];const pl=s.ard[i]>0.5&&!w.tsetse[i];o.tax+=pp>=1?pp*s.farm[i]*cerealEff(i)*Math.exp(-di/(o.h||6))*(0.5+0.5*s.integ[i])*(0.6+0.4*s.circE[i])*(pl?1.1:0.8)/(1+0.3*P.eco*eD)*collection:0;if(pl)o.plN++;if(w.heavy[i]>0.4)o.hvN++;if(isWaste(i,o.kind==="horde"))o.wasteN++;if(s.car[i]>0.3){const tl=1500*s.car[i];o.tax+=tl;o.trade+=tl}o.tax+=urbanTax(i)*collection;aggregateUrban(i,o);
-    if(w.nomad[i])o.nom++;if(w.coast[i])o.coastN++;if(s.farm[i]>0.5&&w.sF[i]>0.25&&pp/w.area[i]>2)o.farmN++;if(s.fort[i]>0.5)o.fortN++;
-    o.cx+=w.cosLon[i];o.cy+=w.sinLon[i];o.yy+=w.cyA[i];if(pp>o.mp){o.mp=pp;o.mc=i}
+    o.pop+=pp;o.K+=grid_K[i];o.cells++;o.area+=world_area[i];o.sS+=grid_s[i];const di=dd(i);o.dS+=di;let eD=0;if(pp>=1){o.n0+=pp*world_nT[i];o.n1+=pp*world_nM[i];o.n2+=pp*world_nN[i];o.n3+=pp*world_nD[i];o.nw+=pp;if(o.ni){eD=ecoD(i,o);if(eD>0.8)o.forP+=pp}}o.ad+=grid_admin[i];o.ig+=grid_integ[i];const pl=grid_ard[i]>0.5&&!world_tsetse[i];o.tax+=pp>=1?pp*grid_farm[i]*cerealEff(i)*Math.exp(-di/(o.h||6))*(0.5+0.5*grid_integ[i])*(0.6+0.4*grid_circE[i])*(pl?1.1:0.8)/(1+0.3*P.eco*eD)*collection:0;if(pl)o.plN++;if(world_heavy[i]>0.4)o.hvN++;if(isWaste(i,o.kind==="horde"))o.wasteN++;if(grid_car[i]>0.3){const tl=1500*grid_car[i];o.tax+=tl;o.trade+=tl}o.tax+=urbanTax(i,o)*collection;aggregateUrban(i,o);
+    if(world_nomad[i])o.nom++;if(world_coast[i])o.coastN++;if(grid_farm[i]>0.5&&world_sF[i]>0.25&&pp/world_area[i]>2)o.farmN++;if(grid_fort[i]>0.5)o.fortN++;
+    o.cx+=world_cosLon[i];o.cy+=world_sinLon[i];o.yy+=world_cyA[i];if(pp>o.mp){o.mp=pp;o.mc=i}
     if(sampleNow){if(o.sample.length<24)o.sample.push(i);else if(r()<24/o.cells)o.sample[(r()*24)|0]=i}}
 
 }
 function updatePoliticalBorders(phase,from,to){
   const {s,w,r,y,pols,L,pol,pop,asR,wr,rev,rels,fz,infl}=phase;
+  // Stable array references avoid repeated object lookups in the cell loop.
+  const grid_eth=s.eth,grid_rel=s.rel,world_cosLat=w.cosLat,world_nb=w.nb,world_land=w.land,world_nomad=w.nomad,world_desert=w.desert,world_coast=w.coast,grid_sail=s.sail,world_ls=w.ls,world_lt=w.lt,world_ld=w.ld,grid_nav=s.nav,grid_pop=s.pop,grid_ocean=s.ocean,grid_s=s.s,grid_integ=s.integ,grid_eths=s.eths,grid_control=s.control,grid_autonomy=s.autonomy,grid_admin=s.admin,grid_roads=s.roads,grid_law=s.law,grid_uni=s.uni,grid_uniFam=s.uniFam,grid_taken=s.taken,grid_circE=s.circE,world_area=w.area,grid_gun=s.gun,grid_fort=s.fort,grid_herd=s.herd,world_sH=w.sH,grid_camel=s.camel,grid_dist=s.dist,grid_horse=s.horse;
   for(let kk=from;kk<to;kk++){
-    const i=L[rev?L.length-1-kk:kk],p=pol[i],pi=pop[i],ei=s.eth[i],ri=s.rel[i];
+    const i=L[rev?L.length-1-kk:kk],p=pol[i],pi=pop[i],ei=grid_eth[i],ri=grid_rel[i];
     const o=p?pols[p]:null,horde=o&&o.kind==='horde';
     let fr=0,cand=-1,nc=0,candSea=false,threat=0,rcand=-1,rn=0;
-    const cl=w.cosLat[i];
-    for(let d=0;d<4;d++){const j=w.nb[i*4+d];if(j<0||!w.land[j])continue;const q=pol[j],wt=d<2?1:cl;
-      if(q!==p){const ej=s.eth[j];
+    const cl=world_cosLat[i];
+    for(let d=0;d<4;d++){const j=world_nb[i*4+d];if(j<0||!world_land[j])continue;const q=pol[j],wt=d<2?1:cl;
+      if(q!==p){const ej=grid_eth[j];
         if(ej>=0&&ei>=0&&ej!==ei&&ethDist(ei,ej)>0.22)fr=1;
-        else if(ri>=0&&s.rel[j]>=0&&s.rel[j]!==ri)fr=1;
-        if(o){if(q){const t=pols[q];o.nb.set(q,(o.nb.get(q)||0)+1);
+        else if(ri>=0&&grid_rel[j]>=0&&grid_rel[j]!==ri)fr=1;
+        if(o){noteMilitaryFrontier(o,j);if(q){const t=pols[q];o.nb.set(q,(o.nb.get(q)||0)+1);
             if(t.kind==='horde'||o.enemies.has(q))threat=1;
             if(o.enemies.has(q)||(horde&&t.kind==='horde')){nc+=3*wt;if(r()*nc<3*wt)cand=j}
             else if(horde&&t.kind==='state'){rn+=wt;if(r()*rn<wt)rcand=j}}
-          else if(!horde||w.nomad[j]||w.desert[j]||pop[j]>=1){nc+=wt;if(r()*nc<wt)cand=j}}}}
-    if(o&&w.coast[i]&&s.sail[i]>0.5){for(let q2=w.ls[i];q2<w.ls[i+1];q2++){const j=w.lt[q2];if(w.ld[q2]>3&&s.nav[i]<0.5)continue;const q=pol[j];if(q===p)continue;
+          else if(!horde||world_nomad[j]||world_desert[j]||pop[j]>=1){nc+=wt;if(r()*nc<wt)cand=j}}}}
+    if(o&&world_coast[i]&&grid_sail[i]>0.5){for(let q2=world_ls[i];q2<world_ls[i+1];q2++){const j=world_lt[q2];if(world_ld[q2]>3&&grid_nav[i]<0.5)continue;const q=pol[j];if(q===p)continue;
       if(q){o.nb.set(q,(o.nb.get(q)||0)+1);if(o.enemies.has(q)){nc+=1;if(r()*nc<1){cand=j;candSea=true}}}
-      else if(o.kind==='state'&&w.coast[j]&&s.pop[j]>=0.3&&r()<0.012*P.seafaring*(0.4+s.nav[i])&&r()*(nc+1)<1){nc+=1;cand=j;candSea=true}}}
+      else if(o.kind==='state'&&world_coast[j]&&grid_pop[j]>=0.3&&r()<0.012*P.seafaring*(0.4+grid_nav[i])&&r()*(nc+1)<1){nc+=1;cand=j;candSea=true}}}
     const overseas=phase.overseas?.get(i);
-    if(o&&overseas&&s.ocean[i]>=0.6)for(const link of overseas){const q=pol[link.cell];if(q&&q!==p&&voyageRange(i)>=link.km){o.nb.set(q,(o.nb.get(q)||0)+0.35);if(o.enemies.has(q)){threat=1;const weight=0.35*P.seafaring;nc+=weight;if(weight>0&&r()*nc<weight){cand=link.cell;candSea=true}}}}
-    let sv=s.s[i];
+    if(o&&overseas&&grid_ocean[i]>=0.6)for(const link of overseas){const q=pol[link.cell];if(q&&q!==p&&voyageRange(i)>=link.km){o.nb.set(q,(o.nb.get(q)||0)+0.35);if(o.enemies.has(q)){threat=1;const weight=0.35*P.seafaring;nc+=weight;if(weight>0&&r()*nc<weight){cand=link.cell;candSea=true}}}}
+    let sv=grid_s[i];
     if(o){const decay=interiorDecay(o);
       sv+=fr?asR*sv*(1-sv):-decay*sv;sv+=0.004*infl*(o.ruler.char-0.5);if(ri>=0&&ri===o.rel)sv+=0.0015*(0.5+rels[ri].cent);
-      s.s[i]=clamp(sv,0.02,1);
-      if(s.integ[i]<1){const fam=ei>=0&&s.eths[ei]&&s.eths[o.core]&&s.eths[ei].fam===s.eths[o.core].fam;s.integ[i]=Math.min(1,s.integ[i]+0.0011*s.control[i]*(1-0.5*s.autonomy[i])/(1+0.8*P.eco*ecoD(i,o))*(0.5+s.admin[i]+s.roads[i]+0.5*s.law[i])*(fam?1.5:0.6)*(ri>=0&&ri===o.rel?1.2:0.8)*(s.uni[i]>0.3&&s.eths[o.core]&&s.uniFam[i]===s.eths[o.core].fam?1.6:1))}
-      if(cand>=0&&s.taken[i]!==y){const q=pol[cand];
-        if(horde&&!q&&!w.nomad[cand]&&!w.desert[cand]&&pop[cand]>=1){if(r()<P.raid*0.02*o.aggrM*o.gate){raid(o,i,cand)}}
-        else{const rate=q?wr*2*(1+3*s.circE[cand]):wr*(horde?1:Math.min(1,Math.max(0.1,pop[i]/w.area[i]/6))*(0.3+0.7*Math.min(1,o.press))*(1+2*s.gun[i]));if(r()<rate*o.aggrM*o.gate*expansionReadiness(o))attack(o,i,cand,candSea)}}
-      if(horde&&rcand>=0&&r()<P.raid*0.025*o.aggrM*o.gate*(1-0.8*s.fort[rcand]))raid(o,i,rcand);
+      grid_s[i]=clamp(sv,0.02,1);
+      if(grid_integ[i]<1){const fam=ei>=0&&grid_eths[ei]&&grid_eths[o.core]&&grid_eths[ei].fam===grid_eths[o.core].fam;grid_integ[i]=Math.min(1,grid_integ[i]+0.0011*grid_control[i]*(1-0.5*grid_autonomy[i])/(1+0.8*P.eco*ecoD(i,o))*(0.5+grid_admin[i]+grid_roads[i]+0.5*grid_law[i])*(fam?1.5:0.6)*(ri>=0&&ri===o.rel?1.2:0.8)*(grid_uni[i]>0.3&&grid_eths[o.core]&&grid_uniFam[i]===grid_eths[o.core].fam?1.6:1))}
+      if(cand>=0&&grid_taken[i]!==y){const q=pol[cand];
+        if(horde&&!q&&!world_nomad[cand]&&!world_desert[cand]&&pop[cand]>=1){if(r()<P.raid*0.02*o.aggrM*o.gate){raid(o,i,cand)}}
+        else{const rate=q?wr*2*(1+3*grid_circE[cand]):wr*(horde?1:Math.min(1,Math.max(0.1,pop[i]/world_area[i]/6))*(0.3+0.7*Math.min(1,o.press))*(1+2*grid_gun[i]));if(r()<rate*o.aggrM*o.gate*expansionReadiness(o))attack(o,i,cand,candSea)}}
+      if(horde&&rcand>=0&&r()<P.raid*0.025*o.aggrM*o.gate*(1-0.8*grid_fort[rcand]))raid(o,i,rcand);
       const c=o.core;
       politicalCommunityChange(i,o);
       // fortify threatened frontiers if the state is cohesive and can pay
-      if(threat&&!horde&&o.S>0.45&&o.gate>0.7&&s.admin[o.capital]>0.3&&s.fort[i]<1)s.fort[i]=Math.min(1,s.fort[i]+0.006*fz*(1+s.roads[i]));
+      if(threat&&!horde&&o.S>0.45&&o.gate>0.7&&grid_admin[o.capital]>0.3&&grid_fort[i]<1)grid_fort[i]=Math.min(1,grid_fort[i]+0.006*fz*(1+grid_roads[i]));
     }else{
-      sv+=fr?asR*0.6*sv*(1-sv):(0.3-sv)*0.02;s.s[i]=clamp(sv,0.02,1);
-      if(pi>=1){const dens=pi/w.area[i],past=s.herd[i]*Math.max(w.sH[i],w.desert[i]*s.camel[i]*0.6);
+      sv+=fr?asR*0.6*sv*(1-sv):(0.3-sv)*0.02;grid_s[i]=clamp(sv,0.02,1);
+      if(pi>=1){const dens=pi/world_area[i],past=grid_herd[i]*Math.max(world_sH[i],world_desert[i]*grid_camel[i]*0.6);
         const founding=stateFormationChance(i);
         if(founding>0){
           if(r()<founding){
             const id=newPolity(i,null);
-            for(let d=0;d<4;d++){const j=w.nb[i*4+d];if(j>=0&&w.land[j]&&!pol[j]&&s.eth[j]===ei&&pop[j]>=1&&r()<0.5){pol[j]=id;s.dist[j]=2}}}}
-        else if(past>0.3&&dens>0.5&&(w.nomad[i]||w.desert[i])&&fr){
-          if(r()<P.nomad*0.0003*(0.4+s.s[i])*(0.5+s.horse[i]+s.camel[i])){
+            for(let d=0;d<4;d++){const j=world_nb[i*4+d];if(j>=0&&world_land[j]&&!pol[j]&&grid_eth[j]===ei&&pop[j]>=1&&r()<0.5){pol[j]=id;grid_dist[j]=2}}}}
+        else if(past>0.3&&dens>0.5&&(world_nomad[i]||world_desert[i])&&fr){
+          if(r()<P.nomad*0.0003*(0.4+grid_s[i])*(0.5+grid_horse[i]+grid_camel[i])){
             const id=newPolity(i,null,{kind:'horde'});
-            for(let d=0;d<4;d++){const j=w.nb[i*4+d];if(j>=0&&w.land[j]&&!pol[j]&&(w.nomad[j]||w.desert[j])&&pop[j]>=1&&r()<0.6){pol[j]=id;s.dist[j]=2}}}}
+            for(let d=0;d<4;d++){const j=world_nb[i*4+d];if(j>=0&&world_land[j]&&!pol[j]&&(world_nomad[j]||world_desert[j])&&pop[j]>=1&&r()<0.6){pol[j]=id;grid_dist[j]=2}}}}
       }
     }
-    if(s.fort[i]>0){const keep=o&&!horde&&o.S>0.3&&o.press<1;s.fort[i]=keep?s.fort[i]*0.9995:s.fort[i]*0.99;if(s.fort[i]<0.01)s.fort[i]=0}
+    if(grid_fort[i]>0){const keep=o&&!horde&&o.S>0.3&&o.press<1;grid_fort[i]=keep?grid_fort[i]*0.9995:grid_fort[i]*0.99;if(grid_fort[i]<0.01)grid_fort[i]=0}
   }
 
 }
@@ -1651,7 +1660,7 @@ function politics(){for(const _ of politicsG());finishMilitaryYear();}
 function* politicsG(){
   const s=S,w=WD,r=s.r,y=s.year,pols=s.pols,L=w.landIdx,pol=s.pol,pop=s.pop;
   const sampleNow=y%10===0,governmentAdvance=beginGovernmentYear();beginMilitaryPolitics();
-  for(const id of s.alive){const o=pols[id];o.pop=0;o.K=0;o.cells=0;o.area=0;o.sS=0;o.dS=0;o.ad=0;o.nom=0;o.cx=0;o.cy=0;o.yy=0;o.mp=-1;o.mc=-1;o.coastN=0;o.farmN=0;o.fortN=0;o.lmN=0;o.tax=0;o.cityPop=0;o.civicPopulation=0;o.scholarPopulation=0;o.learningCell=null;o.learningScore=0;o.ig=0;o.wasteN=0;o.plN=0;o.hvN=0;o.trade=0;o.n0=0;o.n1=0;o.n2=0;o.n3=0;o.nw=0;o.forP=0;if(sampleNow)o.sample=[]}
+  for(const id of s.alive){const o=pols[id];o.pop=0;o.K=0;o.cells=0;o.area=0;o.sS=0;o.dS=0;o.ad=0;o.nom=0;o.cx=0;o.cy=0;o.yy=0;o.mp=-1;o.mc=-1;o.coastN=0;o.farmN=0;o.fortN=0;o.lmN=0;o.tax=0;o.cityPop=0;o.civicPopulation=0;o.scholarPopulation=0;o.learningCell=null;o.learningScore=0;o.frontierPopulation=0;o.ig=0;o.wasteN=0;o.plN=0;o.hvN=0;o.trade=0;o.n0=0;o.n1=0;o.n2=0;o.n3=0;o.nw=0;o.forP=0;if(sampleNow)o.sample=[]}
   const phase={s,w,r,y,pols,L,pol,pop,sampleNow,governmentAdvance};
   for(let from=0;from<L.length;from+=2048){if(from)yield;aggregatePoliticalCells(phase,from,Math.min(from+2048,L.length))}
   recordAtlasHistory();

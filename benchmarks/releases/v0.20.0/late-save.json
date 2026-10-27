@@ -1,0 +1,39 @@
+{
+  "source": {
+    "commit": "f6a60c7cb508b6c38fcf2a46f1453ee70fc7fd37",
+    "runtimeSHA256": "a38acc537ec3b39055ace1186acda61ae7bd01d20cc63347c9780e10d8734529",
+    "files": {
+      "index.html": "ce51727012b8bc1e6848feb7735abb76fcbef6e7386ceddbcda2929c012c7a07",
+      "assets/earth.js": "d9aabf45fa947490a75542987d792156b807e0d04deb898ec5261ea53f598c83",
+      "js/core.js": "55d9ad7ef0135f589e22b07557931cd99a3bb6749c7365fd69e19cf5d9a9b7d9",
+      "js/economy.js": "bdbd05a15b1d2b3e9298a1f3f1ab87023616d47b3f057d1bb4f0a104bb4c285d",
+      "js/government.js": "4218e7346ba0007d01259490fbe155b97ad96fe8bdfae96ee3d702f99afdc0f1",
+      "js/warfare.js": "cd459425ba65fab0da9efeb119620e68c00873e82bcd095f0594b84308d2a8df",
+      "js/cities.js": "45f475c45c1b8f887e4f575461d155239a0d0a3d21272be586c5e2797c3eb07d",
+      "js/communities.js": "b329bc67732c8af2ce758ecfa34cee0cebddf916ed0b5ec79271e29caee67797",
+      "js/colonies.js": "773d28a06ad9551d8f90bde8ed4d521211c082bcf87dcc07d1eb5191d1ef01ef",
+      "js/atlas.js": "3cf7c9ae0023b13bb5a66704a57fbf6bd247e26206165a8c8d8c80865879abe8",
+      "js/history.js": "291ba4cb5c6157ddd25e49b4194642d6747011d6bd427cbf4653f7a44d1509fd",
+      "js/experiments.js": "eae05399b8c60577b02064b22eedadecee966e9aac0d706477bfe91241a34d5a",
+      "js/diagnostics.js": "23142abc6952dbfa31747d3f902f6f0580d0f812342b131cff636d32aa867909",
+      "js/save-codec.js": "b5ecec26a2f1cf8160115cfead4e7eb8d73bac3741ac2b02c0271ca08be799f5",
+      "js/saves.js": "28ec0dda920a93519973933bb07475b4ae69405ce08e4553e93481e546a2a15d",
+      "js/ui.js": "a03f3cc346e9a675141e2d55dbd565e2391506242da32adf5032c8371128a95c",
+      "js/history-ui.js": "7034b508a99669305782db2c552f8ef41687231c76dcf1e6c9bf6d36ff1ddcc6",
+      "js/save-ui.js": "3d14a36ce2f4f84f78f177eab36fc3f93e34b0a6b847e1c1fa3f3bc952a02871",
+      "js/save-store.js": "7d153a175f2c2c7bd54a1f70caf604a00c2fd698eba9d4add30bea8258d620ef",
+      "js/save-worker.js": "3e12c4319810ab2d67d4277e13810167fe49ae7522fa891c207228372d8c5ff1",
+      "styles/base.css": "a4a477526673b7cbb466775e39698516d7867f308f9c94fd1f243e5ffe190c75",
+      "styles/app.css": "8be08ad21030d1b0d4bd7e1022fb1574acc4ef2d16c796ab62a1b208706bcd29"
+    }
+  },
+  "recordedRun": "earth-development-03",
+  "replayedYears": 10800,
+  "independentReplayCheckpointSHA256": "29eb5907336ce3c92a29c3a3612ac756012978fccc3cad993ced9cb409aeade5",
+  "recordedCheckpointSHA256": "29eb5907336ce3c92a29c3a3612ac756012978fccc3cad993ced9cb409aeade5",
+  "rawBytes": 132644209,
+  "loadedEncodingExact": true,
+  "continuedYears": 20,
+  "continuationValuesAndRngExact": true,
+  "issues": []
+}

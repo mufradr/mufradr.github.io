@@ -1,0 +1,13 @@
+✔ cached cell arrays retain every checkpoint value and RNG draw: early (7542.960307ms)
+✔ cached cell arrays retain every checkpoint value and RNG draw: developed (26125.20476ms)
+✔ CPU optimizations preserve every saved value and RNG draw in early worlds (10150.40476ms)
+✔ CPU optimizations preserve every saved value and RNG draw in developed worlds (28769.773215ms)
+✔ exit opportunities refresh after population, ownership and world changes (6975.549787ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 46268.767762

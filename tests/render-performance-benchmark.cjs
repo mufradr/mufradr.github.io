@@ -21,7 +21,7 @@ async function main(){
     ui.running=false;const rand=mulberry32(101),cells=WD.landIdx;S.cities=[];
     for(let q=0;q<100;q++)newPolity(cells[Math.floor(rand()*cells.length)],null);
     // A deliberately crowded stress scene, not a historical forecast.
-    for(const i of cells){S.pol[i]=1+Math.floor(rand()*S.alive.length);S.pop[i]=100000+Math.floor(rand()*1000000);S.fort[i]=rand();if(rand()<.12)S.cities.push({cell:i,name:'City '+i})}
+    for(const i of cells){S.pol[i]=1+Math.floor(rand()*S.alive.length);S.pop[i]=100000+Math.floor(rand()*1000000);S.fort[i]=rand();if(rand()<.12)S.cities.push({cell:i,name:'City '+i,population:S.pop[i]*.2})}
     S.routes=Array.from({length:1200},(_,id)=>{const start=cells[Math.floor(rand()*cells.length)],path=Array.from({length:100},(_,j)=>(start+j)%N);return{id,a:start,b:path.at(-1),path}});
     ui.z=2.8;clampView();ui.mode='political';buildComp();drawMap();
     const bench=(fn,n=30)=>{for(let i=0;i<5;i++)fn();const times=[];for(let i=0;i<n;i++){const t=performance.now();fn();times.push(performance.now()-t)}times.sort((a,b)=>a-b);return {medianMs:times[times.length>>1],p90Ms:times[Math.floor(times.length*.9)]}};

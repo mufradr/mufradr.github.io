@@ -15,7 +15,7 @@ function normalizeCommunity(i,faith=false){
  if(S.mix[i]>0.5){const a=S.eth[i];S.eth[i]=S.eth2[i];S.eth2[i]=a;S.mix[i]=1-S.mix[i]}
 }
 function canReceiveCommunity(i,people,faith){
- if(S.pop[i]<1)return true;
+ if(S.pop[i]<=0)return true;
  return (people===S.eth[i]||people===S.eth2[i]||S.eth2[i]<0||S.mix[i]<=1e-7)
   &&(faith===S.rel[i]||faith===S.faith2[i]||faith===S.faith3[i]||S.faith2[i]===-2||S.faith3[i]===-2);
 }
@@ -27,7 +27,7 @@ function removeCommunity(i,amount,people=S.eth[i],faith=S.rel[i]){
 function arriveCommunity(i,amount,people,faith){
  if(amount<=0||!canReceiveCommunity(i,people,faith))return 0;
  const s=S,p=s.pop[i],minor=p*s.mix[i],faithMinor=p*s.faithMix[i],faithMinor3=p*s.faithMix3[i];s.pop[i]+=amount;
- if(p<1||s.eth[i]<0){s.eth[i]=people;s.eth2[i]=-1;s.mix[i]=0;s.rel[i]=faith;s.faith2[i]=-2;s.faithMix[i]=0;s.faith3[i]=-2;s.faithMix3[i]=0}
+ if(p<=0||s.eth[i]<0){s.eth[i]=people;s.eth2[i]=-1;s.mix[i]=0;s.rel[i]=faith;s.faith2[i]=-2;s.faithMix[i]=0;s.faith3[i]=-2;s.faithMix3[i]=0}
  else{
   if(s.eth[i]===people)s.mix[i]=minor/s.pop[i];
   else{if(s.eth2[i]!==people){s.eth2[i]=people;s.mixT[i]=0}s.mix[i]=(minor+amount)/s.pop[i]}

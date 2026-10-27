@@ -211,7 +211,7 @@ engines follow the same seed. No measurement arrays are attached to saved state.
    changes; focused cultural/religious integration without unbounded mixtures.
 6. **Integration and release.** Compare the same seed set and fixtures against
    v0.16.0, investigate outcomes and measured regressions, test old-save migration
-   and mobile flows, publish honest limitations, then release v0.17.0 only after
+   and mobile flows, publish honest limitations, then release v0.20.0 (the requested final version) only after
    the final commit/push instruction.
 
 Each implementation chunk should have its own reversible local commit. Update
@@ -220,3 +220,11 @@ and cache strings at 0.16.0 during this measurement-only chunk. Reuse shared map
 passes and regional/state aggregates, cache connectivity until relevant changes,
 and stagger slow processes with elapsed-time-correct rates. Check conservation,
 bounded cost, recovery and old-save compatibility at each stage.
+
+## Integrated release
+
+The completed update is v0.20.0. Its [release report](../benchmarks/releases/v0.20.0/README.md)
+compares the preserved three Earth seeds and generated history using the same
+definitions and horizons. Concurrent outcome runs do not supply performance
+claims. Isolated paired CPU cases, including a quiet developed control, and
+serial browser playback provide separate performance evidence.

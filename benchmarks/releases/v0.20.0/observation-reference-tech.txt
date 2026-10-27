@@ -1,0 +1,8 @@
+Excerpt retained from the earlier full-suite console output:
+CPU optimizations preserve every saved value and RNG draw in developed worlds
+AssertionError: save.state.stateNow.res.0.share: 0.875 vs 1
+actual value digest: 15dc2aabeeaf7530b48ccc54f0b5e6f676e54d2df07dba35d55e3d4b758cfbe8
+expected value digest: fae22be01810ba162a1d5a2d230f45989c79a18490022bc91ad2afbd028c512c
+The old technology/exit-option reference comparison differed; this is not a
+save/load failure or the final full-suite result. Enhanced setup/per-year
+comparisons and the later full 219-test suite passed. See OBSERVATIONS.md.

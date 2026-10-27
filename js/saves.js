@@ -12,7 +12,7 @@ function captureWorldSave(name='',view=null){
 function validateWorldSave(data){
  const fail=m=>{throw new Error('Invalid world save: '+m)};
  if(!data||data.format!==WORLD_SAVE_FORMAT||data.schemaVersion!==WORLD_SAVE_SCHEMA)throw new Error('Unsupported world save format. Setup files are not world saves.');
- if(!['0.13.0','0.14.0','0.14.1','0.15.0','0.16.0','0.17.0-dev.1','0.17.0-dev.2','0.17.0-dev.3',ENGINE_VERSION].includes(data.engineVersion))throw new Error('This save needs World Engine '+String(data.engineVersion).slice(0,30)+'; this engine is '+ENGINE_VERSION+'. Your current world has not been replaced.');
+ if(!['0.13.0','0.14.0','0.14.1','0.15.0','0.16.0','0.17.0-dev.1','0.17.0-dev.2','0.17.0-dev.3','0.17.0-dev.4',ENGINE_VERSION].includes(data.engineVersion))throw new Error('This save needs World Engine '+String(data.engineVersion).slice(0,30)+'; this engine is '+ENGINE_VERSION+'. Your current world has not been replaced.');
  if(data.width!==W||data.height!==H)fail('map dimensions');
  if(typeof data.name!=='string'||data.name.length>40||typeof data.savedAt!=='string'||!Number.isFinite(Date.parse(data.savedAt)))fail('save details');
  if(!Number.isInteger(data.rngState)||data.rngState<0||data.rngState>0xffffffff)fail('random state');
@@ -37,9 +37,9 @@ function validateWorldSave(data){
  if(data.state.warfareVersion!==1)fail('warfare schema');
  if(data.state.urbanVersion===undefined){
   if(data.engineVersion===ENGINE_VERSION||data.state.faith2!==undefined||data.state.faithMix!==undefined||data.state.faith3!==undefined||data.state.faithMix3!==undefined)fail('urban schema');
-  const s=data.state;if(!Array.isArray(s.cities)||!(s.pop instanceof Float32Array)||!(s.admin instanceof Float32Array))fail('legacy urban data');
+  const s=data.state;if(!Array.isArray(s.cities)||!(s.pop instanceof Float32Array)||!(s.admin instanceof Float32Array)||!(s.mix instanceof Float32Array)||!(s.eth2 instanceof Int32Array))fail('legacy urban data');
   const cities=s.cities.map(c=>{const p=s.pop[c.cell];return {...c,legacyProvincePeak:c.peak,legacyEstimate:true,population:p*(0.04+0.08*s.admin[c.cell]),peak:p*(0.04+0.08*s.admin[c.cell]),provincePopulation:p,lastYear:s.year,institutions:0.2*s.admin[c.cell],scholarship:0,knowledge:null,foodAccess:1,security:1,commerce:0,urbanTarget:0}});
-  data={...data,state:{...s,urbanVersion:1,urbanYear:null,faith2:new Int32Array(N).fill(-2),faithMix:new Float32Array(N),faith3:new Int32Array(N).fill(-2),faithMix3:new Float32Array(N),cities}};
+  data={...data,state:{...s,urbanVersion:1,urbanYear:null,mix:Float32Array.from(s.mix,(v,i)=>s.eth2[i]>=0&&s.eth2[i]!==s.eth[i]?v:0),faith2:new Int32Array(N).fill(-2),faithMix:new Float32Array(N),faith3:new Int32Array(N).fill(-2),faithMix3:new Float32Array(N),cities}};
  }
  if(data.state.urbanVersion!==1)fail('urban schema');
  const w=data.world,s=data.state;if(!w||!s||!Number.isInteger(s.year)||!Number.isInteger(s.start)||s.year<s.start||typeof s.seed!=='string'||typeof w.seed!=='string'||!Number.isInteger(w.lmCount)||w.lmCount<0||w.lmCount>N)fail('world or date');

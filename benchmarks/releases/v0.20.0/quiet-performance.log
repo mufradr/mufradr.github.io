@@ -1,0 +1,7 @@
+PASS quiet before 1/3
+PASS quiet after 1/3
+PASS quiet after 2/3
+PASS quiet before 2/3
+PASS quiet before 3/3
+PASS quiet after 3/3
+{"kernelTimeRatio":0.9287292481681606,"states":{"before":[423,423,423],"after":[274,274,274]}}

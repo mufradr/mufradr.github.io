@@ -33,7 +33,8 @@ for(const scenario of ['early','developed'])test(`political loop extraction pres
  let borders=src.slice(src.indexOf('  for(let kk=0;kk<L.length;kk++){'),src.indexOf('  // first great walls'))
   .replace('for(let kk=0;kk<L.length;kk++){','for(let kk=from;kk<to;kk++){')
   .replace('if(kk&&(kk&1023)===0)yield;','')
-  .replace('const t0=pop[cand]*0.03;pop[cand]-=t0;o.loot+=t0*0.5;displace(cand,0.02,o.id)','raid(o,i,cand)')
+  .replace('if(o){if(q){const t=pols[q];o.nb.set(q,','if(o){noteMilitaryFrontier(o,j);if(q){const t=pols[q];o.nb.set(q,')
+   .replace('const t0=pop[cand]*0.03;pop[cand]-=t0;o.loot+=t0*0.5;displace(cand,0.02,o.id)','raid(o,i,cand)')
   .replace('s.integ[i]+0.0011/','s.integ[i]+0.0011*s.control[i]*(1-0.5*s.autonomy[i])/');
  const affiliation=borders.indexOf('      if(ei>=0&&c>=0&&ei!==c&&pi>=1&&!o.conqDyn');borders=borders.slice(0,affiliation)+'      politicalCommunityChange(i,o);\n'+borders.slice(borders.indexOf('      // fortify',affiliation));
  b.inspect(`aggregatePoliticalCells=function(phase,from,to){const {s,w,r,pols,L,pol,pop,sampleNow}=phase;${aggregate}};updatePoliticalBorders=function(phase,from,to){const {s,w,r,y,pols,L,pol,pop,asR,wr,rev,rels,fz,infl}=phase;${borders}};`);
@@ -42,7 +43,7 @@ for(const scenario of ['early','developed'])test(`political loop extraction pres
  // retained loop fixture predates all maintenance effects, including storage.
  // Freeze condition too; dedicated economy tests cover the evolving physics.
  for(const app of [a,b])app.inspect('overseasTransport=()=>new Map();isDependentColony=()=>false;roadWorks=i=>S.roads[i];canalWorks=i=>S.irrig[i];maintainWorks=()=>{}');
- setup(a,scenario);setup(b,scenario);for(let k=0;k<40;k++){a.step();b.step()}const da=digest(a),db=digest(b);assert.equal(da,db,da===db?undefined:explainDifference(a.save('Compare'),b.save('Compare')));
+ setup(a,scenario);setup(b,scenario);assert.equal(digest(a),digest(b),'Setup: '+explainDifference(a.save('Compare'),b.save('Compare')));for(let k=0;k<40;k++){a.step();b.step();if(a.inspect('S.r.state()')!==b.inspect('S.r.state()'))assert.fail('Year '+k+': '+explainDifference(a.save('Compare'),b.save('Compare')))}const da=digest(a),db=digest(b);assert.equal(da,db,da===db?undefined:explainDifference(a.save('Compare'),b.save('Compare')));
 });
 test('packed numeric histories retain a decoded memory budget and reject invalid layouts',()=>{
  const a=loadCore();const make=(node,payloadLength)=>a.inspect(`(()=>{const h=new TextEncoder().encode(JSON.stringify({schemaVersion:3,root:{r:0},shapes:[],nodes:[${JSON.stringify(node)}]}));const raw=new Uint8Array(16+h.length+${payloadLength});raw.set(SAVE_MAGIC);new DataView(raw.buffer).setUint32(8,h.length,true);raw.set(h,12);new DataView(raw.buffer).setUint32(raw.length-4,saveCRC(raw.subarray(0,raw.length-4)),true);return raw})()`);

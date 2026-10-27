@@ -1,0 +1,4 @@
+{"seed":"network-a","year":1550,"states":277,"wars":580,"colonies":26,"outbreaks":21,"foodMoved":307774,"tradeRevenue":19076006,"unmetCapacity":65598450}
+{"seed":"network-b","year":1550,"states":279,"wars":528,"colonies":32,"outbreaks":19,"foodMoved":360566,"tradeRevenue":20994605,"unmetCapacity":69065162}
+{"seed":"network-c","year":1550,"states":283,"wars":559,"colonies":32,"outbreaks":13,"foodMoved":390517,"tradeRevenue":19554481,"unmetCapacity":75462460}
+Passed: three 150-year prepared worlds with regular integrity checks.

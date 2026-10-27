@@ -1,0 +1,1668 @@
+{
+  "schemaVersion": 1,
+  "protocol": "civilization-development-v1",
+  "runs": [
+    {
+      "id": "earth-development-01",
+      "category": "historical-earth",
+      "years": 10800,
+      "repeats": 1,
+      "startYear": -9000,
+      "endYear": 1800,
+      "first": {
+        "chiefdom": -7041,
+        "kingdom": -5696,
+        "empire": -988,
+        "oceanKnowledge": 1210,
+        "colony": 1690,
+        "colonialIndependence": null
+      },
+      "empireLongevity": {
+        "total": 59,
+        "ended": 0,
+        "rightCensored": 59,
+        "completedStateLifetimes": {
+          "count": 0,
+          "min": null,
+          "median": null,
+          "p95": null,
+          "p99": null,
+          "max": null
+        },
+        "completedYearsSinceFirstEmpire": {
+          "count": 0,
+          "min": null,
+          "median": null,
+          "p95": null,
+          "p99": null,
+          "max": null
+        },
+        "ongoingObservedYears": {
+          "count": 59,
+          "min": 1290,
+          "median": 3029,
+          "p95": 5719,
+          "p99": 7556,
+          "max": 7556
+        }
+      },
+      "majorDecline": {
+        "eligible": 20,
+        "observed": 0,
+        "sudden": 0,
+        "gradual": 0,
+        "notYetObserved": 20
+      },
+      "final": {
+        "year": 1800,
+        "population": 770311496.6867571,
+        "polities": 1731,
+        "states": 1718,
+        "empires": 54,
+        "largestStateArea": 706331.0146484375,
+        "regions": [
+          {
+            "name": "Fertile Crescent",
+            "population": 6272871.167236328,
+            "polities": 49,
+            "governedShare": 0.849682554785673,
+            "largestStateShare": 0.08908416782592705,
+            "largestBlocShare": 0.08908416782592705
+          },
+          {
+            "name": "Europe",
+            "population": 64401475.7668457,
+            "polities": 96,
+            "governedShare": 0.9781417596526593,
+            "largestStateShare": 0.14151301708705197,
+            "largestBlocShare": 0.14151301708705197
+          },
+          {
+            "name": "India",
+            "population": 39075358.782303214,
+            "polities": 51,
+            "governedShare": 0.9639784276142432,
+            "largestStateShare": 0.13331617662672368,
+            "largestBlocShare": 0.13331617662672368
+          },
+          {
+            "name": "China",
+            "population": 55403499.01477051,
+            "polities": 52,
+            "governedShare": 0.9706896775801364,
+            "largestStateShare": 0.20450460002949206,
+            "largestBlocShare": 0.20450460002949206
+          },
+          {
+            "name": "Mesoamerica",
+            "population": 3164652.6005859375,
+            "polities": 49,
+            "governedShare": 0.8178472031467546,
+            "largestStateShare": 0.04997726314476554,
+            "largestBlocShare": 0.04997726314476554
+          },
+          {
+            "name": "Andes",
+            "population": 3553240.149208069,
+            "polities": 29,
+            "governedShare": 0.36378617985087164,
+            "largestStateShare": 0.03345088712417617,
+            "largestBlocShare": 0.0395104433853956
+          },
+          {
+            "name": "West Africa",
+            "population": 39494217.10241699,
+            "polities": 87,
+            "governedShare": 0.8429097109519106,
+            "largestStateShare": 0.10632192160686028,
+            "largestBlocShare": 0.10632192160686028
+          },
+          {
+            "name": "Congo basin",
+            "population": 52357743.76953125,
+            "polities": 126,
+            "governedShare": 0.8495970524456219,
+            "largestStateShare": 0.16649639317079276,
+            "largestBlocShare": 0.16649639317079276
+          },
+          {
+            "name": "East Africa",
+            "population": 80485810.79125977,
+            "polities": 149,
+            "governedShare": 0.9765080779460817,
+            "largestStateShare": 0.058280689972832915,
+            "largestBlocShare": 0.058280689972832915
+          },
+          {
+            "name": "Australia",
+            "population": 17709404.810287476,
+            "polities": 32,
+            "governedShare": 0.4010662958745139,
+            "largestStateShare": 0.04164642892580802,
+            "largestBlocShare": 0.04164642892580802
+          }
+        ],
+        "overseas": {
+          "routes": 128,
+          "totalFoundings": 4,
+          "active": 4,
+          "dependent": 4,
+          "independentRegions": 0,
+          "diasporas": 30,
+          "communityPopulation": 85776.6277008832
+        },
+        "wars": 21484,
+        "outbreaks": 376,
+        "plagueDeaths": 2819171181.5424895,
+        "cities": 7912,
+        "peoples": 2548
+      },
+      "performance": {
+        "kernelMs": {
+          "count": 1,
+          "min": 624797.637862992,
+          "median": 624797.637862992,
+          "p95": 624797.637862992,
+          "p99": 624797.637862992,
+          "max": 624797.637862992
+        },
+        "sliceP95Ms": {
+          "count": 1,
+          "min": 5.982858000003034,
+          "median": 5.982858000003034,
+          "p95": 5.982858000003034,
+          "p99": 5.982858000003034,
+          "max": 5.982858000003034
+        },
+        "sliceP99Ms": {
+          "count": 1,
+          "min": 19.429543999955058,
+          "median": 19.429543999955058,
+          "p95": 19.429543999955058,
+          "p99": 19.429543999955058,
+          "max": 19.429543999955058
+        },
+        "maxSliceMs": 306.15517100004945
+      },
+      "memory": {
+        "samples": [
+          {
+            "year": -9000,
+            "rssBytes": 163753984,
+            "heapUsedBytes": 20741448,
+            "externalBytes": 85401780,
+            "arrayBufferBytes": 83261057
+          },
+          {
+            "year": -8750,
+            "rssBytes": 233484288,
+            "heapUsedBytes": 41868064,
+            "externalBytes": 87362124,
+            "arrayBufferBytes": 85221401
+          },
+          {
+            "year": -8500,
+            "rssBytes": 231092224,
+            "heapUsedBytes": 49592256,
+            "externalBytes": 71735249,
+            "arrayBufferBytes": 69594526
+          },
+          {
+            "year": -8250,
+            "rssBytes": 231878656,
+            "heapUsedBytes": 30746296,
+            "externalBytes": 71921689,
+            "arrayBufferBytes": 69780966
+          },
+          {
+            "year": -8000,
+            "rssBytes": 232009728,
+            "heapUsedBytes": 33211944,
+            "externalBytes": 72149125,
+            "arrayBufferBytes": 70008402
+          },
+          {
+            "year": -7750,
+            "rssBytes": 235286528,
+            "heapUsedBytes": 47910784,
+            "externalBytes": 72339041,
+            "arrayBufferBytes": 70198318
+          },
+          {
+            "year": -7500,
+            "rssBytes": 235679744,
+            "heapUsedBytes": 59782824,
+            "externalBytes": 72611253,
+            "arrayBufferBytes": 70470530
+          },
+          {
+            "year": -7250,
+            "rssBytes": 308686848,
+            "heapUsedBytes": 46362792,
+            "externalBytes": 72981753,
+            "arrayBufferBytes": 70841030
+          },
+          {
+            "year": -7000,
+            "rssBytes": 328740864,
+            "heapUsedBytes": 55088304,
+            "externalBytes": 73461709,
+            "arrayBufferBytes": 71293166
+          },
+          {
+            "year": -6750,
+            "rssBytes": 350367744,
+            "heapUsedBytes": 95502208,
+            "externalBytes": 71641809,
+            "arrayBufferBytes": 69501086
+          },
+          {
+            "year": -6500,
+            "rssBytes": 350818304,
+            "heapUsedBytes": 89921040,
+            "externalBytes": 72238337,
+            "arrayBufferBytes": 70063918
+          },
+          {
+            "year": -6250,
+            "rssBytes": 364580864,
+            "heapUsedBytes": 98938224,
+            "externalBytes": 72941473,
+            "arrayBufferBytes": 70800750
+          },
+          {
+            "year": -6000,
+            "rssBytes": 348807168,
+            "heapUsedBytes": 66057032,
+            "externalBytes": 73617129,
+            "arrayBufferBytes": 71437198
+          },
+          {
+            "year": -5750,
+            "rssBytes": 364138496,
+            "heapUsedBytes": 87504024,
+            "externalBytes": 74358865,
+            "arrayBufferBytes": 72218142
+          },
+          {
+            "year": -5500,
+            "rssBytes": 385507328,
+            "heapUsedBytes": 121289784,
+            "externalBytes": 75110385,
+            "arrayBufferBytes": 72969662
+          },
+          {
+            "year": -5250,
+            "rssBytes": 399671296,
+            "heapUsedBytes": 114221856,
+            "externalBytes": 75872729,
+            "arrayBufferBytes": 73732006
+          },
+          {
+            "year": -5000,
+            "rssBytes": 433487872,
+            "heapUsedBytes": 123544224,
+            "externalBytes": 76625173,
+            "arrayBufferBytes": 74484450
+          },
+          {
+            "year": -4750,
+            "rssBytes": 458280960,
+            "heapUsedBytes": 150639784,
+            "externalBytes": 77297105,
+            "arrayBufferBytes": 75156382
+          },
+          {
+            "year": -4500,
+            "rssBytes": 474476544,
+            "heapUsedBytes": 46898072,
+            "externalBytes": 71968824,
+            "arrayBufferBytes": 69772246
+          },
+          {
+            "year": -4250,
+            "rssBytes": 475131904,
+            "heapUsedBytes": 121878144,
+            "externalBytes": 73009240,
+            "arrayBufferBytes": 70869810
+          },
+          {
+            "year": -4000,
+            "rssBytes": 477360128,
+            "heapUsedBytes": 134724864,
+            "externalBytes": 74194320,
+            "arrayBufferBytes": 72054890
+          },
+          {
+            "year": -3750,
+            "rssBytes": 496918528,
+            "heapUsedBytes": 47654784,
+            "externalBytes": 71315644,
+            "arrayBufferBytes": 69176214
+          },
+          {
+            "year": -3500,
+            "rssBytes": 502423552,
+            "heapUsedBytes": 110925024,
+            "externalBytes": 72901068,
+            "arrayBufferBytes": 70681750
+          },
+          {
+            "year": -3250,
+            "rssBytes": 508198912,
+            "heapUsedBytes": 74335096,
+            "externalBytes": 71269812,
+            "arrayBufferBytes": 69130382
+          },
+          {
+            "year": -3000,
+            "rssBytes": 509771776,
+            "heapUsedBytes": 168987600,
+            "externalBytes": 72375104,
+            "arrayBufferBytes": 70235674
+          },
+          {
+            "year": -2750,
+            "rssBytes": 548507648,
+            "heapUsedBytes": 91945144,
+            "externalBytes": 71266756,
+            "arrayBufferBytes": 69127326
+          },
+          {
+            "year": -2500,
+            "rssBytes": 550473728,
+            "heapUsedBytes": 153447024,
+            "externalBytes": 72462296,
+            "arrayBufferBytes": 70227430
+          },
+          {
+            "year": -2250,
+            "rssBytes": 549154816,
+            "heapUsedBytes": 140550040,
+            "externalBytes": 72014548,
+            "arrayBufferBytes": 69875118
+          },
+          {
+            "year": -2000,
+            "rssBytes": 545120256,
+            "heapUsedBytes": 112105880,
+            "externalBytes": 71662608,
+            "arrayBufferBytes": 69420582
+          },
+          {
+            "year": -1750,
+            "rssBytes": 587366400,
+            "heapUsedBytes": 134055152,
+            "externalBytes": 71764804,
+            "arrayBufferBytes": 69625374
+          },
+          {
+            "year": -1500,
+            "rssBytes": 608210944,
+            "heapUsedBytes": 142366488,
+            "externalBytes": 71448700,
+            "arrayBufferBytes": 69309270
+          },
+          {
+            "year": -1250,
+            "rssBytes": 653381632,
+            "heapUsedBytes": 192429064,
+            "externalBytes": 71622748,
+            "arrayBufferBytes": 69483318
+          },
+          {
+            "year": -1000,
+            "rssBytes": 661721088,
+            "heapUsedBytes": 315550704,
+            "externalBytes": 72194156,
+            "arrayBufferBytes": 69937542
+          },
+          {
+            "year": -750,
+            "rssBytes": 701407232,
+            "heapUsedBytes": 142792968,
+            "externalBytes": 71514404,
+            "arrayBufferBytes": 69374974
+          },
+          {
+            "year": -500,
+            "rssBytes": 726679552,
+            "heapUsedBytes": 222023624,
+            "externalBytes": 72007020,
+            "arrayBufferBytes": 69742398
+          },
+          {
+            "year": -250,
+            "rssBytes": 758415360,
+            "heapUsedBytes": 300542832,
+            "externalBytes": 72195876,
+            "arrayBufferBytes": 70056446
+          },
+          {
+            "year": 0,
+            "rssBytes": 792457216,
+            "heapUsedBytes": 400564704,
+            "externalBytes": 72799476,
+            "arrayBufferBytes": 70527022
+          },
+          {
+            "year": 250,
+            "rssBytes": 844750848,
+            "heapUsedBytes": 499566272,
+            "externalBytes": 72528204,
+            "arrayBufferBytes": 70388774
+          },
+          {
+            "year": 500,
+            "rssBytes": 881778688,
+            "heapUsedBytes": 122977000,
+            "externalBytes": 71790212,
+            "arrayBufferBytes": 69650782
+          },
+          {
+            "year": 750,
+            "rssBytes": 905805824,
+            "heapUsedBytes": 210197936,
+            "externalBytes": 71933156,
+            "arrayBufferBytes": 69793726
+          },
+          {
+            "year": 1000,
+            "rssBytes": 942153728,
+            "heapUsedBytes": 160982728,
+            "externalBytes": 72177956,
+            "arrayBufferBytes": 69887798
+          },
+          {
+            "year": 1250,
+            "rssBytes": 922673152,
+            "heapUsedBytes": 581155976,
+            "externalBytes": 73375116,
+            "arrayBufferBytes": 71234886
+          },
+          {
+            "year": 1500,
+            "rssBytes": 969822208,
+            "heapUsedBytes": 554009232,
+            "externalBytes": 74087808,
+            "arrayBufferBytes": 71788910
+          },
+          {
+            "year": 1750,
+            "rssBytes": 974934016,
+            "heapUsedBytes": 537945792,
+            "externalBytes": 74020396,
+            "arrayBufferBytes": 71880966
+          },
+          {
+            "year": 1800,
+            "rssBytes": 961495040,
+            "heapUsedBytes": 604798808,
+            "externalBytes": 74545184,
+            "arrayBufferBytes": 72239958
+          }
+        ],
+        "beforeFinalSave": {
+          "rssBytes": 961495040,
+          "heapUsedBytes": 604801912,
+          "externalBytes": 74545184,
+          "arrayBufferBytes": 72239958
+        },
+        "processPeakRSSBytes": 1432125440
+      },
+      "worldBuffers": {
+        "bytes": 65538571,
+        "buffers": 89250
+      },
+      "save": {
+        "initial": {
+          "rawBytes": 40494832,
+          "gzipBytes": 7099827,
+          "encodeMs": 221.48233700000003,
+          "gzipMs": 534.8233599999999,
+          "rawSHA256": "14501c4e633a36a4c73068e36c02bdcffffb45f6f78940150e79aaf88d830de1",
+          "before": {
+            "rssBytes": 154214400,
+            "heapUsedBytes": 26391120,
+            "externalBytes": 76338837,
+            "arrayBufferBytes": 74198154
+          },
+          "after": {
+            "rssBytes": 209133568,
+            "heapUsedBytes": 11973304,
+            "externalBytes": 131165609,
+            "arrayBufferBytes": 129024886
+          }
+        },
+        "final": {
+          "rawBytes": 133501254,
+          "gzipBytes": 26301650,
+          "encodeMs": 4052.1876230000053,
+          "gzipMs": 1964.2954420000315,
+          "rawSHA256": "9bd48e2c29a105a7b6d899690f0f9b78f49870e5412df4dc8d4599e5636ae41b",
+          "before": {
+            "rssBytes": 1008467968,
+            "heapUsedBytes": 634293480,
+            "externalBytes": 76010364,
+            "arrayBufferBytes": 73870934
+          },
+          "after": {
+            "rssBytes": 1223450624,
+            "heapUsedBytes": 403347384,
+            "externalBytes": 261580293,
+            "arrayBufferBytes": 259440863
+          }
+        }
+      },
+      "integrityIssues": []
+    },
+    {
+      "id": "earth-development-02",
+      "category": "historical-earth",
+      "years": 10800,
+      "repeats": 1,
+      "startYear": -9000,
+      "endYear": 1800,
+      "first": {
+        "chiefdom": -7893,
+        "kingdom": -4967,
+        "empire": -222,
+        "oceanKnowledge": 1173,
+        "colony": 1380,
+        "colonialIndependence": 1615
+      },
+      "empireLongevity": {
+        "total": 57,
+        "ended": 0,
+        "rightCensored": 57,
+        "completedStateLifetimes": {
+          "count": 0,
+          "min": null,
+          "median": null,
+          "p95": null,
+          "p99": null,
+          "max": null
+        },
+        "completedYearsSinceFirstEmpire": {
+          "count": 0,
+          "min": null,
+          "median": null,
+          "p95": null,
+          "p99": null,
+          "max": null
+        },
+        "ongoingObservedYears": {
+          "count": 57,
+          "min": 1117,
+          "median": 3348,
+          "p95": 5935,
+          "p99": 7929,
+          "max": 7929
+        }
+      },
+      "majorDecline": {
+        "eligible": 19,
+        "observed": 0,
+        "sudden": 0,
+        "gradual": 0,
+        "notYetObserved": 19
+      },
+      "final": {
+        "year": 1800,
+        "population": 725946970.5992863,
+        "polities": 1502,
+        "states": 1489,
+        "empires": 53,
+        "largestStateArea": 650201.9970703125,
+        "regions": [
+          {
+            "name": "Fertile Crescent",
+            "population": 7507704.219238281,
+            "polities": 27,
+            "governedShare": 0.8777386273049071,
+            "largestStateShare": 0.2547515294253651,
+            "largestBlocShare": 0.2547515294253651
+          },
+          {
+            "name": "Europe",
+            "population": 80737662.88897705,
+            "polities": 101,
+            "governedShare": 0.9891227100932456,
+            "largestStateShare": 0.1404890311322704,
+            "largestBlocShare": 0.1427082008693407
+          },
+          {
+            "name": "India",
+            "population": 43422945.33664709,
+            "polities": 39,
+            "governedShare": 0.9617831953734756,
+            "largestStateShare": 0.14821703882827764,
+            "largestBlocShare": 0.14821703882827764
+          },
+          {
+            "name": "China",
+            "population": 48603436.13935089,
+            "polities": 62,
+            "governedShare": 0.9731290896261301,
+            "largestStateShare": 0.19876784439163594,
+            "largestBlocShare": 0.20112888421829525
+          },
+          {
+            "name": "Mesoamerica",
+            "population": 3800436.7353515625,
+            "polities": 30,
+            "governedShare": 0.4014760832315187,
+            "largestStateShare": 0.026014602648912203,
+            "largestBlocShare": 0.07190754772877965
+          },
+          {
+            "name": "Andes",
+            "population": 6713138.637916565,
+            "polities": 31,
+            "governedShare": 0.36531803086609305,
+            "largestStateShare": 0.040628331585185355,
+            "largestBlocShare": 0.040628331585185355
+          },
+          {
+            "name": "West Africa",
+            "population": 37715895.19067383,
+            "polities": 71,
+            "governedShare": 0.7806028102155401,
+            "largestStateShare": 0.15175255090715467,
+            "largestBlocShare": 0.15175255090715467
+          },
+          {
+            "name": "Congo basin",
+            "population": 32473305.893554688,
+            "polities": 68,
+            "governedShare": 0.7412948729010354,
+            "largestStateShare": 0.12952233457265008,
+            "largestBlocShare": 0.12952233457265008
+          },
+          {
+            "name": "East Africa",
+            "population": 43774031.83496094,
+            "polities": 120,
+            "governedShare": 0.9790525456920343,
+            "largestStateShare": 0.0844199224995446,
+            "largestBlocShare": 0.0844199224995446
+          },
+          {
+            "name": "Australia",
+            "population": 5167705.730484009,
+            "polities": 13,
+            "governedShare": 0.1290424346664772,
+            "largestStateShare": 0.03244243419976965,
+            "largestBlocShare": 0.03244243419976965
+          }
+        ],
+        "overseas": {
+          "routes": 128,
+          "totalFoundings": 19,
+          "active": 19,
+          "dependent": 15,
+          "independentRegions": 2,
+          "diasporas": 161,
+          "communityPopulation": 180999.90718159208
+        },
+        "wars": 21380,
+        "outbreaks": 631,
+        "plagueDeaths": 2836525801.40586,
+        "cities": 7832,
+        "peoples": 2574
+      },
+      "performance": {
+        "kernelMs": {
+          "count": 1,
+          "min": 869467.7729019824,
+          "median": 869467.7729019824,
+          "p95": 869467.7729019824,
+          "p99": 869467.7729019824,
+          "max": 869467.7729019824
+        },
+        "sliceP95Ms": {
+          "count": 1,
+          "min": 7.09275300000445,
+          "median": 7.09275300000445,
+          "p95": 7.09275300000445,
+          "p99": 7.09275300000445,
+          "max": 7.09275300000445
+        },
+        "sliceP99Ms": {
+          "count": 1,
+          "min": 26.812470000004396,
+          "median": 26.812470000004396,
+          "p95": 26.812470000004396,
+          "p99": 26.812470000004396,
+          "max": 26.812470000004396
+        },
+        "maxSliceMs": 695.4834660000633
+      },
+      "memory": {
+        "samples": [
+          {
+            "year": -9000,
+            "rssBytes": 198893568,
+            "heapUsedBytes": 26654960,
+            "externalBytes": 111733471,
+            "arrayBufferBytes": 109592748
+          },
+          {
+            "year": -8750,
+            "rssBytes": 263118848,
+            "heapUsedBytes": 50466640,
+            "externalBytes": 113880327,
+            "arrayBufferBytes": 111729828
+          },
+          {
+            "year": -8500,
+            "rssBytes": 225439744,
+            "heapUsedBytes": 24141616,
+            "externalBytes": 72069065,
+            "arrayBufferBytes": 69917214
+          },
+          {
+            "year": -8250,
+            "rssBytes": 227143680,
+            "heapUsedBytes": 50696576,
+            "externalBytes": 72471825,
+            "arrayBufferBytes": 70331102
+          },
+          {
+            "year": -8000,
+            "rssBytes": 227667968,
+            "heapUsedBytes": 52232496,
+            "externalBytes": 72707453,
+            "arrayBufferBytes": 70566730
+          },
+          {
+            "year": -7750,
+            "rssBytes": 265285632,
+            "heapUsedBytes": 64139456,
+            "externalBytes": 72879537,
+            "arrayBufferBytes": 70738814
+          },
+          {
+            "year": -7500,
+            "rssBytes": 334303232,
+            "heapUsedBytes": 78677656,
+            "externalBytes": 73229097,
+            "arrayBufferBytes": 71045526
+          },
+          {
+            "year": -7250,
+            "rssBytes": 325255168,
+            "heapUsedBytes": 55037112,
+            "externalBytes": 71492001,
+            "arrayBufferBytes": 69327150
+          },
+          {
+            "year": -7000,
+            "rssBytes": 326619136,
+            "heapUsedBytes": 49058944,
+            "externalBytes": 71978621,
+            "arrayBufferBytes": 69784078
+          },
+          {
+            "year": -6750,
+            "rssBytes": 332386304,
+            "heapUsedBytes": 48729424,
+            "externalBytes": 72522105,
+            "arrayBufferBytes": 70381382
+          },
+          {
+            "year": -6500,
+            "rssBytes": 328749056,
+            "heapUsedBytes": 98957856,
+            "externalBytes": 73212693,
+            "arrayBufferBytes": 71071970
+          },
+          {
+            "year": -6250,
+            "rssBytes": 344195072,
+            "heapUsedBytes": 73060720,
+            "externalBytes": 73870729,
+            "arrayBufferBytes": 71694854
+          },
+          {
+            "year": -6000,
+            "rssBytes": 347643904,
+            "heapUsedBytes": 97565816,
+            "externalBytes": 74559793,
+            "arrayBufferBytes": 72419070
+          },
+          {
+            "year": -5750,
+            "rssBytes": 352235520,
+            "heapUsedBytes": 122714640,
+            "externalBytes": 75158289,
+            "arrayBufferBytes": 73017566
+          },
+          {
+            "year": -5500,
+            "rssBytes": 391294976,
+            "heapUsedBytes": 114215232,
+            "externalBytes": 75891161,
+            "arrayBufferBytes": 73750438
+          },
+          {
+            "year": -5250,
+            "rssBytes": 411164672,
+            "heapUsedBytes": 105259000,
+            "externalBytes": 76526737,
+            "arrayBufferBytes": 74386014
+          },
+          {
+            "year": -5000,
+            "rssBytes": 421093376,
+            "heapUsedBytes": 79445816,
+            "externalBytes": 71418880,
+            "arrayBufferBytes": 69229998
+          },
+          {
+            "year": -4750,
+            "rssBytes": 423616512,
+            "heapUsedBytes": 46400184,
+            "externalBytes": 72392176,
+            "arrayBufferBytes": 70200590
+          },
+          {
+            "year": -4500,
+            "rssBytes": 416047104,
+            "heapUsedBytes": 120180976,
+            "externalBytes": 73310928,
+            "arrayBufferBytes": 71171498
+          },
+          {
+            "year": -4250,
+            "rssBytes": 422993920,
+            "heapUsedBytes": 129547632,
+            "externalBytes": 74369316,
+            "arrayBufferBytes": 72229886
+          },
+          {
+            "year": -4000,
+            "rssBytes": 421163008,
+            "heapUsedBytes": 95477416,
+            "externalBytes": 72430188,
+            "arrayBufferBytes": 70290758
+          },
+          {
+            "year": -3750,
+            "rssBytes": 432578560,
+            "heapUsedBytes": 161379624,
+            "externalBytes": 73625104,
+            "arrayBufferBytes": 71410974
+          },
+          {
+            "year": -3500,
+            "rssBytes": 469344256,
+            "heapUsedBytes": 43400416,
+            "externalBytes": 71494404,
+            "arrayBufferBytes": 69354974
+          },
+          {
+            "year": -3250,
+            "rssBytes": 470069248,
+            "heapUsedBytes": 148009464,
+            "externalBytes": 72715580,
+            "arrayBufferBytes": 70493734
+          },
+          {
+            "year": -3000,
+            "rssBytes": 494641152,
+            "heapUsedBytes": 103020192,
+            "externalBytes": 71666016,
+            "arrayBufferBytes": 69440198
+          },
+          {
+            "year": -2750,
+            "rssBytes": 490098688,
+            "heapUsedBytes": 99611400,
+            "externalBytes": 71282684,
+            "arrayBufferBytes": 69143254
+          },
+          {
+            "year": -2500,
+            "rssBytes": 490852352,
+            "heapUsedBytes": 157888480,
+            "externalBytes": 72639884,
+            "arrayBufferBytes": 70406494
+          },
+          {
+            "year": -2250,
+            "rssBytes": 520323072,
+            "heapUsedBytes": 150583784,
+            "externalBytes": 72031036,
+            "arrayBufferBytes": 69891606
+          },
+          {
+            "year": -2000,
+            "rssBytes": 531275776,
+            "heapUsedBytes": 198476968,
+            "externalBytes": 71858780,
+            "arrayBufferBytes": 69618110
+          },
+          {
+            "year": -1750,
+            "rssBytes": 550944768,
+            "heapUsedBytes": 205668960,
+            "externalBytes": 72004052,
+            "arrayBufferBytes": 69864622
+          },
+          {
+            "year": -1500,
+            "rssBytes": 616067072,
+            "heapUsedBytes": 247063184,
+            "externalBytes": 71804172,
+            "arrayBufferBytes": 69556462
+          },
+          {
+            "year": -1250,
+            "rssBytes": 638091264,
+            "heapUsedBytes": 118515344,
+            "externalBytes": 71427052,
+            "arrayBufferBytes": 69287622
+          },
+          {
+            "year": -1000,
+            "rssBytes": 640786432,
+            "heapUsedBytes": 169149544,
+            "externalBytes": 71864448,
+            "arrayBufferBytes": 69608918
+          },
+          {
+            "year": -750,
+            "rssBytes": 655495168,
+            "heapUsedBytes": 252819128,
+            "externalBytes": 71942604,
+            "arrayBufferBytes": 69803174
+          },
+          {
+            "year": -500,
+            "rssBytes": 687546368,
+            "heapUsedBytes": 375261560,
+            "externalBytes": 72740372,
+            "arrayBufferBytes": 70476502
+          },
+          {
+            "year": -250,
+            "rssBytes": 761159680,
+            "heapUsedBytes": 114797736,
+            "externalBytes": 71726684,
+            "arrayBufferBytes": 69587254
+          },
+          {
+            "year": 0,
+            "rssBytes": 782364672,
+            "heapUsedBytes": 188475232,
+            "externalBytes": 71794948,
+            "arrayBufferBytes": 69655518
+          },
+          {
+            "year": 250,
+            "rssBytes": 807014400,
+            "heapUsedBytes": 206596736,
+            "externalBytes": 71899156,
+            "arrayBufferBytes": 69759726
+          },
+          {
+            "year": 500,
+            "rssBytes": 838279168,
+            "heapUsedBytes": 265434888,
+            "externalBytes": 72189916,
+            "arrayBufferBytes": 70050486
+          },
+          {
+            "year": 750,
+            "rssBytes": 876818432,
+            "heapUsedBytes": 254994080,
+            "externalBytes": 72124124,
+            "arrayBufferBytes": 69984694
+          },
+          {
+            "year": 1000,
+            "rssBytes": 900222976,
+            "heapUsedBytes": 170309640,
+            "externalBytes": 72163348,
+            "arrayBufferBytes": 70023918
+          },
+          {
+            "year": 1250,
+            "rssBytes": 916496384,
+            "heapUsedBytes": 606719560,
+            "externalBytes": 73901972,
+            "arrayBufferBytes": 71761918
+          },
+          {
+            "year": 1500,
+            "rssBytes": 934592512,
+            "heapUsedBytes": 329294088,
+            "externalBytes": 73273028,
+            "arrayBufferBytes": 71133598
+          },
+          {
+            "year": 1750,
+            "rssBytes": 929349632,
+            "heapUsedBytes": 528326592,
+            "externalBytes": 74082908,
+            "arrayBufferBytes": 71935950
+          },
+          {
+            "year": 1800,
+            "rssBytes": 934612992,
+            "heapUsedBytes": 569469056,
+            "externalBytes": 74379564,
+            "arrayBufferBytes": 72240134
+          }
+        ],
+        "beforeFinalSave": {
+          "rssBytes": 934612992,
+          "heapUsedBytes": 569471552,
+          "externalBytes": 74379564,
+          "arrayBufferBytes": 72240134
+        },
+        "processPeakRSSBytes": 1381593088
+      },
+      "worldBuffers": {
+        "bytes": 65591987,
+        "buffers": 87915
+      },
+      "save": {
+        "initial": {
+          "rawBytes": 40507836,
+          "gzipBytes": 7103279,
+          "encodeMs": 202.534356,
+          "gzipMs": 464.32076599999994,
+          "rawSHA256": "97527f27e8deb5722f3792d42ba8518612b86abd3f64143014118f615b45be3e",
+          "before": {
+            "rssBytes": 154689536,
+            "heapUsedBytes": 20845888,
+            "externalBytes": 76337825,
+            "arrayBufferBytes": 74197142
+          },
+          "after": {
+            "rssBytes": 205926400,
+            "heapUsedBytes": 10941984,
+            "externalBytes": 125914638,
+            "arrayBufferBytes": 123773915
+          }
+        },
+        "final": {
+          "rawBytes": 131227394,
+          "gzipBytes": 25723603,
+          "encodeMs": 5376.714288999909,
+          "gzipMs": 2357.272961000097,
+          "rawSHA256": "a0e64f26346852d656d09d95d6aa34418ba53c3afef9743384d79494ec837af2",
+          "before": {
+            "rssBytes": 981594112,
+            "heapUsedBytes": 597619680,
+            "externalBytes": 76025796,
+            "arrayBufferBytes": 73886366
+          },
+          "after": {
+            "rssBytes": 1192468480,
+            "heapUsedBytes": 392668152,
+            "externalBytes": 258302631,
+            "arrayBufferBytes": 256163201
+          }
+        }
+      },
+      "integrityIssues": []
+    },
+    {
+      "id": "earth-development-03",
+      "category": "historical-earth",
+      "years": 10800,
+      "repeats": 1,
+      "startYear": -9000,
+      "endYear": 1800,
+      "first": {
+        "chiefdom": -7396,
+        "kingdom": -5657,
+        "empire": 299,
+        "oceanKnowledge": 942,
+        "colony": 975,
+        "colonialIndependence": 1420
+      },
+      "empireLongevity": {
+        "total": 59,
+        "ended": 1,
+        "rightCensored": 58,
+        "completedStateLifetimes": {
+          "count": 1,
+          "min": 2076,
+          "median": 2076,
+          "p95": 2076,
+          "p99": 2076,
+          "max": 2076
+        },
+        "completedYearsSinceFirstEmpire": {
+          "count": 1,
+          "min": 958,
+          "median": 958,
+          "p95": 958,
+          "p99": 958,
+          "max": 958
+        },
+        "ongoingObservedYears": {
+          "count": 58,
+          "min": 1449,
+          "median": 3378,
+          "p95": 5404,
+          "p99": 5908,
+          "max": 5908
+        }
+      },
+      "majorDecline": {
+        "eligible": 14,
+        "observed": 0,
+        "sudden": 0,
+        "gradual": 0,
+        "notYetObserved": 14
+      },
+      "final": {
+        "year": 1800,
+        "population": 668506255.2547039,
+        "polities": 1420,
+        "states": 1399,
+        "empires": 58,
+        "largestStateArea": 728663.4716796875,
+        "regions": [
+          {
+            "name": "Fertile Crescent",
+            "population": 5121174.697265625,
+            "polities": 17,
+            "governedShare": 0.8573305947019461,
+            "largestStateShare": 0.3028212971286577,
+            "largestBlocShare": 0.3028212971286577
+          },
+          {
+            "name": "Europe",
+            "population": 47363965.252441406,
+            "polities": 133,
+            "governedShare": 0.9464128564624061,
+            "largestStateShare": 0.07165378281164791,
+            "largestBlocShare": 0.07291494628912769
+          },
+          {
+            "name": "India",
+            "population": 32766420.559429467,
+            "polities": 47,
+            "governedShare": 0.9583804023785701,
+            "largestStateShare": 0.17040818458432527,
+            "largestBlocShare": 0.17040818458432527
+          },
+          {
+            "name": "China",
+            "population": 45925596.9633255,
+            "polities": 47,
+            "governedShare": 0.9755529441962592,
+            "largestStateShare": 0.12531458628497436,
+            "largestBlocShare": 0.12531458628497436
+          },
+          {
+            "name": "Mesoamerica",
+            "population": 7110030.037597656,
+            "polities": 58,
+            "governedShare": 0.7202433599099275,
+            "largestStateShare": 0.07422061756729278,
+            "largestBlocShare": 0.07422061756729278
+          },
+          {
+            "name": "Andes",
+            "population": 7912221.204734802,
+            "polities": 31,
+            "governedShare": 0.3137794280236846,
+            "largestStateShare": 0.017462459677861218,
+            "largestBlocShare": 0.04170459346517474
+          },
+          {
+            "name": "West Africa",
+            "population": 33853825.29016113,
+            "polities": 62,
+            "governedShare": 0.8293843404303967,
+            "largestStateShare": 0.10267371569289623,
+            "largestBlocShare": 0.1136153242199081
+          },
+          {
+            "name": "Congo basin",
+            "population": 40499335.75683594,
+            "polities": 44,
+            "governedShare": 0.7633767124900942,
+            "largestStateShare": 0.199829963766973,
+            "largestBlocShare": 0.199829963766973
+          },
+          {
+            "name": "East Africa",
+            "population": 53838740.13745117,
+            "polities": 112,
+            "governedShare": 0.9624591263120656,
+            "largestStateShare": 0.09530806782949962,
+            "largestBlocShare": 0.09530806782949962
+          },
+          {
+            "name": "Australia",
+            "population": 10681943.001998901,
+            "polities": 32,
+            "governedShare": 0.3071761051215458,
+            "largestStateShare": 0.03945818233711105,
+            "largestBlocShare": 0.03945818233711105
+          }
+        ],
+        "overseas": {
+          "routes": 128,
+          "totalFoundings": 37,
+          "active": 37,
+          "dependent": 26,
+          "independentRegions": 9,
+          "diasporas": 192,
+          "communityPopulation": 832734.8204273622
+        },
+        "wars": 23576,
+        "outbreaks": 640,
+        "plagueDeaths": 2181742846.1811037,
+        "cities": 7557,
+        "peoples": 2613
+      },
+      "performance": {
+        "kernelMs": {
+          "count": 1,
+          "min": 955277.2491669996,
+          "median": 955277.2491669996,
+          "p95": 955277.2491669996,
+          "p99": 955277.2491669996,
+          "max": 955277.2491669996
+        },
+        "sliceP95Ms": {
+          "count": 1,
+          "min": 9.23106000002008,
+          "median": 9.23106000002008,
+          "p95": 9.23106000002008,
+          "p99": 9.23106000002008,
+          "max": 9.23106000002008
+        },
+        "sliceP99Ms": {
+          "count": 1,
+          "min": 29.637458999990486,
+          "median": 29.637458999990486,
+          "p95": 29.637458999990486,
+          "p99": 29.637458999990486,
+          "max": 29.637458999990486
+        },
+        "maxSliceMs": 340.05864800000563
+      },
+      "memory": {
+        "samples": [
+          {
+            "year": -9000,
+            "rssBytes": 198311936,
+            "heapUsedBytes": 18789768,
+            "externalBytes": 111723517,
+            "arrayBufferBytes": 109582794
+          },
+          {
+            "year": -8750,
+            "rssBytes": 223432704,
+            "heapUsedBytes": 28071216,
+            "externalBytes": 71231873,
+            "arrayBufferBytes": 69091150
+          },
+          {
+            "year": -8500,
+            "rssBytes": 225660928,
+            "heapUsedBytes": 48724784,
+            "externalBytes": 71940113,
+            "arrayBufferBytes": 69799390
+          },
+          {
+            "year": -8250,
+            "rssBytes": 229199872,
+            "heapUsedBytes": 36564944,
+            "externalBytes": 72148425,
+            "arrayBufferBytes": 69994494
+          },
+          {
+            "year": -8000,
+            "rssBytes": 238505984,
+            "heapUsedBytes": 45921896,
+            "externalBytes": 72347505,
+            "arrayBufferBytes": 70190766
+          },
+          {
+            "year": -7750,
+            "rssBytes": 248631296,
+            "heapUsedBytes": 35182968,
+            "externalBytes": 71192169,
+            "arrayBufferBytes": 69051446
+          },
+          {
+            "year": -7500,
+            "rssBytes": 282841088,
+            "heapUsedBytes": 43124928,
+            "externalBytes": 71534697,
+            "arrayBufferBytes": 69372654
+          },
+          {
+            "year": -7250,
+            "rssBytes": 331862016,
+            "heapUsedBytes": 95470816,
+            "externalBytes": 71862481,
+            "arrayBufferBytes": 69721758
+          },
+          {
+            "year": -7000,
+            "rssBytes": 339607552,
+            "heapUsedBytes": 58486168,
+            "externalBytes": 71337100,
+            "arrayBufferBytes": 69144526
+          },
+          {
+            "year": -6750,
+            "rssBytes": 347566080,
+            "heapUsedBytes": 100483584,
+            "externalBytes": 71876664,
+            "arrayBufferBytes": 69737234
+          },
+          {
+            "year": -6500,
+            "rssBytes": 361578496,
+            "heapUsedBytes": 109350960,
+            "externalBytes": 72527180,
+            "arrayBufferBytes": 70355614
+          },
+          {
+            "year": -6250,
+            "rssBytes": 359211008,
+            "heapUsedBytes": 106894432,
+            "externalBytes": 73147348,
+            "arrayBufferBytes": 70973078
+          },
+          {
+            "year": -6000,
+            "rssBytes": 364593152,
+            "heapUsedBytes": 64525784,
+            "externalBytes": 71286404,
+            "arrayBufferBytes": 69109222
+          },
+          {
+            "year": -5750,
+            "rssBytes": 364593152,
+            "heapUsedBytes": 85029696,
+            "externalBytes": 71831880,
+            "arrayBufferBytes": 69692450
+          },
+          {
+            "year": -5500,
+            "rssBytes": 358457344,
+            "heapUsedBytes": 97953016,
+            "externalBytes": 72496632,
+            "arrayBufferBytes": 70357202
+          },
+          {
+            "year": -5250,
+            "rssBytes": 366317568,
+            "heapUsedBytes": 134559720,
+            "externalBytes": 73232444,
+            "arrayBufferBytes": 71093014
+          },
+          {
+            "year": -5000,
+            "rssBytes": 366256128,
+            "heapUsedBytes": 91687648,
+            "externalBytes": 71467496,
+            "arrayBufferBytes": 69328066
+          },
+          {
+            "year": -4750,
+            "rssBytes": 367087616,
+            "heapUsedBytes": 120898584,
+            "externalBytes": 72200556,
+            "arrayBufferBytes": 70061126
+          },
+          {
+            "year": -4500,
+            "rssBytes": 368709632,
+            "heapUsedBytes": 112002712,
+            "externalBytes": 73135692,
+            "arrayBufferBytes": 70996262
+          },
+          {
+            "year": -4250,
+            "rssBytes": 371609600,
+            "heapUsedBytes": 85565552,
+            "externalBytes": 72062068,
+            "arrayBufferBytes": 69922638
+          },
+          {
+            "year": -4000,
+            "rssBytes": 382107648,
+            "heapUsedBytes": 95788728,
+            "externalBytes": 73281436,
+            "arrayBufferBytes": 71069726
+          },
+          {
+            "year": -3750,
+            "rssBytes": 385601536,
+            "heapUsedBytes": 76844984,
+            "externalBytes": 72276132,
+            "arrayBufferBytes": 70136702
+          },
+          {
+            "year": -3500,
+            "rssBytes": 387051520,
+            "heapUsedBytes": 114789640,
+            "externalBytes": 71826996,
+            "arrayBufferBytes": 69607766
+          },
+          {
+            "year": -3250,
+            "rssBytes": 387129344,
+            "heapUsedBytes": 110422016,
+            "externalBytes": 71940644,
+            "arrayBufferBytes": 69717950
+          },
+          {
+            "year": -3000,
+            "rssBytes": 399953920,
+            "heapUsedBytes": 79294192,
+            "externalBytes": 71667772,
+            "arrayBufferBytes": 69528342
+          },
+          {
+            "year": -2750,
+            "rssBytes": 426016768,
+            "heapUsedBytes": 89368120,
+            "externalBytes": 71667068,
+            "arrayBufferBytes": 69527638
+          },
+          {
+            "year": -2500,
+            "rssBytes": 429477888,
+            "heapUsedBytes": 167733632,
+            "externalBytes": 71981024,
+            "arrayBufferBytes": 69747022
+          },
+          {
+            "year": -2250,
+            "rssBytes": 479711232,
+            "heapUsedBytes": 140857696,
+            "externalBytes": 71870996,
+            "arrayBufferBytes": 69731566
+          },
+          {
+            "year": -2000,
+            "rssBytes": 498266112,
+            "heapUsedBytes": 197987744,
+            "externalBytes": 72047720,
+            "arrayBufferBytes": 69806206
+          },
+          {
+            "year": -1750,
+            "rssBytes": 514924544,
+            "heapUsedBytes": 93590088,
+            "externalBytes": 71323140,
+            "arrayBufferBytes": 69183710
+          },
+          {
+            "year": -1500,
+            "rssBytes": 537337856,
+            "heapUsedBytes": 183126472,
+            "externalBytes": 71759344,
+            "arrayBufferBytes": 69509974
+          },
+          {
+            "year": -1250,
+            "rssBytes": 590168064,
+            "heapUsedBytes": 293341152,
+            "externalBytes": 72141764,
+            "arrayBufferBytes": 70002334
+          },
+          {
+            "year": -1000,
+            "rssBytes": 590061568,
+            "heapUsedBytes": 196732824,
+            "externalBytes": 71782144,
+            "arrayBufferBytes": 69524262
+          },
+          {
+            "year": -750,
+            "rssBytes": 625184768,
+            "heapUsedBytes": 334938608,
+            "externalBytes": 72394068,
+            "arrayBufferBytes": 70254638
+          },
+          {
+            "year": -500,
+            "rssBytes": 663867392,
+            "heapUsedBytes": 213522560,
+            "externalBytes": 71797756,
+            "arrayBufferBytes": 69658326
+          },
+          {
+            "year": -250,
+            "rssBytes": 694579200,
+            "heapUsedBytes": 355342232,
+            "externalBytes": 72128860,
+            "arrayBufferBytes": 69989430
+          },
+          {
+            "year": 0,
+            "rssBytes": 735862784,
+            "heapUsedBytes": 466532792,
+            "externalBytes": 72323132,
+            "arrayBufferBytes": 70048478
+          },
+          {
+            "year": 250,
+            "rssBytes": 790237184,
+            "heapUsedBytes": 184421728,
+            "externalBytes": 71802788,
+            "arrayBufferBytes": 69663358
+          },
+          {
+            "year": 500,
+            "rssBytes": 825663488,
+            "heapUsedBytes": 275263792,
+            "externalBytes": 72313212,
+            "arrayBufferBytes": 70029414
+          },
+          {
+            "year": 750,
+            "rssBytes": 845406208,
+            "heapUsedBytes": 296349064,
+            "externalBytes": 72120548,
+            "arrayBufferBytes": 69981118
+          },
+          {
+            "year": 1000,
+            "rssBytes": 896536576,
+            "heapUsedBytes": 344665824,
+            "externalBytes": 73114448,
+            "arrayBufferBytes": 70821478
+          },
+          {
+            "year": 1250,
+            "rssBytes": 956506112,
+            "heapUsedBytes": 316378424,
+            "externalBytes": 73081204,
+            "arrayBufferBytes": 70941774
+          },
+          {
+            "year": 1500,
+            "rssBytes": 994168832,
+            "heapUsedBytes": 281359640,
+            "externalBytes": 73394504,
+            "arrayBufferBytes": 71090270
+          },
+          {
+            "year": 1750,
+            "rssBytes": 1020317696,
+            "heapUsedBytes": 187652416,
+            "externalBytes": 73234868,
+            "arrayBufferBytes": 71095438
+          },
+          {
+            "year": 1800,
+            "rssBytes": 1020448768,
+            "heapUsedBytes": 267541984,
+            "externalBytes": 73705676,
+            "arrayBufferBytes": 71566246
+          }
+        ],
+        "beforeFinalSave": {
+          "rssBytes": 1020448768,
+          "heapUsedBytes": 267543424,
+          "externalBytes": 73705676,
+          "arrayBufferBytes": 71566246
+        },
+        "processPeakRSSBytes": 1481367552
+      },
+      "worldBuffers": {
+        "bytes": 65750771,
+        "buffers": 94196
+      },
+      "save": {
+        "initial": {
+          "rawBytes": 40498874,
+          "gzipBytes": 7101339,
+          "encodeMs": 302.07364600000005,
+          "gzipMs": 608.2099119999998,
+          "rawSHA256": "2297247b93a7ea810ff1d59cc111fa7d8ac07d3590e1171aeb4eebb6e81f3290",
+          "before": {
+            "rssBytes": 155009024,
+            "heapUsedBytes": 26687768,
+            "externalBytes": 76340401,
+            "arrayBufferBytes": 74199718
+          },
+          "after": {
+            "rssBytes": 205254656,
+            "heapUsedBytes": 11108136,
+            "externalBytes": 125902744,
+            "arrayBufferBytes": 123762021
+          }
+        },
+        "final": {
+          "rawBytes": 130828307,
+          "gzipBytes": 25418081,
+          "encodeMs": 4182.88036900002,
+          "gzipMs": 2102.219268999994,
+          "rawSHA256": "233ab5a8b392889560bef721936cc276f0a16ab28cfd03423686ef2b850874d8",
+          "before": {
+            "rssBytes": 1056165888,
+            "heapUsedBytes": 348540568,
+            "externalBytes": 75540924,
+            "arrayBufferBytes": 73401494
+          },
+          "after": {
+            "rssBytes": 1252200448,
+            "heapUsedBytes": 393571920,
+            "externalBytes": 257508805,
+            "arrayBufferBytes": 255369375
+          }
+        }
+      },
+      "integrityIssues": []
+    }
+  ]
+}

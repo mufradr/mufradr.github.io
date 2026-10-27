@@ -15,7 +15,8 @@ function prepareMilitaryYear(){
   m.year=s.year;m.opening=m.mobilized;m.recruited=m.demobilized=m.combatDeaths=m.attritionDeaths=m.pendingDeaths=m.populationDeaths=m.rounding=0;
   m.operations=0;m.populationBasis=p;m.provisionsNeed=m.provisionsUsed=m.rations=m.foodPopulation=0;
   const authority=clamp((o.control??0.7)*(0.4+0.6*(o.loyalty??0.7)),0,1);
-  const fraction=war?Math.min(0.08,0.05+0.01*Math.min(3,o.enemies.size-1)):o.kind==='horde'?0.012:0.006;
+  const frontier=Math.min(0.05,(o.frontierPopulation||0)*0.15/Math.max(1,p));
+  const fraction=war?Math.min(0.08,0.05+0.01*Math.min(3,o.enemies.size-1)):Math.max(o.kind==='horde'?0.012:0.006,frontier);
   const target=p*fraction*(0.35+0.65*authority)*(0.3+0.7*m.funding)*(1-0.55*m.exhaustion);
   if(target>m.mobilized){m.recruited=Math.min(target-m.mobilized,p*0.01);m.mobilized+=m.recruited}
   else{m.demobilized=(m.mobilized-target)*0.4;m.mobilized-=m.demobilized}
@@ -41,6 +42,8 @@ function militaryLabor(i){
  const o=S.pols[S.pol[i]],m=o?.military;
  return m?.year===S.year&&m.populationBasis>0?clamp(m.mobilized/m.populationBasis,0,0.08)*(S.farm[i]>0.3?1:0.45):0;
 }
+function noteMilitaryFrontier(o,j){if(!S.pol[j]&&S.pop[j]>=1000)o.frontierPopulation=Math.max(o.frontierPopulation||0,S.pop[j])}
+function militaryCampaigning(o){return o.enemies.size>0||(o.frontierPopulation||0)>0}
 function resetMilitaryFood(){
  for(const id of S.alive){const m=S.pols[id].military;if(m?.year===S.year)m.provisionsNeed=m.provisionsUsed=m.rations=m.foodPopulation=0}
 }
@@ -49,7 +52,7 @@ function campaignFood(i,surplus,ledger){
  const p=S.pop[i],share=clamp(m.mobilized/Math.max(1,m.populationBasis),0,0.08);
  // People under arms already eat their ordinary ration in civilian consumption.
  // Only additional fodder/handling losses are a separate physical food expense.
- const need=p*share*0.25*(o.enemies.size?1+0.5*m.strain:0.2),used=Math.min(surplus,need);
+ const need=p*share*0.25*(militaryCampaigning(o)?1+0.5*m.strain:0.2),used=Math.min(surplus,need);
  m.provisionsNeed+=need;m.provisionsUsed+=used;m.rations+=Math.min(p,networkEconomy.food[i])*share;m.foodPopulation+=p*share;
  ledger.campaignUse+=used;S.K[i]=Math.max(0,S.K[i]-used);return used;
 }
@@ -62,7 +65,7 @@ function finishMilitaryFood(){
 function militaryBudgetNeed(o){
  const m=o.military;if(!m||m.year!==S.year)return 0;
  const c=o.capital,equipment=1+0.4*S.gun[c]+0.2*S.iron[c]+0.3*S.caval[c];
- return m.mobilized*(o.enemies.size?0.4:0.18)*equipment*(1+0.6*m.strain);
+ return m.mobilized*(militaryCampaigning(o)?0.4:0.18)*equipment*(1+0.6*m.strain);
 }
 function militaryReadiness(o){
  const m=o.military;if(!m)return 0.5;
@@ -118,7 +121,7 @@ function reserveDefensiveSupport(attacker,defender,j,gap){
 }
 function commitCampaign(o,i,j,sea=false){
  const m=o.military,access=campaignAccess(o,i,j,sea);if(!m||access<0.04||m.mobilized<1)return null;
- const want=Math.min(m.mobilized*0.12,Math.max(25,S.pop[j]*0.035));
+ const want=Math.min(m.mobilized*0.65,Math.max(25,S.pop[j]*0.08));
  const room=sea?Math.max(0,portCampaignCapacity(i)-(militaryScratch.portUsed.get(i)||0)):Infinity;
  const committed=Math.min(want,m.attackRemaining,m.mobilized,room)*m.funding;
  if(committed<1)return null;m.attackRemaining=Math.max(0,m.attackRemaining-committed);m.operations++;

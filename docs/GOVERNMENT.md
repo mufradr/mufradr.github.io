@@ -3,9 +3,9 @@
 The subsequent [campaign checkpoint](WARFARE.md) replaces the flat wartime charge
 and adds mobilization, exhaustion, reachable reinforcements and withheld service.
 
-Chunk 3 builds on the [economic foundation](ECONOMY.md). This is a local
-checkpoint, not the final v0.17.0 release. Campaign supply, mobilization, cities
-and full historical calibration remain later chunks.
+Chunk 3 builds on the [economic foundation](ECONOMY.md). It is included in
+v0.20.0 with campaigns and cities; see the [release guide](RELEASE_v0.20.0.md)
+for integrated validation and remaining historical calibration limits.
 
 ## Provincial government
 

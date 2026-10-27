@@ -43,6 +43,7 @@ function simulationIssues(limit=50,state=S,world=WD){
     for(const key of ['pop','K','S','press','h','cult','psi'])if(!Number.isFinite(o[key]))report('Nonfinite polity '+key+' for '+id);
     for(const key of ['foodStress','foodImports','foodExports'])if(o[key]!==undefined&&(!Number.isFinite(o[key])||o[key]<0||(key==='foodStress'&&o[key]>1)))report('Invalid polity '+key+' for '+id);
     if(o.foodCrisisYear!==undefined&&!Number.isSafeInteger(o.foodCrisisYear))report('Invalid food crisis year for '+id);
+    if(o.frontierPopulation!==undefined&&(!Number.isFinite(o.frontierPopulation)||o.frontierPopulation<0))report('Invalid frontier exposure for '+id);
     for(const key of ['infrastructureFunding','infrastructureCondition','fiscalStress','control','loyalty','autonomy','successionShock'])if(o[key]!==undefined&&(!Number.isFinite(o[key])||o[key]<0||o[key]>1))report('Invalid '+key+' for '+id);
     if(o.treas!==undefined&&(!Number.isFinite(o.treas)||o.treas < -2||o.treas>1))report('Invalid treasury for '+id);
     if(o.military){const m=o.military,nonnegative=['mobilized','populationBasis','opening','recruited','demobilized','combatDeaths','attritionDeaths','pendingDeaths','populationDeaths','totalDeaths','operations','attackRemaining','defenseRemaining','provisionsNeed','provisionsUsed','rations','foodPopulation'];
